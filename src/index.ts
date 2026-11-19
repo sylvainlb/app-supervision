@@ -4,6 +4,7 @@
 // (document.currentScript == null → toAbsPath(undefined)).
 import '@startinblox/core/dist/store.js';
 import '@startinblox/oidc'; // enregistre <sib-auth>
+import './styles.css';
 import { config } from './config';
 import { matchPath, componentsFor, menuItems, userLabel } from './lib/router.js';
 import orbit from '../orbit.json';

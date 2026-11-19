@@ -18,9 +18,11 @@ export class EnergyChart extends OrbitComponent {
 
   static styles = css`
     ${OrbitComponent.styles}
-    .freshness { font-size: 0.85em; color: #555; }
-    select { margin-left: 8px; }
-    table { border-collapse: collapse; } td, th { border: 1px solid #ccc; padding: 2px 6px; }
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .toolbar strong { font-size: 1.05rem; }
+    .freshness { font-size: 0.78rem; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 999px; padding: 3px 10px; }
+    canvas { max-height: 320px; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(17,24,39,.08); }
+    table { margin-top: 12px; max-height: 260px; display: block; overflow: auto; }
   `;
 
   constructor() {
@@ -69,7 +71,7 @@ export class EnergyChart extends OrbitComponent {
   renderContent() {
     const series = buildSeries(this.rows, this.metric);
     return html`
-      <div>
+      <div class="toolbar">
         <strong>${this.metric}</strong>
         <span class="freshness">${formatFreshness(latestTimestamp(this.rows))}</span>
         <select @change=${(e) => { this.window = e.target.value; this.refresh(); }}>

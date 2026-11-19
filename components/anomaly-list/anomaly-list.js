@@ -14,10 +14,11 @@ export class AnomalyList extends OrbitComponent {
 
   static styles = css`
     ${OrbitComponent.styles}
-    .sev-LOW { background: #9e9e9e; } .sev-MEDIUM { background: #ff9800; }
-    .sev-HIGH { background: #f44336; } .sev-CRITICAL { background: #7b0000; }
-    .badge { color: #fff; border-radius: 10px; padding: 1px 8px; font-size: 0.8em; }
-    li { margin: 4px 0; }
+    .filters { margin-bottom: 12px; }
+    ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    li { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 1px 3px rgba(17,24,39,.08); padding: 10px 14px; }
+    li .meta { flex: 1; color: #374151; font-size: 0.9rem; }
+    li button { margin-left: auto; }
   `;
 
   constructor() {
@@ -31,7 +32,7 @@ export class AnomalyList extends OrbitComponent {
     const rows = filterAnomalies(this.objects, { severity: this.filterSeverity || undefined, building: this.filterBuilding || undefined });
     const severities = [...new Set(this.objects.map((a) => a.severity).filter(Boolean))];
     return html`
-      <div>
+      <div class="filters">
         <select @change=${(e) => { this.filterSeverity = e.target.value; }}>
           <option value="">toutes sévérités</option>
           ${severities.map((s) => html`<option value=${s} ?selected=${s === this.filterSeverity}>${s}</option>`)}
@@ -42,7 +43,7 @@ export class AnomalyList extends OrbitComponent {
         ${rows.map((a) => html`
           <li>
             <span class="badge sev-${a.severity}">${a.severity}</span>
-            ${a.ts} — ${a.meter_id} — ${a.type}
+            <span class="meta">${a.ts} — ${a.meter_id} — ${a.type}</span>
             <button @click=${() => this._createTicket(a)}>Créer un ticket</button>
           </li>`)}
       </ul>`}`;

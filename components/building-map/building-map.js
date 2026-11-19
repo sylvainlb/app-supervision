@@ -3,9 +3,7 @@
 // Carte Leaflet si window.L (CDN) présent, sinon repli liste cliquable. Clic → requestNavigation.
 import { html, css } from 'lit';
 import { OrbitComponent } from '../boilerplate/index.js';
-import { computeBuildingStates, STATE } from './logic.js';
-
-const STATE_COLOR = { [STATE.OK]: 'green', [STATE.ANOMALY]: 'orange', [STATE.HIGH]: 'red' };
+import { computeBuildingStates } from './logic.js';
 
 export class BuildingMap extends OrbitComponent {
   static properties = {
@@ -16,9 +14,12 @@ export class BuildingMap extends OrbitComponent {
 
   static styles = css`
     ${OrbitComponent.styles}
-    .map { height: 400px; }
-    ul.markers { list-style: none; padding: 0; }
-    .marker { display: inline-block; margin: 4px; padding: 4px 8px; border-radius: 4px; color: #fff; cursor: pointer; }
+    .map { height: 420px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(17,24,39,.08); margin-bottom: 12px; }
+    ul.markers { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .marker { color: #fff; border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; }
+    .marker.st-ok { background: #15803d; }
+    .marker.st-anomaly { background: #d97706; }
+    .marker.st-high { background: #dc2626; }
   `;
 
   constructor() {
@@ -68,7 +69,7 @@ export class BuildingMap extends OrbitComponent {
       <ul class="markers">
         ${states.map(({ building, state, anomalies }) => html`
           <li>
-            <button class="marker" style="background:${STATE_COLOR[state]}"
+            <button class="marker st-${state}"
               title="${anomalies.length} anomalie(s) active(s)"
               @click=${() => this.navigate('building-detail', building['@id'])}>
               ${building['buildings:name'] ?? building['@id']}

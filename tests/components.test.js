@@ -33,8 +33,8 @@ test('building-map : rend les marqueurs colorés et navigue au clic', async () =
   const el = await mount('building-map');
   const markers = el.shadowRoot.querySelectorAll('.marker');
   assert.equal(markers.length, 2);
-  assert.match(markers[0].getAttribute('style'), /green/);
-  assert.match(markers[1].getAttribute('style'), /red/);
+  assert.match(markers[0].className, /st-ok/);
+  assert.match(markers[1].className, /st-high/);
   markers[1].click();
   assert.deepEqual(events[0], { route: 'building-detail', resource: '/buildings/2', query: null });
 });

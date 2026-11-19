@@ -1,6 +1,7 @@
 // ticket-new — formulaire de création de ticket (spec front §7.4 : pré-rempli depuis
 // ?anomaly=<@id> : titre + tickets:anomaly_ref). POST /tickets/ puis retour à la liste.
 import { LitElement, html, css } from 'lit';
+import { sharedStyles } from '../boilerplate/index.js';
 import { validateTicket, buildTicketPayload, PRIORITIES } from './logic.js';
 
 export class TicketNew extends LitElement {
@@ -13,8 +14,13 @@ export class TicketNew extends LitElement {
   };
 
   static styles = css`
-    form label { display: block; margin: 6px 0; }
-    .errors { color: #b00020; }
+    ${sharedStyles}
+    form { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 1px 3px rgba(17,24,39,.08); padding: 16px; max-width: 480px; }
+    form label { display: block; margin: 10px 0; font-size: 0.88rem; color: #374151; }
+    form input, form select, form textarea { width: 100%; margin-top: 4px; }
+    .errors { color: #b91c1c; }
+    .anomaly-link { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 8px; padding: 8px 12px; font-size: 0.88rem; }
+    h2 { margin-top: 0; }
   `;
 
   constructor() {
@@ -48,7 +54,7 @@ export class TicketNew extends LitElement {
   render() {
     return html`
       <h2>Nouveau ticket</h2>
-      ${this.anomaly ? html`<p>anomalie liée : ${this.anomaly}</p>` : ''}
+      ${this.anomaly ? html`<p class="anomaly-link">anomalie liée : ${this.anomaly}</p>` : ''}
       <form @submit=${(e) => { e.preventDefault(); this._submit(); }}>
         <label>titre <input .value=${this.form.title} @input=${(e) => { this.form = { ...this.form, title: e.target.value }; }}></label>
         <label>description <textarea .value=${this.form.description} @input=${(e) => { this.form = { ...this.form, description: e.target.value }; }}></textarea></label>

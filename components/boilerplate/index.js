@@ -7,6 +7,36 @@
 import { LitElement, html, css } from 'lit';
 import { Task } from '@lit/task';
 
+export const sharedStyles = css`    :host { display: block; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #111827; }
+    button {
+      background: #2563eb; color: #fff; border: 0; border-radius: 8px;
+      padding: 7px 14px; font-size: 0.9rem; cursor: pointer;
+    }
+    button:hover { background: #1e40af; }
+    button.secondary { background: #fff; color: #111827; border: 1px solid #d1d5db; }
+    button.secondary:hover { background: #f3f4f6; }
+    input, select, textarea {
+      border: 1px solid #d1d5db; border-radius: 8px; padding: 7px 10px; font-size: 0.9rem;
+      font-family: inherit; background: #fff; color: #111827;
+    }
+    input:focus, select:focus, textarea:focus { outline: 2px solid #93c5fd; border-color: #2563eb; }
+    table { border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(17,24,39,.08); }
+    th { background: #f9fafb; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #6b7280; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px 12px; font-size: 0.9rem; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 1px 3px rgba(17,24,39,.08); padding: 12px; }
+    .badge { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 0.75rem; font-weight: 600; color: #fff; background: #6b7280; }
+    .sev-LOW, .st-OPEN { background: #6b7280; }
+    .sev-MEDIUM, .pri-MEDIUM { background: #d97706; }
+    .sev-HIGH, .st-IN_PROGRESS, .pri-HIGH { background: #dc2626; }
+    .sev-CRITICAL, .pri-CRITICAL { background: #7f1d1d; }
+    .st-RESOLVED { background: #2563eb; }
+    .st-CLOSED { background: #15803d; }
+    .pending .skeleton { height: 1.2em; border-radius: 6px; background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%); background-size: 200% 100%; animation: pulse 1.2s infinite; }
+    @keyframes pulse { to { background-position: -200% 0; } }
+    .error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 8px; padding: 10px 14px; }
+    .empty { border: 1px dashed #d1d5db; border-radius: 8px; padding: 24px; text-align: center; color: #6b7280; font-style: italic; background: #fff; }
+    .toast { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: 8px; padding: 10px 14px; margin: 8px 0; }`;
+
 export class ComponentObjectHandler extends LitElement {
   static properties = {
     dataSrc: { type: String, attribute: 'data-src' },
@@ -47,12 +77,7 @@ export class OrbitComponent extends ComponentObjectsHandler {
     error: { type: Object, attribute: false },
   };
 
-  static styles = css`
-    :host { display: block; font-family: sans-serif; }
-    .pending { opacity: 0.6; }
-    .error { color: #b00020; }
-    .empty { color: #555; font-style: italic; }
-  `;
+  static styles = sharedStyles;
 
   constructor() {
     super();
@@ -101,8 +126,8 @@ export class OrbitComponent extends ComponentObjectsHandler {
 
   render() {
     return this._task.render({
-      initial: () => html`<div class="pending" role="status">chargement…</div>`,
-      pending: () => html`<div class="pending" role="status">chargement…</div>`,
+      initial: () => html`<div class="pending" role="status"><div class="skeleton"></div></div>`,
+      pending: () => html`<div class="pending" role="status"><div class="skeleton"></div></div>`,
       error: (e) => html`<div class="error" role="alert">erreur : ${e?.message ?? e}</div>`,
       complete: () => (this.isEmpty()
         ? html`<div class="empty">aucun élément</div>`

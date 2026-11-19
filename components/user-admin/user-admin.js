@@ -14,9 +14,13 @@ export class UserAdmin extends OrbitComponent {
 
   static styles = css`
     ${OrbitComponent.styles}
-    table { border-collapse: collapse; } td, th { border: 1px solid #ccc; padding: 4px 8px; }
-    .errors { color: #b00020; }
-    form label { display: block; margin: 4px 0; }
+    h3 { margin: 0 0 10px; }
+    form { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 1px 3px rgba(17,24,39,.08); padding: 14px 16px; margin-top: 14px; max-width: 420px; }
+    form label { display: block; margin: 8px 0; font-size: 0.88rem; color: #374151; }
+    form input, form select { width: 100%; margin-top: 4px; }
+    .errors { color: #b91c1c; }
+    td button { background: #fff; color: #b91c1c; border: 1px solid #fecaca; }
+    td button:hover { background: #fef2f2; }
   `;
 
   constructor() {
