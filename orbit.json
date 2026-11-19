@@ -1,0 +1,37 @@
+{
+  "client": {
+    "url": "https://<pod>/",
+    "oidc": {
+      "issuer": "https://<pod>/auth/realms/fap-light",
+      "clientId": "fap-light-ui"
+    }
+  },
+  "npm": {
+    "@startinblox/core": "1.0.0",
+    "@startinblox/oidc": "1.0.0",
+    "@startinblox/orbit": "1.0.0",
+    "@startinblox/orbit-styling-framework": "1.0.0",
+    "lit": "3.2.0",
+    "chart.js": "4.4.4"
+  },
+  "routes": [
+    { "name": "dashboard", "path": "/", "roles": ["gestionnaire"], "components": ["building-map", "energy-chart", "anomaly-list"] },
+    { "name": "building-detail", "path": "/buildings/:id", "roles": ["gestionnaire"], "components": ["energy-chart", "solid-display"] },
+    { "name": "anomalies", "path": "/anomalies", "roles": ["gestionnaire"], "components": ["anomaly-list", "solid-form"] },
+    { "name": "tickets", "path": "/tickets", "roles": ["gestionnaire"], "components": ["ticket-board", "ticket-detail", "solid-form"] },
+    { "name": "interventions", "path": "/interventions", "roles": ["technicien"], "components": ["ticket-board", "ticket-detail"] },
+    { "name": "admin", "path": "/admin", "roles": ["admin"], "components": ["user-admin"] }
+  ],
+  "components": {
+    "building-map": "components/building-map/building-map.js",
+    "energy-chart": "components/energy-chart/energy-chart.js",
+    "anomaly-list": "components/anomaly-list/anomaly-list.js",
+    "ticket-board": "components/ticket-board/ticket-board.js",
+    "ticket-detail": "components/ticket-detail/ticket-detail.js",
+    "user-admin": "components/user-admin/user-admin.js",
+    "solid-display": "@startinblox/core",
+    "solid-form": "@startinblox/core",
+    "solid-ac-checker": "@startinblox/core",
+    "solid-router": "@startinblox/core"
+  }
+}

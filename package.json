@@ -1,0 +1,16 @@
+{
+  "name": "app-supervision",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Front-end de l'application de supervision energetique (spec supervision-energetique-front-technique.md)",
+  "scripts": {
+    "test": "node --test tests/",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "5.5.4",
+    "vite": "5.4.8"
+  }
+}
