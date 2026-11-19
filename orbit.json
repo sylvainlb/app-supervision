@@ -7,11 +7,10 @@
     }
   },
   "npm": {
-    "@startinblox/core": "1.0.0",
-    "@startinblox/oidc": "1.0.0",
-    "@startinblox/orbit": "1.0.0",
-    "@startinblox/orbit-styling-framework": "1.0.0",
-    "lit": "3.2.0",
+    "@startinblox/core": "2.0.6",
+    "@startinblox/oidc": "0.16.6",
+    "@lit/task": "1.0.3",
+    "lit": "3.3.3",
     "chart.js": "4.4.4"
   },
   "routes": [

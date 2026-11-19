@@ -32,3 +32,22 @@ export function buildProxyRequest({ assetId, from, to }) {
     body: JSON.stringify({ assetId, from, to }),
   };
 }
+
+// Appel du proxy avec le fetch authentifié de session (fetchAuthn injecté par sib-auth, §13.7).
+// 429 → backoff (spec §2/§10) ; autres erreurs → body dspace:Error transmis.
+export async function queryGold(fetchFn, params) {
+  const req = buildProxyRequest(params);
+  const res = await fetchFn(req.url, { method: req.method, headers: req.headers, body: req.body });
+  if (res.status === 429) {
+    const err = new Error('rate limit proxy (60 req/min) — backoff');
+    err.status = 429;
+    throw err;
+  }
+  if (!res.ok) {
+    const err = new Error(`proxy /app/query : ${res.status}`);
+    err.status = res.status;
+    err.body = await res.json().catch(() => null);
+    throw err;
+  }
+  return res.json();
+}
