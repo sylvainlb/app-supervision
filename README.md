@@ -21,6 +21,37 @@ sibStore, blox du Store en ES modules CDN, composants custom Lit, sib-auth/OIDC)
 └── dist/               ← build Vite (servi par caddy à https://<pod>/app/)
 ```
 
+## Lancer en local avec le back FAP-light
+
+**1. Back** (stack 1 VM : postgres + ORCE + caddy + Keycloak) :
+
+```sh
+cd ../fap-light-serveur
+cp .env.example .env        # éditer les secrets si besoin (FAP_DOMAIN=localhost par défaut)
+./scripts/deploy.sh         # build + up + attente santé
+# → LDP/JSON-LD : https://localhost/ (caddy :443, certificat auto-signé en local :
+#   l'accepter dans le navigateur) ; Keycloak : https://localhost/auth/realms/fap-light
+#   (console admin : http://localhost:8080) ; ORCE : http://localhost:1880
+```
+
+**2. Front** :
+
+```sh
+cd ../app-supervision
+cp .env.example .env        # POD_URL=https://localhost, OIDC_ISSUER=.../auth/realms/fap-light
+npm ci
+npm run dev                 # → http://localhost:5173 (proxy Vite same-origin vers le back)
+```
+
+En dev, `vite.config.ts` proxage `/tickets`, `/buildings`, `/users`, `/gold`,
+`/app/query` et `/auth` vers `POD_URL` (pas de CORS). En production, pas de proxy :
+le build est servi en same-origin par caddy à `https://<pod>/app/` :
+
+```sh
+POD_URL=https://<pod> OIDC_ISSUER=https://<pod>/auth/realms/fap-light npm run build
+# copier dist/ sur le serveur, route caddy /app/* → statique (spec front §13.6)
+```
+
 ## Tests de conformité
 
 ```sh
