@@ -16,5 +16,10 @@
   --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-* { box-sizing: border-box; }
-body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--ink); }
+/* Reset minimal standard */
+*, *::before, *::after { box-sizing: border-box; }
+body, h1, h2, h3, p, ul { margin: 0; }
+ul { padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+a { color: var(--brand); }
+button { font-family: inherit; }
