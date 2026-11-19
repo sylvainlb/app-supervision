@@ -46,9 +46,11 @@ async function main(): Promise<void> {
   if (sibAuth) {
     sibAuth.issuer = config.oidcIssuer; // realm Keycloak de la FAP (D-7)
     sibAuth.clientId = config.oidcClientId; // client statique fap-light-ui
-    if (sibAuth.fetchAuthn && window.sibStore) {
-      // §13.7 : fetch authentifié (DPoP) injecté dans sibStore, point d'injection unique
-      (window.sibStore as { fetchAuthn?: typeof fetch }).fetchAuthn = sibAuth.fetchAuthn.bind(sibAuth);
+    if (window.sibStore) {
+      // §13.7 : fetch authentifié (DPoP) injecté dans sibStore, point d'injection unique.
+      // Wrapper résolu à l'appel : <sib-auth> peut s'upgrader après ce main().
+      (window.sibStore as { fetchAuthn?: typeof fetch }).fetchAuthn = ((u: string, i?: RequestInit) =>
+        sibAuth?.fetchAuthn ? sibAuth.fetchAuthn(u, i) : fetch(u, i)) as typeof fetch;
     }
   }
   // Sans shell Orbit standalone : on fournit une promesse résolue pour que les

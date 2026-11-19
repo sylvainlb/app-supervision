@@ -34,7 +34,8 @@ export class EnergyChart extends OrbitComponent {
   async load() {
     const access = metricAccess(this.metric);
     if (access.via === 'proxy') {
-      const fetchFn = window.sibStore?.fetchAuthn ?? fetch;
+      // Ne jamais extraire la méthode (perd le `this`) : wrapper résolu à l'appel.
+      const fetchFn = (u, i) => (window.sibStore?.fetchAuthn ?? fetch)(u, i);
       const res = await queryGold(fetchFn, this._proxyParams());
       this.rows = res.rows ?? [];
     } else {
