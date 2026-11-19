@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { matchPath, componentsFor, menuItems } from '../src/lib/router.js';
+import { matchPath, componentsFor, menuItems, userLabel } from '../src/lib/router.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const routes = JSON.parse(readFileSync(join(root, 'orbit.json'), 'utf8')).routes;
@@ -49,4 +49,11 @@ test('menuItems : libellés FR, pas de routes de détail, visibilité par rôle 
   const admin = menuItems(routes, 'admin').filter((i) => i.visible).map((i) => i.name);
   assert.ok(admin.includes('admin') && admin.includes('dashboard'), 'admin voit tout');
   assert.ok(all.every((i) => i.label && i.label.length > 0), 'chaque entrée a un libellé');
+});
+
+test('userLabel : webid + rôle depuis les claims OIDC (D-7)', () => {
+  assert.equal(userLabel({ webid: 'https://app.localhost/users/1', role: 'gestionnaire' }), 'https://app.localhost/users/1 (gestionnaire)');
+  assert.equal(userLabel({ preferred_username: 'u1' }), 'u1');
+  assert.equal(userLabel(null), '');
+  assert.equal(userLabel({}), '');
 });

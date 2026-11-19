@@ -21,6 +21,18 @@ export function componentsFor(name, routes) {
   return routes.find((r) => r.name === name)?.components ?? [];
 }
 
+// Libellé utilisateur pour le header, depuis les claims OIDC (webid + role, D-7).
+/**
+ * @param {{webid?:string, preferred_username?:string, role?:string}|null|undefined} claims
+ * @returns {string}
+ */
+export function userLabel(claims) {
+  if (!claims) return '';
+  const webid = claims.webid ?? claims.preferred_username ?? '';
+  const role = claims.role ?? '';
+  return role ? `${webid} (${role})` : webid;
+}
+
 // Menu latéral : libellés FR + visibilité par rôle (spec §8 — le rôle pilote
 // l'assemblage des écrans, jamais la décision d'accès).
 export const LABELS = {

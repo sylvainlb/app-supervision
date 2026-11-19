@@ -5,7 +5,7 @@
 import '@startinblox/core/dist/store.js';
 import '@startinblox/oidc'; // enregistre <sib-auth>
 import { config } from './config';
-import { matchPath, componentsFor, menuItems } from './lib/router.js';
+import { matchPath, componentsFor, menuItems, userLabel } from './lib/router.js';
 import orbit from '../orbit.json';
 import '../components/building-map/building-map.js';
 import '../components/energy-chart/energy-chart.js';
@@ -32,6 +32,29 @@ function currentRole(sibAuth: HTMLElement | null): string {
   if (w.appRole) return w.appRole;
   const claims = (sibAuth as unknown as { session?: { tokenParsed?: { role?: string } }; claims?: { role?: string } });
   return claims?.session?.tokenParsed?.role ?? claims?.claims?.role ?? 'gestionnaire';
+}
+
+function claimsOf(sibAuth: HTMLElement | null): { webid?: string; role?: string } | null {
+  const c = (sibAuth as unknown as {
+    session?: { tokenParsed?: { webid?: string; role?: string } };
+    claims?: { webid?: string; role?: string };
+  });
+  return c?.session?.tokenParsed ?? c?.claims ?? null;
+}
+
+// Header : utilisateur connecté (claims OIDC) + déconnexion (sib-auth si dispo).
+function renderHeader(sibAuth: HTMLElement | null): void {
+  const user = document.getElementById('user');
+  if (user) user.textContent = userLabel(claimsOf(sibAuth));
+  const logout = document.getElementById('logout');
+  if (logout && !logout.dataset.wired) {
+    logout.dataset.wired = '1';
+    logout.addEventListener('click', () => {
+      const auth = sibAuth as unknown as { logout?: () => void };
+      if (auth?.logout) auth.logout();
+      else document.dispatchEvent(new CustomEvent('auth-logout'));
+    });
+  }
 }
 
 function renderMenu(role: string): void {
@@ -108,6 +131,7 @@ async function main(): Promise<void> {
   await window.orbit.ready;
   document.dispatchEvent(new CustomEvent('orbit-ready'));
   render();
+  renderHeader(sibAuth);
   renderMenu(currentRole(sibAuth));
   console.info(`[app-supervision] pod=${config.podUrl} issuer=${config.oidcIssuer}`);
 }
@@ -119,10 +143,12 @@ document.addEventListener('requestNavigation', (e) => {
   const path = d.resource ?? def?.path ?? '/';
   window.history.pushState({}, '', path);
   render();
+  renderHeader(document.querySelector('sib-auth'));
   renderMenu(currentRole(document.querySelector('sib-auth')));
 });
 window.addEventListener('popstate', () => {
   render();
+  renderHeader(document.querySelector('sib-auth'));
   renderMenu(currentRole(document.querySelector('sib-auth')));
 });
 
