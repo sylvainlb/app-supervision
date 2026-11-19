@@ -12,26 +12,27 @@
     <style>
       #header {
         display: flex; align-items: center; gap: 12px;
-        background: linear-gradient(90deg, var(--brand-dark), var(--brand));
-        color: #fff; padding: 12px 20px; box-shadow: var(--shadow);
+        background: #0f172a; color: #f8fafc; padding: 12px 20px;
+        box-shadow: var(--shadow); border-bottom: 3px solid var(--brand);
       }
       #header .title { font-size: 1.15rem; font-weight: 700; letter-spacing: 0.2px; }
+      #header .title::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--brand); margin-right: 9px; }
       #header .spacer { flex: 1; }
-      #header .user { font-size: 0.9rem; color: #dbeafe; }
+      #header .user { font-size: 0.9rem; color: #94a3b8; }
       #header button {
-        background: rgba(255, 255, 255, 0.15); color: #fff; border: 1px solid rgba(255, 255, 255, 0.4);
+        background: transparent; color: #e2e8f0; border: 1px solid #334155;
         border-radius: var(--radius); padding: 6px 12px; cursor: pointer; font-size: 0.85rem;
       }
-      #header button:hover { background: rgba(255, 255, 255, 0.3); }
-      #layout { display: flex; min-height: calc(100vh - 45px); }
-      #menu { width: 230px; background: #111827; padding: 14px 0; flex-shrink: 0; }
+      #header button:hover { background: #1e293b; border-color: var(--brand); }
+      #layout { display: flex; min-height: calc(100vh - 48px); }
+      #menu { width: 230px; background: #0f172a; padding: 14px 0; flex-shrink: 0; }
       #menu a {
-        display: block; padding: 11px 18px; color: #9ca3af; text-decoration: none; cursor: pointer;
-        border-left: 3px solid transparent; font-size: 0.95rem;
+        display: block; padding: 11px 18px; color: #94a3b8; text-decoration: none; cursor: pointer;
+        border-left: 3px solid transparent; font-size: 0.93rem;
       }
-      #menu a:hover { background: #1f2937; color: #f9fafb; }
-      #menu a.active { background: #1f2937; color: #fff; font-weight: 600; border-left-color: var(--brand); }
-      #app { flex: 1; padding: 20px 24px; }
+      #menu a:hover { background: #1e293b; color: #f1f5f9; }
+      #menu a.active { background: #134e4a; color: #5eead4; font-weight: 600; border-left-color: var(--brand); }
+      #app { flex: 1; padding: 24px 28px; }
     </style>
   </head>
   <body>

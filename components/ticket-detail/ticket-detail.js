@@ -19,13 +19,13 @@ export class TicketDetail extends OrbitComponent {
   static styles = css`
     ${OrbitComponent.styles}
     h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; }
-    .fiche { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 1px 3px rgba(17,24,39,.08); padding: 14px 16px; margin-bottom: 14px; }
-    .fiche p { margin: 6px 0; color: #374151; font-size: 0.92rem; }
+    .fiche { background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: 10px; box-shadow: var(--shadow); padding: 14px 16px; margin-bottom: 14px; }
+    .fiche p { margin: 6px 0; color: #334155; font-size: 0.92rem; }
     .actions { margin: 12px 0; }
     .actions button { margin-right: 8px; }
-    section.comments { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; }
+    section.comments { background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: 10px; padding: 14px 16px; }
     section.comments ul { list-style: none; padding: 0; }
-    section.comments li { border-bottom: 1px solid #f3f4f6; padding: 8px 0; font-size: 0.9rem; color: #374151; }
+    section.comments li { border-bottom: 1px solid #f1f5f9; padding: 8px 0; font-size: 0.9rem; color: #334155; }
     section.comments li:last-child { border-bottom: 0; }
     .comment-form { display: flex; gap: 8px; margin-top: 10px; }
     .comment-form input { flex: 1; }

@@ -16,8 +16,8 @@ export class AnomalyList extends OrbitComponent {
     ${OrbitComponent.styles}
     .filters { margin-bottom: 12px; }
     ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-    li { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 1px 3px rgba(17,24,39,.08); padding: 10px 14px; }
-    li .meta { flex: 1; color: #374151; font-size: 0.9rem; }
+    li { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: 8px; box-shadow: var(--shadow); padding: 10px 14px; }
+    li .meta { flex: 1; color: #334155; font-size: 0.9rem; }
     li button { margin-left: auto; }
   `;
 

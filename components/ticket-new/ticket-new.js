@@ -15,11 +15,11 @@ export class TicketNew extends LitElement {
 
   static styles = css`
     ${sharedStyles}
-    form { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 1px 3px rgba(17,24,39,.08); padding: 16px; max-width: 480px; }
-    form label { display: block; margin: 10px 0; font-size: 0.88rem; color: #374151; }
+    form { background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: 10px; box-shadow: var(--shadow); padding: 16px; max-width: 480px; }
+    form label { display: block; margin: 10px 0; font-size: 0.88rem; color: #334155; }
     form input, form select, form textarea { width: 100%; margin-top: 4px; }
-    .errors { color: #b91c1c; }
-    .anomaly-link { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 8px; padding: 8px 12px; font-size: 0.88rem; }
+    .errors { color: #dc2626; }
+    .anomaly-link { background: #f0fdfa; border: 1px solid #99f6e4; color: #0f766e; border-radius: 8px; padding: 8px 12px; font-size: 0.88rem; }
     h2 { margin-top: 0; }
   `;
 

@@ -7,35 +7,38 @@
 import { LitElement, html, css } from 'lit';
 import { Task } from '@lit/task';
 
-export const sharedStyles = css`    :host { display: block; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #111827; }
+export const sharedStyles = css`    :host {
+    --brand: #0d9488; --brand-dark: #115e59; --ink: #0f172a; --muted: #64748b;
+    --border: #e2e8f0; --shadow: 0 1px 2px rgba(15,23,42,.06), 0 4px 14px rgba(15,23,42,.05);
+    display: block; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #111827; }
     button {
-      background: #2563eb; color: #fff; border: 0; border-radius: 8px;
+      background: var(--brand, #0d9488); color: #fff; border: 0; border-radius: 8px;
       padding: 7px 14px; font-size: 0.9rem; cursor: pointer;
     }
-    button:hover { background: #1e40af; }
-    button.secondary { background: #fff; color: #111827; border: 1px solid #d1d5db; }
+    button:hover { background: var(--brand-dark, #115e59); }
+    button.secondary { background: #fff; color: var(--ink, #0f172a); border: 1px solid var(--border, #e2e8f0); }
     button.secondary:hover { background: #f3f4f6; }
     input, select, textarea {
-      border: 1px solid #d1d5db; border-radius: 8px; padding: 7px 10px; font-size: 0.9rem;
-      font-family: inherit; background: #fff; color: #111827;
+      border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 7px 10px; font-size: 0.9rem;
+      font-family: inherit; background: #fff; color: var(--ink, #0f172a);
     }
-    input:focus, select:focus, textarea:focus { outline: 2px solid #93c5fd; border-color: #2563eb; }
-    table { border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(17,24,39,.08); }
-    th { background: #f9fafb; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #6b7280; }
-    th, td { border: 1px solid #e5e7eb; padding: 8px 12px; font-size: 0.9rem; }
-    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 1px 3px rgba(17,24,39,.08); padding: 12px; }
+    input:focus, select:focus, textarea:focus { outline: 2px solid #5eead4; border-color: var(--brand, #0d9488); }
+    table { border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: var(--shadow, 0 1px 2px rgba(15,23,42,.06)); }
+    th { background: #f8fafc; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: var(--muted, #64748b); }
+    th, td { border: 1px solid var(--border, #e2e8f0); padding: 8px 12px; font-size: 0.9rem; }
+    .card { background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: 8px; box-shadow: var(--shadow, 0 1px 2px rgba(15,23,42,.06)); padding: 12px; }
     .badge { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 0.75rem; font-weight: 600; color: #fff; background: #6b7280; }
-    .sev-LOW, .st-OPEN { background: #6b7280; }
+    .sev-LOW, .st-OPEN { background: #64748b; }
     .sev-MEDIUM, .pri-MEDIUM { background: #d97706; }
-    .sev-HIGH, .st-IN_PROGRESS, .pri-HIGH { background: #dc2626; }
-    .sev-CRITICAL, .pri-CRITICAL { background: #7f1d1d; }
-    .st-RESOLVED { background: #2563eb; }
-    .st-CLOSED { background: #15803d; }
-    .pending .skeleton { height: 1.2em; border-radius: 6px; background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%); background-size: 200% 100%; animation: pulse 1.2s infinite; }
+    .sev-HIGH, .st-IN_PROGRESS, .pri-HIGH { background: #ea580c; }
+    .sev-CRITICAL, .pri-CRITICAL { background: #b91c1c; }
+    .st-RESOLVED { background: #0284c7; }
+    .st-CLOSED, .st-ok { background: #059669; } .st-anomaly { background: #d97706; } .st-high { background: #dc2626; }
+    .pending .skeleton { height: 1.2em; border-radius: 6px; background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%); background-size: 200% 100%; animation: pulse 1.2s infinite; }
     @keyframes pulse { to { background-position: -200% 0; } }
-    .error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 8px; padding: 10px 14px; }
-    .empty { border: 1px dashed #d1d5db; border-radius: 8px; padding: 24px; text-align: center; color: #6b7280; font-style: italic; background: #fff; }
-    .toast { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: 8px; padding: 10px 14px; margin: 8px 0; }`;
+    .error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 8px; padding: 10px 14px; }
+    .empty { border: 1px dashed #cbd5e1; border-radius: 8px; padding: 24px; text-align: center; color: var(--muted, #64748b); font-style: italic; background: #fff; }
+    .toast { background: #fffbeb; border: 1px solid #fde68a; color: #b45309; border-radius: 8px; padding: 10px 14px; margin: 8px 0; }`;
 
 export class ComponentObjectHandler extends LitElement {
   static properties = {

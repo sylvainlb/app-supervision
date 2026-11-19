@@ -20,8 +20,8 @@ export class EnergyChart extends OrbitComponent {
     ${OrbitComponent.styles}
     .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .toolbar strong { font-size: 1.05rem; }
-    .freshness { font-size: 0.78rem; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 999px; padding: 3px 10px; }
-    canvas { max-height: 320px; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(17,24,39,.08); }
+    .freshness { font-size: 0.78rem; background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; border-radius: 999px; padding: 3px 10px; }
+    canvas { max-height: 320px; background: #fff; border-radius: 8px; box-shadow: var(--shadow); }
     table { margin-top: 12px; max-height: 260px; display: block; overflow: auto; }
   `;
 

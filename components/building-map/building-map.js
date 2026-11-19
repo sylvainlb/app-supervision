@@ -14,10 +14,10 @@ export class BuildingMap extends OrbitComponent {
 
   static styles = css`
     ${OrbitComponent.styles}
-    .map { height: 420px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(17,24,39,.08); margin-bottom: 12px; }
+    .map { height: 420px; border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 12px; }
     ul.markers { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
     .marker { color: #fff; border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; }
-    .marker.st-ok { background: #15803d; }
+    .marker.st-ok { background: #059669; }
     .marker.st-anomaly { background: #d97706; }
     .marker.st-high { background: #dc2626; }
   `;

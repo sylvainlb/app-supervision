@@ -9,12 +9,12 @@ export class TicketBoard extends OrbitComponent {
   static styles = css`
     ${OrbitComponent.styles}
     .board { display: flex; gap: 14px; align-items: flex-start; }
-    .column { flex: 1; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px; }
-    .column h3 { margin: 0 0 8px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; display: flex; justify-content: space-between; align-items: center; }
-    .count { background: #e5e7eb; color: #111827; border-radius: 999px; padding: 1px 9px; font-size: 0.78rem; }
-    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; margin: 8px 0; padding: 10px; cursor: pointer; box-shadow: 0 1px 2px rgba(17,24,39,.05); font-size: 0.88rem; }
-    .card:hover { box-shadow: 0 4px 10px rgba(17,24,39,.12); border-color: #c7d2fe; }
-    .card .meta { color: #6b7280; font-size: 0.78rem; margin-top: 4px; display: flex; gap: 8px; align-items: center; }
+    .column { flex: 1; background: #f8fafc; border: 1px solid var(--border, #e2e8f0); border-radius: 10px; padding: 10px; }
+    .column h3 { margin: 0 0 8px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted, #64748b); display: flex; justify-content: space-between; align-items: center; }
+    .count { background: #e2e8f0; color: var(--ink, #0f172a); border-radius: 999px; padding: 1px 9px; font-size: 0.78rem; }
+    .card { background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: 8px; margin: 8px 0; padding: 10px; cursor: pointer; box-shadow: var(--shadow); font-size: 0.88rem; }
+    .card:hover { box-shadow: 0 4px 10px rgba(17,24,39,.12); border-color: #99f6e4; }
+    .card .meta { color: var(--muted, #64748b); font-size: 0.78rem; margin-top: 4px; display: flex; gap: 8px; align-items: center; }
   `;
 
   constructor() {

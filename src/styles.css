@@ -1,17 +1,18 @@
 /* Design system global (light DOM : header, menu, layout). */
 :root {
-  --brand: #2563eb;
-  --brand-dark: #1e40af;
-  --ink: #111827;
-  --muted: #6b7280;
-  --bg: #f3f4f6;
+  --brand: #0d9488;        /* teal-600 */
+  --brand-dark: #115e59;   /* teal-800 */
+  --brand-soft: #ccfbf1;   /* teal-100 */
+  --ink: #0f172a;          /* slate-900 */
+  --muted: #64748b;        /* slate-500 */
+  --bg: #f1f5f9;           /* slate-100 */
   --card: #ffffff;
-  --border: #e5e7eb;
-  --danger: #b91c1c;
-  --amber: #b45309;
-  --ok: #15803d;
-  --radius: 8px;
-  --shadow: 0 1px 3px rgba(17, 24, 39, 0.08);
+  --border: #e2e8f0;       /* slate-200 */
+  --danger: #dc2626;
+  --amber: #d97706;
+  --ok: #059669;           /* emerald-600 */
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 14px rgba(15, 23, 42, 0.05);
   --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
