@@ -25,6 +25,10 @@ test('routes paramétrées : détail', () => {
   assert.deepEqual(matchPath('/tickets/7', routes).params, ['7']);
 });
 
+test('route exacte prioritaire sur le paramètre : /tickets/new ≠ /tickets/:id', () => {
+  assert.equal(matchPath('/tickets/new', routes).name, 'ticket-new');
+});
+
 test('inconnue → null (le bootstrap retombe sur le dashboard)', () => {
   assert.equal(matchPath('/nope', routes), null);
 });

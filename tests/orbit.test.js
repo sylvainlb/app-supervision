@@ -14,11 +14,12 @@ test('§8 : les 6 routes déclarées avec rôles et composants', () => {
     { name: 'building-detail', path: '/buildings/:id', roles: ['gestionnaire'] },
     { name: 'anomalies', path: '/anomalies', roles: ['gestionnaire'] },
     { name: 'tickets', path: '/tickets', roles: ['gestionnaire'] },
+    { name: 'ticket-new', path: '/tickets/new', roles: ['gestionnaire'] },
     { name: 'ticket-detail', path: '/tickets/:id', roles: ['gestionnaire', 'technicien'] },
     { name: 'interventions', path: '/interventions', roles: ['technicien'] },
     { name: 'admin', path: '/admin', roles: ['admin'] },
   ];
-  assert.equal(orbit.routes.length, 7);
+  assert.equal(orbit.routes.length, 8);
   for (const exp of expected) {
     const route = orbit.routes.find((r) => r.name === exp.name);
     assert.ok(route, `route manquante: ${exp.name}`);
@@ -42,7 +43,7 @@ test('§13.6 : versions npm épinglées exactes (pas de ^ ni ~)', () => {
 });
 
 test('§6 : orbit.json déclare les 6 blox custom + les blox du Store réutilisés', () => {
-  for (const c of ['building-map', 'energy-chart', 'anomaly-list', 'ticket-board', 'ticket-detail', 'user-admin']) {
+  for (const c of ['building-map', 'energy-chart', 'anomaly-list', 'ticket-board', 'ticket-detail', 'ticket-new', 'user-admin']) {
     assert.ok(orbit.components[c], `composant non déclaré: ${c}`);
   }
   for (const b of ['solid-display', 'solid-form', 'solid-ac-checker', 'solid-router']) {

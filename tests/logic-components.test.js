@@ -7,6 +7,7 @@ import { groupByStatus, compareTickets } from '../components/ticket-board/logic.
 import { allowedTransitions, transitionPatch, commentPayload } from '../components/ticket-detail/logic.js';
 import { selectWindow, metricAccess, metricQuery, buildSeries, formatFreshness, latestTimestamp } from '../components/energy-chart/logic.js';
 import { validateUser, userPayload } from '../components/user-admin/logic.js';
+import { validateTicket, buildTicketPayload } from '../components/ticket-new/logic.js';
 import { queryGold } from '../src/lib/gold-access.js';
 
 test('building-map : états vert/orange/rouge, ticket CLOSED désactive l anomalie', () => {
@@ -98,6 +99,22 @@ test('energy-chart : queryGold appelle /app/query et gère 429', async () => {
   assert.deepEqual(JSON.parse(calls[0][1].body), { assetId: 'net_grid_hourly', from: 'a', to: 'b' });
   const fetch429 = async () => ({ ok: false, status: 429, json: async () => ({}) });
   await assert.rejects(() => queryGold(fetch429, { assetId: 'net_grid_hourly', from: 'a', to: 'b' }), (e) => e.status === 429);
+});
+
+test('ticket-new : RG-1 (bâtiment requis) + payload JSON-LD avec anomaly_ref', () => {
+  assert.ok(validateTicket({ title: 'T' }).some((e) => e.includes('bâtiment')));
+  assert.ok(validateTicket({ building_id: '/buildings/1' }).some((e) => e.includes('titre')));
+  assert.deepEqual(validateTicket({ title: 'T', building_id: '/buildings/1' }), []);
+  const p = buildTicketPayload({
+    title: 'Anomalie a2', description: 'd', priority: 'HIGH',
+    building_id: '/buildings/2', anomaly_ref: 'a2', created_by: 'https://app.localhost/users/1',
+  });
+  assert.equal(p['tickets:anomaly_ref'], 'a2');
+  assert.equal(p['tickets:priority'], 'HIGH');
+  assert.equal(p['tickets:building_id'], '/buildings/2');
+  const p2 = buildTicketPayload({ title: 'T', building_id: '/buildings/1' });
+  assert.equal('tickets:anomaly_ref' in p2, false); // anomaly_ref facultatif (RG-1)
+  assert.equal(p2['tickets:priority'], 'MEDIUM'); // défaut §13.2
 });
 
 test('user-admin : validation webid IRI + rôle', () => {

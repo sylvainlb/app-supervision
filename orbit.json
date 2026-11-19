@@ -18,6 +18,7 @@
     { "name": "building-detail", "path": "/buildings/:id", "roles": ["gestionnaire"], "components": ["energy-chart", "solid-display"] },
     { "name": "anomalies", "path": "/anomalies", "roles": ["gestionnaire"], "components": ["anomaly-list", "solid-form"] },
     { "name": "tickets", "path": "/tickets", "roles": ["gestionnaire"], "components": ["ticket-board", "ticket-detail", "solid-form"] },
+    { "name": "ticket-new", "path": "/tickets/new", "roles": ["gestionnaire"], "components": ["ticket-new"] },
     { "name": "ticket-detail", "path": "/tickets/:id", "roles": ["gestionnaire", "technicien"], "components": ["ticket-detail"] },
     { "name": "interventions", "path": "/interventions", "roles": ["technicien"], "components": ["ticket-board", "ticket-detail"] },
     { "name": "admin", "path": "/admin", "roles": ["admin"], "components": ["user-admin"] }
@@ -28,6 +29,7 @@
     "anomaly-list": "components/anomaly-list/anomaly-list.js",
     "ticket-board": "components/ticket-board/ticket-board.js",
     "ticket-detail": "components/ticket-detail/ticket-detail.js",
+    "ticket-new": "components/ticket-new/ticket-new.js",
     "user-admin": "components/user-admin/user-admin.js",
     "solid-display": "@startinblox/core",
     "solid-form": "@startinblox/core",

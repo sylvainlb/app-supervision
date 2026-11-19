@@ -12,6 +12,7 @@ import '../components/energy-chart/energy-chart.js';
 import '../components/anomaly-list/anomaly-list.js';
 import '../components/ticket-board/ticket-board.js';
 import '../components/ticket-detail/ticket-detail.js';
+import '../components/ticket-new/ticket-new.js';
 import '../components/user-admin/user-admin.js';
 
 declare global {
@@ -21,6 +22,8 @@ declare global {
   }
 }
 
+let lastNav: { route?: string; resource?: string; query?: Record<string, unknown> } = {};
+
 function render(): void {
   const app = document.getElementById('app');
   if (!app) return;
@@ -28,8 +31,9 @@ function render(): void {
   const name = m?.name ?? 'dashboard';
   app.replaceChildren();
   for (const tag of componentsFor(name, orbit.routes)) {
-    const el = document.createElement(tag) as HTMLElement & { dataSrc?: string; building?: string };
+    const el = document.createElement(tag) as HTMLElement & { dataSrc?: string; building?: string; anomaly?: string; webid?: string };
     if (tag === 'ticket-detail') el.dataSrc = window.location.pathname; // /tickets/<pk>
+    if (tag === 'ticket-new' && lastNav.query?.anomaly) el.anomaly = String(lastNav.query.anomaly);
     if (tag === 'energy-chart' && window.location.pathname.startsWith('/buildings/')) {
       el.building = window.location.pathname;
     }
@@ -51,6 +55,20 @@ async function main(): Promise<void> {
       // Wrapper résolu à l'appel : <sib-auth> peut s'upgrader après ce main().
       (window.sibStore as { fetchAuthn?: typeof fetch }).fetchAuthn = ((u: string, i?: RequestInit) =>
         sibAuth?.fetchAuthn ? sibAuth.fetchAuthn(u, i) : fetch(u, i)) as typeof fetch;
+      // §3 : à chaque 401 → purge du cache sibStore + redirect login OIDC.
+      const store = window.sibStore as unknown as { fetch?: typeof fetch; cache?: { clear?: () => void } };
+      if (typeof store.fetch === 'function') {
+        const origFetch = store.fetch.bind(store);
+        store.fetch = (async (u: string | URL, i?: RequestInit) => {
+          const res = await origFetch(u as string, i);
+          if (res.status === 401) {
+            try { store.cache?.clear?.(); } catch { /* cache déjà vidé */ }
+            (sibAuth as unknown as { login?: () => void })?.login?.();
+            document.dispatchEvent(new CustomEvent('auth-required'));
+          }
+          return res;
+        }) as typeof fetch;
+      }
     }
   }
   // Sans shell Orbit standalone : on fournit une promesse résolue pour que les
@@ -64,6 +82,7 @@ async function main(): Promise<void> {
 
 document.addEventListener('requestNavigation', (e) => {
   const d = (e as CustomEvent).detail ?? {};
+  lastNav = d;
   const def = orbit.routes.find((r) => r.name === d.route);
   const path = d.resource ?? def?.path ?? '/';
   window.history.pushState({}, '', path);

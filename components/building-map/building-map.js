@@ -40,6 +40,27 @@ export class BuildingMap extends OrbitComponent {
     return buildings;
   }
 
+  // Carte Leaflet si la lib CDN est chargée (index.html), sinon repli liste.
+  updated() {
+    const L = window.L;
+    if (!L) return;
+    const states = computeBuildingStates(this.objects, this.anomalies, this.tickets)
+      .filter(({ building }) => building.lat != null && building.lon != null);
+    const div = this.renderRoot.querySelector('#map');
+    if (!div || states.length === 0) return;
+    if (!this._map) {
+      this._map = L.map(div).setView([states[0].building.lat, states[0].building.lon], 13);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this._map);
+    }
+    this._map.eachLayer((l) => { if (l instanceof L.Marker) this._map.removeLayer(l); });
+    for (const { building, state } of states) {
+      const marker = L.marker([building.lat, building.lon]).addTo(this._map);
+      marker.bindPopup(`${building['buildings:name'] ?? building['@id']} — ${state}`);
+      marker.on('click', () => this.navigate('building-detail', building['@id']));
+      marker._state = state;
+    }
+  }
+
   renderContent() {
     const states = computeBuildingStates(this.objects, this.anomalies, this.tickets);
     return html`

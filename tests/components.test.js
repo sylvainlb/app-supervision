@@ -12,6 +12,7 @@ before(async () => {
   await import('../components/anomaly-list/anomaly-list.js');
   await import('../components/ticket-board/ticket-board.js');
   await import('../components/ticket-detail/ticket-detail.js');
+  await import('../components/ticket-new/ticket-new.js');
   await import('../components/energy-chart/energy-chart.js');
   await import('../components/user-admin/user-admin.js');
 });
@@ -141,6 +142,29 @@ test('user-admin : validation webid, création POST, suppression DELETE', async 
   el._remove({ '@id': '/users/1' });
   await new Promise((r) => setTimeout(r, 0));
   assert.ok(calls.some((c) => c[0] === 'delete' && c[1] === '/users/1'));
+});
+
+test('ticket-new : pré-remplissage anomalie, validation RG-1, POST /tickets/ puis navigation', async () => {
+  const calls = mockSibStore(window, {
+    '/buildings/': { 'ldp:contains': [{ '@id': '/buildings/1', 'buildings:name': 'Alpha' }] },
+  });
+  const events = [];
+  document.addEventListener('requestNavigation', (e) => events.push(e.detail));
+  const el = await mount('ticket-new', { anomaly: 'a2', webid: 'https://app.localhost/users/1' });
+  assert.match(el.shadowRoot.querySelector('p').textContent, /a2/);
+  // sans bâtiment → erreur RG-1, pas de POST
+  el.form = { title: 'Anomalie a2', description: '', priority: 'MEDIUM', building_id: '' };
+  await el._submit();
+  assert.ok(el.errors.some((e) => e.includes('bâtiment')));
+  assert.ok(!calls.some((c) => c[0] === 'post'));
+  // avec bâtiment → POST avec anomaly_ref
+  el.form = { ...el.form, building_id: '/buildings/1' };
+  await el._submit();
+  const post = calls.find((c) => c[0] === 'post');
+  assert.equal(post[1], '/tickets/');
+  assert.equal(post[2]['tickets:anomaly_ref'], 'a2');
+  assert.equal(post[2]['tickets:created_by'], 'https://app.localhost/users/1');
+  assert.equal(events.at(-1).route, 'tickets');
 });
 
 test('convention §5 : événement save sur document déclenche un refresh (re-fetch)', async () => {
