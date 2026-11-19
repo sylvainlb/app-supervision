@@ -101,6 +101,7 @@ export class OrbitComponent extends ComponentObjectsHandler {
 
   render() {
     return this._task.render({
+      initial: () => html`<div class="pending" role="status">chargement…</div>`,
       pending: () => html`<div class="pending" role="status">chargement…</div>`,
       error: (e) => html`<div class="error" role="alert">erreur : ${e?.message ?? e}</div>`,
       complete: () => (this.isEmpty()

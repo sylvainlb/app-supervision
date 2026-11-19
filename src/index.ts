@@ -51,7 +51,10 @@ async function main(): Promise<void> {
       (window.sibStore as { fetchAuthn?: typeof fetch }).fetchAuthn = sibAuth.fetchAuthn.bind(sibAuth);
     }
   }
-  await window.orbit?.ready;
+  // Sans shell Orbit standalone : on fournit une promesse résolue pour que les
+  // composants montés plus tard (navigation) déclenchent leur chargement aussi.
+  window.orbit ??= { ready: Promise.resolve() };
+  await window.orbit.ready;
   document.dispatchEvent(new CustomEvent('orbit-ready'));
   render();
   console.info(`[app-supervision] pod=${config.podUrl} issuer=${config.oidcIssuer}`);
