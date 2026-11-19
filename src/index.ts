@@ -3,6 +3,7 @@
 // point d'injection unique, aucun appel LDP ne part en clair hors session.
 // Les composants custom attendent `orbit-ready` avant init (convention boilerplate §6.2).
 import '@startinblox/core';
+import '@startinblox/oidc'; // enregistre <sib-auth>
 import { config } from './config';
 
 declare global {
@@ -13,7 +14,15 @@ declare global {
 }
 
 async function main(): Promise<void> {
-  const sibAuth = document.querySelector('sib-auth') as (HTMLElement & { fetchAuthn?: typeof fetch }) | null;
+  const sibAuth = document.querySelector('sib-auth') as (HTMLElement & {
+    fetchAuthn?: typeof fetch;
+    issuer?: string;
+    clientId?: string;
+  }) | null;
+  if (sibAuth) {
+    sibAuth.issuer = config.oidcIssuer; // realm Keycloak de la FAP (D-7)
+    sibAuth.clientId = config.oidcClientId; // client statique fap-light-ui
+  }
   if (sibAuth?.fetchAuthn && window.sibStore) {
     (window.sibStore as { fetchAuthn?: typeof fetch }).fetchAuthn = sibAuth.fetchAuthn.bind(sibAuth);
   }
