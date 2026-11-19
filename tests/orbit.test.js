@@ -14,10 +14,11 @@ test('§8 : les 6 routes déclarées avec rôles et composants', () => {
     { name: 'building-detail', path: '/buildings/:id', roles: ['gestionnaire'] },
     { name: 'anomalies', path: '/anomalies', roles: ['gestionnaire'] },
     { name: 'tickets', path: '/tickets', roles: ['gestionnaire'] },
+    { name: 'ticket-detail', path: '/tickets/:id', roles: ['gestionnaire', 'technicien'] },
     { name: 'interventions', path: '/interventions', roles: ['technicien'] },
     { name: 'admin', path: '/admin', roles: ['admin'] },
   ];
-  assert.equal(orbit.routes.length, 6);
+  assert.equal(orbit.routes.length, 7);
   for (const exp of expected) {
     const route = orbit.routes.find((r) => r.name === exp.name);
     assert.ok(route, `route manquante: ${exp.name}`);
