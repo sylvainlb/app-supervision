@@ -9,10 +9,23 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <title>Supervision énergétique</title>
+    <style>
+      body { margin: 0; font-family: sans-serif; }
+      #layout { display: flex; min-height: 100vh; }
+      #menu { width: 220px; background: #1f2937; color: #f9fafb; padding: 16px 0; flex-shrink: 0; }
+      #menu h1 { font-size: 1rem; padding: 0 16px; margin: 0 0 12px; }
+      #menu a { display: block; padding: 10px 16px; color: #d1d5db; text-decoration: none; cursor: pointer; }
+      #menu a:hover { background: #374151; }
+      #menu a.active { background: #4b5563; color: #fff; font-weight: bold; }
+      #app { flex: 1; padding: 16px; }
+    </style>
   </head>
   <body>
     <sib-auth></sib-auth>
-    <div id="app"></div>
+    <div id="layout">
+      <nav id="menu"><h1>Supervision énergétique</h1></nav>
+      <main id="app"></main>
+    </div>
     <script type="module" src="/src/index.ts"></script>
   </body>
 </html>

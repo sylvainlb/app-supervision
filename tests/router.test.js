@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { matchPath, componentsFor } from '../src/lib/router.js';
+import { matchPath, componentsFor, menuItems } from '../src/lib/router.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const routes = JSON.parse(readFileSync(join(root, 'orbit.json'), 'utf8')).routes;
@@ -37,4 +37,16 @@ test('componentsFor suit orbit.json', () => {
   assert.ok(componentsFor('dashboard', routes).includes('building-map'));
   assert.deepEqual(componentsFor('ticket-detail', routes), ['ticket-detail']);
   assert.deepEqual(componentsFor('inconnu', routes), []);
+});
+
+test('menuItems : libellés FR, pas de routes de détail, visibilité par rôle (§8)', () => {
+  const all = menuItems(routes, 'gestionnaire');
+  assert.ok(!all.some((i) => i.name === 'ticket-detail' || i.name === 'building-detail'), 'pas de routes :id dans le menu');
+  const gest = all.filter((i) => i.visible).map((i) => i.name);
+  assert.deepEqual(gest, ['dashboard', 'anomalies', 'tickets', 'ticket-new']);
+  const tech = menuItems(routes, 'technicien').filter((i) => i.visible).map((i) => i.name);
+  assert.deepEqual(tech, ['interventions']);
+  const admin = menuItems(routes, 'admin').filter((i) => i.visible).map((i) => i.name);
+  assert.ok(admin.includes('admin') && admin.includes('dashboard'), 'admin voit tout');
+  assert.ok(all.every((i) => i.label && i.label.length > 0), 'chaque entrée a un libellé');
 });

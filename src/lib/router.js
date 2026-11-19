@@ -20,3 +20,33 @@ export function matchPath(pathname, routes) {
 export function componentsFor(name, routes) {
   return routes.find((r) => r.name === name)?.components ?? [];
 }
+
+// Menu latéral : libellés FR + visibilité par rôle (spec §8 — le rôle pilote
+// l'assemblage des écrans, jamais la décision d'accès).
+export const LABELS = {
+  dashboard: 'Tableau de bord',
+  'building-detail': 'Bâtiment',
+  anomalies: 'Anomalies',
+  tickets: 'Tickets',
+  'ticket-new': 'Nouveau ticket',
+  'ticket-detail': 'Ticket',
+  interventions: 'Mes interventions',
+  admin: 'Administration',
+};
+
+// route visible si le rôle y est autorisé, ou si admin (voit tout).
+/**
+ * @param {Array<{name:string, path:string, roles?:string[]}>} routes
+ * @param {string} role
+ * @returns {Array<{name:string, path:string, label:string, visible:boolean}>}
+ */
+export function menuItems(routes, role) {
+  return routes
+    .filter((r) => r.path === '/' || !r.path.includes(':id')) // pas les routes de détail dans le menu
+    .map((r) => ({
+      name: r.name,
+      path: r.path,
+      label: LABELS[r.name] ?? r.name,
+      visible: role === 'admin' || (r.roles ?? []).includes(role),
+    }));
+}

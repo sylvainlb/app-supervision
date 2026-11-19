@@ -5,7 +5,7 @@
 import '@startinblox/core/dist/store.js';
 import '@startinblox/oidc'; // enregistre <sib-auth>
 import { config } from './config';
-import { matchPath, componentsFor } from './lib/router.js';
+import { matchPath, componentsFor, menuItems } from './lib/router.js';
 import orbit from '../orbit.json';
 import '../components/building-map/building-map.js';
 import '../components/energy-chart/energy-chart.js';
@@ -23,6 +23,37 @@ declare global {
 }
 
 let lastNav: { route?: string; resource?: string; query?: Record<string, unknown> } = {};
+
+// Rôle courant pour le menu (§8 : le rôle pilote l'assemblage des écrans, jamais
+// la décision d'accès — l'ACL/RLS reste côté serveur). Lu depuis les claims OIDC
+// de <sib-auth> si disponibles, sinon 'gestionnaire' (dev), overridable via window.appRole.
+function currentRole(sibAuth: HTMLElement | null): string {
+  const w = window as unknown as { appRole?: string };
+  if (w.appRole) return w.appRole;
+  const claims = (sibAuth as unknown as { session?: { tokenParsed?: { role?: string } }; claims?: { role?: string } });
+  return claims?.session?.tokenParsed?.role ?? claims?.claims?.role ?? 'gestionnaire';
+}
+
+function renderMenu(role: string): void {
+  const nav = document.getElementById('menu');
+  if (!nav) return;
+  const current = window.location.pathname;
+  const links = menuItems(orbit.routes, role)
+    .filter((item) => item.visible)
+    .map((item) => {
+      const active = current === item.path ? ' class="active"' : '';
+      return `<a data-route="${item.name}" data-path="${item.path}"${active}>${item.label}</a>`;
+    })
+    .join('');
+  nav.innerHTML = '<h1>Supervision énergétique</h1>' + links;
+  nav.querySelectorAll('a[data-route]').forEach((a) => {
+    a.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('requestNavigation', {
+        detail: { route: a.getAttribute('data-route'), resource: a.getAttribute('data-path') },
+      }));
+    });
+  });
+}
 
 function render(): void {
   const app = document.getElementById('app');
@@ -77,6 +108,7 @@ async function main(): Promise<void> {
   await window.orbit.ready;
   document.dispatchEvent(new CustomEvent('orbit-ready'));
   render();
+  renderMenu(currentRole(sibAuth));
   console.info(`[app-supervision] pod=${config.podUrl} issuer=${config.oidcIssuer}`);
 }
 
@@ -87,7 +119,11 @@ document.addEventListener('requestNavigation', (e) => {
   const path = d.resource ?? def?.path ?? '/';
   window.history.pushState({}, '', path);
   render();
+  renderMenu(currentRole(document.querySelector('sib-auth')));
 });
-window.addEventListener('popstate', render);
+window.addEventListener('popstate', () => {
+  render();
+  renderMenu(currentRole(document.querySelector('sib-auth')));
+});
 
 main();
