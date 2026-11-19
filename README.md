@@ -29,8 +29,8 @@ sibStore, blox du Store en ES modules CDN, composants custom Lit, sib-auth/OIDC)
 cd ../fap-light-serveur
 cp .env.example .env        # éditer les secrets si besoin (FAP_DOMAIN=localhost par défaut)
 ./scripts/deploy.sh         # build + up + attente santé
-# → LDP/JSON-LD : https://localhost/ (caddy :443, certificat auto-signé en local :
-#   l'accepter dans le navigateur) ; Keycloak : https://localhost/auth/realms/fap-light
+# → LDP/JSON-LD : https://app.localhost/ (caddy :443, certificat auto-signé en local :
+#   l'accepter dans le navigateur) ; Keycloak : https://app.localhost/auth/realms/fap-light
 #   (console admin : http://localhost:8080) ; ORCE : http://localhost:1880
 ```
 
@@ -38,7 +38,7 @@ cp .env.example .env        # éditer les secrets si besoin (FAP_DOMAIN=localhos
 
 ```sh
 cd ../app-supervision
-cp .env.example .env        # POD_URL=https://localhost, OIDC_ISSUER=.../auth/realms/fap-light
+cp .env.example .env        # POD_URL=https://app.localhost, OIDC_ISSUER=.../auth/realms/fap-light
 npm ci
 npm run dev                 # → http://localhost:5173 (proxy Vite same-origin vers le back)
 ```
