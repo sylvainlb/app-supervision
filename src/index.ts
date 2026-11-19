@@ -2,7 +2,10 @@
 // §13.7 : sib-auth expose un fetch authentifié (fetchAuthn, DPoP) injecté dans sibStore —
 // point d'injection unique, aucun appel LDP ne part en clair hors session.
 // Les composants custom attendent `orbit-ready` avant init (convention boilerplate §6.2).
-import '@startinblox/core';
+// Store seul (pose window.sibStore) — PAS le barrel '@startinblox/core' complet :
+// celui-ci embarque TinyMCE/Quill qui s'initialisent au import et plantent en module ES
+// (document.currentScript == null → toAbsPath(undefined)).
+import '@startinblox/core/dist/store.js';
 import '@startinblox/oidc'; // enregistre <sib-auth>
 import { config } from './config';
 
