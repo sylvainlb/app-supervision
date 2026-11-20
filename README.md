@@ -38,7 +38,7 @@ cp .env.example .env        # éditer les secrets si besoin (FAP_DOMAIN=localhos
 
 ```sh
 cd ../app-supervision
-cp .env.example .env        # POD_URL=https://app.localhost, OIDC_ISSUER=.../auth/realms/fap-light
+cp .env.example .env        # POD_URL=http://localhost, OIDC_ISSUER=.../auth/realms/fap-light
 npm ci
 npm run dev                 # → http://localhost:5173 (proxy Vite same-origin vers le back)
 ```
