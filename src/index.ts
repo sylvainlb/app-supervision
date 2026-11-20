@@ -110,6 +110,18 @@ function mountInto(parent: HTMLElement, tag: string): void {
   parent.appendChild(el);
 }
 
+// Cible du lien « retour » selon la page de détail courante.
+function backTarget(name: string, role: string): { route: string; path: string; label: string } | null {
+  if (name === 'building-detail') return { route: 'dashboard', path: '/', label: '← Retour au tableau de bord' };
+  if (name === 'ticket-detail') {
+    return role === 'technicien'
+      ? { route: 'interventions', path: '/interventions', label: '← Retour à mes interventions' }
+      : { route: 'tickets', path: '/tickets', label: '← Retour aux tickets' };
+  }
+  if (name === 'ticket-new') return { route: 'tickets', path: '/tickets', label: '← Retour aux tickets' };
+  return null;
+}
+
 function render(): void {
   const app = document.getElementById('app');
   if (!app) return;
@@ -117,6 +129,18 @@ function render(): void {
   const route = m?.route;
   const name = m?.name ?? 'dashboard';
   app.replaceChildren();
+  // Pages de détail (chemin avec paramètre) : lien « retour » vers la liste d'origine.
+  if (route?.path.includes(':')) {
+    const back = backTarget(name, currentRole());
+    if (back) {
+      const a = document.createElement('a');
+      a.className = 'back-link';
+      a.textContent = back.label;
+      a.dataset.route = back.route;
+      a.dataset.path = back.path;
+      app.appendChild(a);
+    }
+  }
   // Route avec sections titrées (ex. tableau de bord) : <section><h2>…</h2>composants</section>
   if (route?.sections?.length) {
     for (const section of route.sections) {
@@ -195,6 +219,16 @@ async function main(): Promise<void> {
   renderAll();
   console.info(`[app-supervision] pod=${config.podUrl} issuer=${config.oidcIssuer} webid=${session.info.webId ?? ''}`);
 }
+
+// Clic sur un lien « retour » (rendu dans #app) → même navigation que le menu.
+document.addEventListener('click', (e) => {
+  const a = (e.target as HTMLElement).closest?.('a.back-link') as HTMLElement | null;
+  if (!a) return;
+  e.preventDefault();
+  document.dispatchEvent(new CustomEvent('requestNavigation', {
+    detail: { route: a.dataset.route, resource: a.dataset.path },
+  }));
+});
 
 document.addEventListener('requestNavigation', (e) => {
   const d = (e as CustomEvent).detail ?? {};

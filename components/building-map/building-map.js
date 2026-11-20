@@ -61,17 +61,46 @@ export class BuildingMap extends OrbitComponent {
     return buildings;
   }
 
+  // Injecte leaflet.css DANS le shadow root et résout quand il est appliqué.
+  _leafletCssReady() {
+    if (this._cssPromise) return this._cssPromise;
+    let link = this.renderRoot.querySelector('link[data-leaflet-css]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      link.dataset.leafletCss = '1';
+      this.renderRoot.prepend(link);
+    }
+    this._cssPromise = new Promise((resolve) => {
+      if (link.sheet) return resolve(); // déjà chargé
+      link.addEventListener('load', () => resolve(), { once: true });
+      link.addEventListener('error', () => resolve(), { once: true }); // on tente quand même
+      setTimeout(() => resolve(), 4000); // filet de sécurité
+    });
+    return this._cssPromise;
+  }
+
   // Carte Leaflet si la lib CDN est chargée (index.html), sinon repli liste.
   updated() {
     const L = window.L;
     if (!L) return;
+    // Icônes de marqueurs en URL absolue (la détection auto du chemin échoue en shadow DOM).
+    L.Icon.Default.mergeOptions({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    });
     const states = computeBuildingStates(this.objects, this.anomalies, this.tickets)
       .filter(({ building }) => typeof field(building, 'lat') === 'number' && typeof field(building, 'lon') === 'number');
     const div = this.renderRoot.querySelector('#map');
     if (!div || states.length === 0) return;
-    // La map doit être créée APRÈS le 1er rendu (taille du conteneur connue),
-    // puis re-mesurée à chaque update : sinon les tuiles sont décalées (« carte cassée »).
-    requestAnimationFrame(() => {
+    // La map doit être créée APRÈS le 1er rendu (taille du conteneur connue) ET après
+    // le chargement du CSS Leaflet dans le shadow root (les styles du document ne
+    // pénètrent pas le shadow DOM : sans ça, les tuiles n'ont aucun positionnement →
+    // « carte cassée »), puis re-mesurée à chaque update.
+    requestAnimationFrame(async () => {
+      await this._leafletCssReady();
       if (!this._map) {
         this._map = L.map(div, { scrollWheelZoom: false }).setView(
           [field(states[0].building, 'lat'), field(states[0].building, 'lon')], 13);

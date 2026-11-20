@@ -31,3 +31,12 @@ button { font-family: inherit; }
   padding-bottom: 6px; border-bottom: 2px solid var(--brand); display: inline-block;
 }
 .dash-section { border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; }
+
+/* Lien « retour » sur les pages de détail */
+.back-link {
+  display: inline-block; margin-bottom: 16px; padding: 7px 14px;
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--brand-dark); font-size: 0.9rem; font-weight: 600;
+  text-decoration: none; cursor: pointer; box-shadow: var(--shadow);
+}
+.back-link:hover { background: var(--brand-soft); border-color: var(--brand); }
