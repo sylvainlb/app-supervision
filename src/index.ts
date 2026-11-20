@@ -117,6 +117,15 @@ function renderHeader(): void {
   }
 }
 
+// Icônes SVG inline (stroke currentColor) pour les entrées du menu.
+const MENU_ICONS: Record<string, string> = {
+  dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
+  anomalies: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  tickets: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.5 2.5 0 0 0 0 5v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2.5 2.5 0 0 0 0-5z"/><line x1="13" y1="5" x2="13" y2="19" stroke-dasharray="2.5 3"/></svg>',
+  interventions: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L3 18l3 3 5.7-5.7a4.5 4.5 0 0 0 6-6L14 13l-3-3 3.7-3.7z"/></svg>',
+  admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>',
+};
+
 function renderMenu(role: string): void {
   const nav = document.getElementById('menu');
   if (!nav) return;
@@ -125,10 +134,11 @@ function renderMenu(role: string): void {
     .filter((item) => item.visible)
     .map((item) => {
       const active = current === item.path ? ' class="active"' : '';
-      return `<a data-route="${item.name}" data-path="${item.path}"${active}>${item.label}</a>`;
+      const icon = MENU_ICONS[item.name] ?? '';
+      return `<a data-route="${item.name}" data-path="${item.path}"${active}>${icon}<span class="lbl">${item.label}</span></a>`;
     })
     .join('');
-  nav.innerHTML = '<h1>Supervision énergétique</h1>' + links;
+  nav.innerHTML = '<h1>Navigation</h1>' + links;
   nav.querySelectorAll('a[data-route]').forEach((a) => {
     a.addEventListener('click', () => {
       document.dispatchEvent(new CustomEvent('requestNavigation', {
@@ -150,13 +160,13 @@ function mountInto(parent: HTMLElement, tag: string): void {
 
 // Cible du lien « retour » selon la page de détail courante.
 function backTarget(name: string, role: string): { route: string; path: string; label: string } | null {
-  if (name === 'building-detail') return { route: 'dashboard', path: '/', label: '← Retour au tableau de bord' };
+  if (name === 'building-detail') return { route: 'dashboard', path: '/', label: '← Back to dashboard' };
   if (name === 'ticket-detail') {
     return role === 'technicien'
-      ? { route: 'interventions', path: '/interventions', label: '← Retour à mes interventions' }
-      : { route: 'tickets', path: '/tickets', label: '← Retour aux tickets' };
+      ? { route: 'interventions', path: '/interventions', label: '← Back to my interventions' }
+      : { route: 'tickets', path: '/tickets', label: '← Back to tickets' };
   }
-  if (name === 'ticket-new') return { route: 'tickets', path: '/tickets', label: '← Retour aux tickets' };
+  if (name === 'ticket-new') return { route: 'tickets', path: '/tickets', label: '← Back to tickets' };
   return null;
 }
 
@@ -297,7 +307,7 @@ main().catch((err) => {
   console.error('[app-supervision] bootstrap en erreur :', err);
   const app = document.getElementById('app');
   if (app && !app.childElementCount) {
-    app.innerHTML = '<p class="error">Erreur au chargement de l’application — voir la console.</p>';
+    app.innerHTML = '<p class="error">Error loading the application — see the console.</p>';
   }
   renderAll();
 });

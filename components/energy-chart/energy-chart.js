@@ -20,13 +20,15 @@ export class EnergyChart extends OrbitComponent {
 
   static styles = css`
     ${OrbitComponent.styles}
-    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .toolbar strong { font-size: 1.05rem; }
-    .freshness { font-size: 0.78rem; background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; border-radius: 999px; padding: 3px 10px; }
-    .chart-wrap { height: 300px; background: #fff; border-radius: 8px; box-shadow: var(--shadow); padding: 8px; }
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .toolbar strong { font-size: 1.05rem; font-weight: 700; }
+    .freshness { font-size: 0.77rem; font-weight: 600; background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; border-radius: 999px; padding: 4px 11px; }
+    .toolbar label { margin-left: auto; font-size: 0.85rem; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; }
+    .chart-wrap { height: 320px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius, 14px); box-shadow: var(--shadow); padding: 14px; }
     .chart-wrap canvas { max-height: 100%; }
-    details.datatable { margin-top: 10px; font-size: 0.85rem; color: var(--muted); }
-    table { margin-top: 12px; max-height: 260px; display: block; overflow: auto; }
+    details.datatable { margin-top: 12px; font-size: 0.85rem; color: var(--muted); background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; box-shadow: var(--shadow); }
+    details.datatable summary { cursor: pointer; font-weight: 600; }
+    table { margin-top: 12px; max-height: 260px; display: block; overflow: auto; box-shadow: none; border: 0; }
   `;
 
   constructor() {
@@ -78,20 +80,59 @@ export class EnergyChart extends OrbitComponent {
     const canvas = this.renderRoot.querySelector('canvas');
     if (!canvas) return;
     if (this._chart) { this._chart.destroy(); this._chart = null; }
-    this._chart = new Chart(canvas.getContext('2d'), {
+    // Courbes lissées + remplissage en dégradé (teal) sous la courbe.
+    const ctx = canvas.getContext('2d');
+    const PALETTE = ['#0d9488', '#6366f1', '#d97706', '#0284c7', '#db2777'];
+    const datasets = series.datasets.map((d, i) => {
+      const color = PALETTE[i % PALETTE.length];
+      // happy-dom / vieux contextes : createLinearGradient peut manquer → repli couleur pleine transparente.
+      let grad = color + '33';
+      if (ctx && typeof ctx.createLinearGradient === 'function') {
+        grad = ctx.createLinearGradient(0, 0, 0, canvas.height || 300);
+        grad.addColorStop(0, color + '55');
+        grad.addColorStop(1, color + '00');
+      }
+      return {
+        ...d,
+        borderColor: color,
+        backgroundColor: grad,
+        borderWidth: 2.5,
+        tension: 0.35,
+        fill: i === 0,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: color,
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
+      };
+    });
+    this._chart = new Chart(ctx, {
       type: 'line',
-      data: series,
+      data: { labels: series.labels, datasets },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { display: true, position: 'top' },
-          tooltip: { callbacks: { label: (c) => `${c.dataset.label} : ${Math.round(c.parsed.y * 10) / 10} kW` } },
+          legend: { display: true, position: 'top', labels: { usePointStyle: true, boxWidth: 8, boxHeight: 8 } },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.92)',
+            padding: 10,
+            cornerRadius: 10,
+            callbacks: { label: (c) => `${c.dataset.label} : ${Math.round(c.parsed.y * 10) / 10} kW` },
+          },
         },
         scales: {
-          x: { title: { display: true, text: 'heure' }, ticks: { maxTicksLimit: 12 } },
-          y: { title: { display: true, text: 'kW' } },
+          x: {
+            title: { display: true, text: 'hour' },
+            ticks: { maxTicksLimit: 12 },
+            grid: { display: false },
+          },
+          y: {
+            title: { display: true, text: 'kW' },
+            grid: { color: 'rgba(15, 23, 42, 0.06)' },
+            border: { display: false },
+          },
         },
       },
     });
@@ -103,9 +144,9 @@ export class EnergyChart extends OrbitComponent {
     const fmtVal = (v) => (typeof v === 'number' ? String(Math.round(v * 10) / 10) : v);
     return html`
       <div class="toolbar">
-        <strong>${this.building ? 'Consommation nette du bâtiment (réseau)' : 'Consommation nette du parc (réseau)'}</strong>
+        <strong>${this.building ? 'Net consumption — building (grid)' : 'Net consumption — site (grid)'}</strong>
         <span class="freshness">${formatFreshness(latestTimestamp(this.rows))}</span>
-        <label>fenêtre
+        <label>range
           <select @change=${(e) => { this.window = e.target.value; this.refresh(); }}>
             ${Object.keys(WINDOWS).map((w) => html`<option value=${w} ?selected=${w === this.window}>${w}</option>`)}
           </select>
@@ -113,9 +154,9 @@ export class EnergyChart extends OrbitComponent {
       </div>
       <div class="chart-wrap"><canvas></canvas></div>
       <details class="datatable">
-        <summary>Voir les valeurs horaires</summary>
+        <summary>Show hourly values</summary>
       <table>
-        <thead><tr><th>heure</th>${series.datasets.map((d) => html`<th>${d.label}</th>`)}</tr></thead>
+        <thead><tr><th>hour</th>${series.datasets.map((d) => html`<th>${d.label}</th>`)}</tr></thead>
         <tbody>
           ${series.labels.map((l, i) => html`<tr><td>${fmtHour(l)}</td>${series.datasets.map((d) => html`<td>${fmtVal(d.data[i])}</td>`)}</tr>`)}
         </tbody>

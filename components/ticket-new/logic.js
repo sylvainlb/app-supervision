@@ -6,7 +6,7 @@ import { PRIORITIES, DEFAULT_PRIORITY } from '../../src/lib/transitions.js';
 export function validateTicket({ title, building_id } = {}) {
   const errors = [];
   if (!title) errors.push('titre requis');
-  if (!building_id) errors.push('bâtiment requis (RG-1)');
+  if (!building_id) errors.push('building required (RG-1)');
   return errors;
 }
 

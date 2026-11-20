@@ -6,7 +6,7 @@ export const WINDOWS = { '24h': 24 * 3600e3, '7d': 7 * 24 * 3600e3, '30d': 30 * 
 // Sélecteur de fenêtre 24 h / 7 j / 30 j → {from, to} ISO 8601 (contrat DSP/proxy).
 export function selectWindow(range, now = new Date()) {
   const ms = WINDOWS[range];
-  if (!ms) throw new Error(`fenêtre inconnue: ${range} (attendu: ${Object.keys(WINDOWS).join(' | ')})`);
+  if (!ms) throw new Error(`unknown range: ${range} (expected: ${Object.keys(WINDOWS).join(' | ')})`);
   return { from: new Date(now.getTime() - ms).toISOString(), to: now.toISOString() };
 }
 
@@ -30,7 +30,7 @@ export function buildSeries(rows, metric) {
     return {
       labels,
       datasets: [
-        { label: 'conso (kW)', data: rows.map((r) => Math.max(0, r.net_grid_kw ?? 0)) },
+        { label: 'consumption (kW)', data: rows.map((r) => Math.max(0, r.net_grid_kw ?? 0)) },
         { label: 'injection (kW)', data: rows.map((r) => Math.min(0, r.net_grid_kw ?? 0)) },
       ],
     };
@@ -43,11 +43,11 @@ export function buildSeries(rows, metric) {
 
 // Badge de fraîcheur RG-4 (« données à HH:MM — refresh ~10 min »).
 export function formatFreshness(ts) {
-  if (!ts) return 'fraîcheur inconnue';
+  if (!ts) return 'freshness unknown';
   const d = new Date(ts);
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
-  return `données à ${hh}:${mm} — refresh ~10 min`;
+  return `data as of ${hh}:${mm} — refresh ~10 min`;
 }
 
 export function latestTimestamp(rows) {

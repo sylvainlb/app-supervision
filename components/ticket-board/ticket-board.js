@@ -5,19 +5,35 @@ import { html, css } from 'lit';
 import { OrbitComponent } from '../boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
 
-const STATUS_LABEL = { OPEN: 'Ouvert', IN_PROGRESS: 'En cours', RESOLVED: 'Résolu', CLOSED: 'Clôturé' };
+const STATUS_LABEL = { OPEN: 'Open', IN_PROGRESS: 'In progress', RESOLVED: 'Resolved', CLOSED: 'Closed' };
 import { groupByStatus } from './logic.js';
 
 export class TicketBoard extends OrbitComponent {
   static styles = css`
     ${OrbitComponent.styles}
-    .board { display: flex; gap: 14px; align-items: flex-start; }
-    .column { flex: 1; background: #f8fafc; border: 1px solid var(--border, #e2e8f0); border-radius: 10px; padding: 10px; }
-    .column h3 { margin: 0 0 8px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted, #64748b); display: flex; justify-content: space-between; align-items: center; }
-    .count { background: #e2e8f0; color: var(--ink, #0f172a); border-radius: 999px; padding: 1px 9px; font-size: 0.78rem; }
-    .card { background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: 8px; margin: 8px 0; padding: 10px; cursor: pointer; box-shadow: var(--shadow); font-size: 0.88rem; }
-    .card:hover { box-shadow: 0 4px 10px rgba(17,24,39,.12); border-color: #99f6e4; }
-    .card .meta { color: var(--muted, #64748b); font-size: 0.78rem; margin-top: 4px; display: flex; gap: 8px; align-items: center; }
+    .board { display: flex; gap: 16px; align-items: flex-start; }
+    .column {
+      flex: 1; min-width: 0; background: #f6f8fb; border: 1px solid var(--border, #e5eaf0);
+      border-radius: var(--radius, 14px); padding: 12px; box-shadow: var(--shadow);
+    }
+    .column h3 {
+      margin: 0 0 10px; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--muted, #64748b); display: flex; justify-content: space-between; align-items: center;
+      padding: 2px 4px 8px; border-bottom: 2px solid var(--border, #e5eaf0);
+    }
+    .column[data-status="OPEN"] h3 { color: #475569; border-bottom-color: #cbd5e1; }
+    .column[data-status="IN_PROGRESS"] h3 { color: #c2410c; border-bottom-color: #fed7aa; }
+    .column[data-status="RESOLVED"] h3 { color: #0369a1; border-bottom-color: #bae6fd; }
+    .column[data-status="CLOSED"] h3 { color: #047857; border-bottom-color: #a7f3d0; }
+    .count { background: #fff; color: var(--ink, #0f172a); border: 1px solid var(--border, #e5eaf0); border-radius: 999px; padding: 1px 10px; font-size: 0.76rem; font-weight: 700; box-shadow: var(--shadow); }
+    .card {
+      background: #fff; border: 1px solid var(--border, #e5eaf0); border-radius: 11px; margin: 9px 0; padding: 11px 12px;
+      cursor: pointer; box-shadow: var(--shadow); font-size: 0.88rem;
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: #5eead4; }
+    .card strong { font-weight: 600; line-height: 1.35; }
+    .card .meta { color: var(--muted, #64748b); font-size: 0.77rem; margin-top: 7px; display: flex; gap: 8px; align-items: center; }
   `;
 
   constructor() {

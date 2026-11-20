@@ -4,10 +4,10 @@ import { ROLES } from '../../src/lib/transitions.js';
 // Le webid saisi doit être une IRI déréférençable ; rôle ∈ gestionnaire|technicien|admin.
 export function validateUser({ webid, name, email, role } = {}) {
   const errors = [];
-  if (!webid || !/^https?:\/\/.+\/.+/.test(webid)) errors.push('webid : IRI déréférençable requise');
+  if (!webid || !/^https?:\/\/.+\/.+/.test(webid)) errors.push('webid: dereferenceable IRI required');
   if (!name) errors.push('name requis');
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) errors.push('email invalide');
-  if (!ROLES.includes(role)) errors.push(`rôle invalide (${ROLES.join(' | ')})`);
+  if (!ROLES.includes(role)) errors.push(`invalid role (${ROLES.join(' | ')})`);
   return errors;
 }
 

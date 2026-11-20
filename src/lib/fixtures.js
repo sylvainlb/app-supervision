@@ -17,10 +17,10 @@ export const FIXTURES = {
   '/buildings/': {
     '@id': `${POD}/buildings/`,
     'ldp:contains': [
-      { '@id': `${POD}/buildings/1`, 'buildings:name': 'Siège — 12 rue des Lilas', 'buildings:address': '12 rue des Lilas, 69003 Lyon', 'buildings:meter_id': 'M-LYO-001', 'buildings:facis_asset': `${POD}/dsp/catalogue/assets/building-lyon-1`, 'buildings:lat': 45.7640, 'buildings:lon': 4.8357 },
-      { '@id': `${POD}/buildings/2`, 'buildings:name': 'Entrepôt Nord', 'buildings:address': '8 zone Nord, 69007 Lyon', 'buildings:meter_id': 'M-LYO-002', 'buildings:facis_asset': `${POD}/dsp/catalogue/assets/building-lyon-2`, 'buildings:lat': 45.7840, 'buildings:lon': 4.8200 },
-      { '@id': `${POD}/buildings/3`, 'buildings:name': 'Bureaux Sud', 'buildings:address': '3 avenue du Sud, 69002 Lyon', 'buildings:meter_id': 'M-LYO-003', 'buildings:facis_asset': `${POD}/dsp/catalogue/assets/building-lyon-3`, 'buildings:lat': 45.7540, 'buildings:lon': 4.8450 },
-      { '@id': `${POD}/buildings/4`, 'buildings:name': 'Atelier Est', 'buildings:address': "17 quai de l'Est, 69006 Lyon", 'buildings:meter_id': 'M-LYO-004', 'buildings:facis_asset': `${POD}/dsp/catalogue/assets/building-lyon-4`, 'buildings:lat': 45.7740, 'buildings:lon': 4.8600 },
+      { '@id': `${POD}/buildings/1`, 'buildings:name': 'HQ — 12 Lilas Street', 'buildings:address': '12 Lilas Street, 69003 Lyon', 'buildings:meter_id': 'M-LYO-001', 'buildings:facis_asset': `${POD}/dsp/catalogue/assets/building-lyon-1`, 'buildings:lat': 45.7640, 'buildings:lon': 4.8357 },
+      { '@id': `${POD}/buildings/2`, 'buildings:name': 'North Warehouse', 'buildings:address': '8 North Zone, 69007 Lyon', 'buildings:meter_id': 'M-LYO-002', 'buildings:facis_asset': `${POD}/dsp/catalogue/assets/building-lyon-2`, 'buildings:lat': 45.7840, 'buildings:lon': 4.8200 },
+      { '@id': `${POD}/buildings/3`, 'buildings:name': 'South Offices', 'buildings:address': '3 South Avenue, 69002 Lyon', 'buildings:meter_id': 'M-LYO-003', 'buildings:facis_asset': `${POD}/dsp/catalogue/assets/building-lyon-3`, 'buildings:lat': 45.7540, 'buildings:lon': 4.8450 },
+      { '@id': `${POD}/buildings/4`, 'buildings:name': 'East Workshop', 'buildings:address': "17 East Quay, 69006 Lyon", 'buildings:meter_id': 'M-LYO-004', 'buildings:facis_asset': `${POD}/dsp/catalogue/assets/building-lyon-4`, 'buildings:lat': 45.7740, 'buildings:lon': 4.8600 },
     ],
   },
   '/gold/anomaly_candidates/': {
@@ -35,17 +35,17 @@ export const FIXTURES = {
   '/tickets/': {
     '@id': `${POD}/tickets/`,
     'ldp:contains': [
-      { '@id': `${POD}/tickets/7`, 'tickets:title': 'Pic de conso entrepôt Nord', 'tickets:description': 'Spike détecté à 21h10 sur M-LYO-002, anomalie 101.', 'tickets:status': 'OPEN', 'tickets:priority': 'HIGH', 'tickets:building_id': `${POD}/buildings/2`, 'tickets:anomaly_ref': `${POD}/gold/anomaly_candidates/101`, 'tickets:created_by': `${POD}/users/1`, 'tickets:assigned_to': `${POD}/users/2`, 'tickets:created_at': '2026-11-19T21:15:00Z', 'tickets:updated_at': '2026-11-19T21:15:00Z' },
-      { '@id': `${POD}/tickets/8`, 'tickets:title': 'Dérive PV bureaux Sud', 'tickets:description': 'Dérive lente détectée, anomalie 104.', 'tickets:status': 'IN_PROGRESS', 'tickets:priority': 'CRITICAL', 'tickets:building_id': `${POD}/buildings/3`, 'tickets:anomaly_ref': `${POD}/gold/anomaly_candidates/104`, 'tickets:created_by': `${POD}/users/1`, 'tickets:assigned_to': `${POD}/users/2`, 'tickets:created_at': '2026-11-19T18:35:00Z', 'tickets:updated_at': '2026-11-19T20:00:00Z' },
-      { '@id': `${POD}/tickets/9`, 'tickets:title': 'Anomalie faible siège', 'tickets:description': 'Anomalie 103 (drift faible), surveillance.', 'tickets:status': 'RESOLVED', 'tickets:priority': 'LOW', 'tickets:building_id': `${POD}/buildings/1`, 'tickets:anomaly_ref': `${POD}/gold/anomaly_candidates/103`, 'tickets:created_by': `${POD}/users/1`, 'tickets:assigned_to': null, 'tickets:created_at': '2026-11-19T19:10:00Z', 'tickets:updated_at': '2026-11-19T19:40:00Z' },
-      { '@id': `${POD}/tickets/10`, 'tickets:title': 'Panne atelier Est', 'tickets:description': 'Outage M-LYO-004, résolu.', 'tickets:status': 'CLOSED', 'tickets:priority': 'MEDIUM', 'tickets:building_id': `${POD}/buildings/4`, 'tickets:anomaly_ref': null, 'tickets:created_by': `${POD}/users/3`, 'tickets:assigned_to': `${POD}/users/2`, 'tickets:created_at': '2026-11-18T08:00:00Z', 'tickets:updated_at': '2026-11-19T07:00:00Z' },
+      { '@id': `${POD}/tickets/7`, 'tickets:title': 'Consumption spike, North Warehouse', 'tickets:description': 'Spike detected at 21:10 on M-LYO-002, anomaly 101.', 'tickets:status': 'OPEN', 'tickets:priority': 'HIGH', 'tickets:building_id': `${POD}/buildings/2`, 'tickets:anomaly_ref': `${POD}/gold/anomaly_candidates/101`, 'tickets:created_by': `${POD}/users/1`, 'tickets:assigned_to': `${POD}/users/2`, 'tickets:created_at': '2026-11-19T21:15:00Z', 'tickets:updated_at': '2026-11-19T21:15:00Z' },
+      { '@id': `${POD}/tickets/8`, 'tickets:title': 'PV drift, South Offices', 'tickets:description': 'Slow drift detected, anomaly 104.', 'tickets:status': 'IN_PROGRESS', 'tickets:priority': 'CRITICAL', 'tickets:building_id': `${POD}/buildings/3`, 'tickets:anomaly_ref': `${POD}/gold/anomaly_candidates/104`, 'tickets:created_by': `${POD}/users/1`, 'tickets:assigned_to': `${POD}/users/2`, 'tickets:created_at': '2026-11-19T18:35:00Z', 'tickets:updated_at': '2026-11-19T20:00:00Z' },
+      { '@id': `${POD}/tickets/9`, 'tickets:title': 'Low anomaly, HQ', 'tickets:description': 'Anomaly 103 (low drift), monitoring.', 'tickets:status': 'RESOLVED', 'tickets:priority': 'LOW', 'tickets:building_id': `${POD}/buildings/1`, 'tickets:anomaly_ref': `${POD}/gold/anomaly_candidates/103`, 'tickets:created_by': `${POD}/users/1`, 'tickets:assigned_to': null, 'tickets:created_at': '2026-11-19T19:10:00Z', 'tickets:updated_at': '2026-11-19T19:40:00Z' },
+      { '@id': `${POD}/tickets/10`, 'tickets:title': 'Outage, East Workshop', 'tickets:description': 'Outage on M-LYO-004, resolved.', 'tickets:status': 'CLOSED', 'tickets:priority': 'MEDIUM', 'tickets:building_id': `${POD}/buildings/4`, 'tickets:anomaly_ref': null, 'tickets:created_by': `${POD}/users/3`, 'tickets:assigned_to': `${POD}/users/2`, 'tickets:created_at': '2026-11-18T08:00:00Z', 'tickets:updated_at': '2026-11-19T07:00:00Z' },
     ],
   },
   '/tickets/7/comments/': {
     '@id': `${POD}/tickets/7/comments/`,
     'ldp:contains': [
-      { '@id': `${POD}/tickets/7/comments/1`, 'comments:ticket_id': `${POD}/tickets/7`, 'comments:author': `${POD}/users/1`, 'comments:text': 'Anomalie confirmée, technicien assigné.', 'comments:ts': '2026-11-19T21:16:00Z' },
-      { '@id': `${POD}/tickets/7/comments/2`, 'comments:ticket_id': `${POD}/tickets/7`, 'comments:author': `${POD}/users/2`, 'comments:text': 'Sur place, investigation en cours.', 'comments:ts': '2026-11-19T21:30:00Z' },
+      { '@id': `${POD}/tickets/7/comments/1`, 'comments:ticket_id': `${POD}/tickets/7`, 'comments:author': `${POD}/users/1`, 'comments:text': 'Anomaly confirmed, technician assigned.', 'comments:ts': '2026-11-19T21:16:00Z' },
+      { '@id': `${POD}/tickets/7/comments/2`, 'comments:ticket_id': `${POD}/tickets/7`, 'comments:author': `${POD}/users/2`, 'comments:text': 'On site, investigation in progress.', 'comments:ts': '2026-11-19T21:30:00Z' },
     ],
   },
 };

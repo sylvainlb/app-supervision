@@ -74,7 +74,7 @@ test('ticket-detail : transitions autorisées + patch merge-patch + commentaire'
 test('energy-chart : fenêtres, voie d accès, requête proxy, séries signées, fraîcheur', () => {
   const now = new Date('2026-11-19T12:00:00Z');
   assert.deepEqual(selectWindow('24h', now), { from: '2026-11-18T12:00:00.000Z', to: '2026-11-19T12:00:00.000Z' });
-  assert.throws(() => selectWindow('1h', now), /fenêtre inconnue/);
+  assert.throws(() => selectWindow('1h', now), /unknown range/);
   assert.deepEqual(metricAccess('net_grid_hourly'), { via: 'proxy' });
   assert.deepEqual(metricAccess('energy_cost_daily'), { via: 'ldp', container: '/gold/energy_cost_daily/' });
   const req = metricQuery('net_grid_hourly', '7d', now);
@@ -88,7 +88,7 @@ test('energy-chart : fenêtres, voie d accès, requête proxy, séries signées,
   const series = buildSeries(rows, 'net_grid_hourly');
   assert.deepEqual(series.datasets[0].data, [5, 0]); // conso positive
   assert.deepEqual(series.datasets[1].data, [0, -2]); // injection négative
-  assert.match(formatFreshness('2026-11-19T10:30:00Z'), /données à \d{2}:\d{2} — refresh ~10 min/);
+  assert.match(formatFreshness('2026-11-19T10:30:00Z'), /data as of \d{2}:\d{2} — refresh ~10 min/);
   assert.equal(latestTimestamp(rows), '2026-11-19T11:00:00Z');
 });
 
@@ -103,11 +103,11 @@ test('energy-chart : queryGold appelle /app/query et gère 429', async () => {
 });
 
 test('ticket-new : RG-1 (bâtiment requis) + payload JSON-LD avec anomaly_ref', () => {
-  assert.ok(validateTicket({ title: 'T' }).some((e) => e.includes('bâtiment')));
+  assert.ok(validateTicket({ title: 'T' }).some((e) => e.includes('building')));
   assert.ok(validateTicket({ building_id: '/buildings/1' }).some((e) => e.includes('titre')));
   assert.deepEqual(validateTicket({ title: 'T', building_id: '/buildings/1' }), []);
   const p = buildTicketPayload({
-    title: 'Anomalie a2', description: 'd', priority: 'HIGH',
+    title: 'Anomaly a2', description: 'd', priority: 'HIGH',
     building_id: '/buildings/2', anomaly_ref: 'a2', created_by: 'https://app.localhost/users/1',
   });
   assert.equal(p.anomaly_ref, 'a2');
@@ -122,7 +122,7 @@ test('user-admin : validation webid IRI + rôle', () => {
   assert.deepEqual(validateUser({ webid: 'https://pod/users/u1', name: 'U1', email: 'u1@x.io', role: 'admin' }), []);
   assert.ok(validateUser({ webid: 'pas-une-iri', name: 'U1', role: 'admin' }).some((e) => e.includes('webid')));
   assert.ok(validateUser({ webid: 'https://pod/users/u1', name: '', role: 'admin' }).some((e) => e.includes('name')));
-  assert.ok(validateUser({ webid: 'https://pod/users/u1', name: 'U1', role: 'superadmin' }).some((e) => e.includes('rôle')));
+  assert.ok(validateUser({ webid: 'https://pod/users/u1', name: 'U1', role: 'superadmin' }).some((e) => e.includes('invalid role')));
   assert.deepEqual(userPayload({ webid: 'https://pod/users/u1', name: 'U1', email: 'u1@x.io', role: 'technicien' }).role, 'technicien');
 });
 

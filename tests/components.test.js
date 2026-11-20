@@ -39,7 +39,7 @@ test('building-map : rend les marqueurs colorés et navigue au clic', async () =
   assert.deepEqual(events[0], { route: 'building-detail', resource: '/buildings/2', query: null });
 });
 
-test('anomaly-list : filtre sévérité, état vide, bouton « Créer un ticket » → requestNavigation ?anomaly=', async () => {
+test('anomaly-list : severity filter, empty state, "Create intervention ticket" button → requestNavigation ?anomaly=', async () => {
   mockSibStore(window, {
     '/gold/anomaly_candidates/': { 'ldp:contains': [
       { '@id': 'a1', meter_id: 'M1', severity: 'LOW', type: 'drift', ts: '2026-11-19T08:00:00Z' },
@@ -60,7 +60,7 @@ test('anomaly-list : filtre sévérité, état vide, bouton « Créer un ticket 
   assert.equal(events.at(-1).query.prefill.anomaly_ref, 'a2');
   el.filterSeverity = 'CRITICAL';
   await el.updateComplete;
-  assert.match(el.shadowRoot.querySelector('.empty').textContent, /Aucune anomalie active/);
+  assert.match(el.shadowRoot.querySelector('.empty').textContent, /No active anomaly/);
 });
 
 test('ticket-board : colonnes par statut avec compteurs, clic → détail', async () => {
@@ -98,7 +98,7 @@ test('ticket-detail : technicien assigné voit IN_PROGRESS (pas CLOSED), PATCH m
   el._changeStatus('IN_PROGRESS');
   await new Promise((r) => setTimeout(r, 0));
   await el.updateComplete;
-  assert.match(el.toast, /modifié entre-temps/);
+  assert.match(el.toast, /modified in the meantime/);
 });
 
 test('energy-chart : metric horaire → POST /app/query via fetchAuthn, badge fraîcheur, fenêtres', async () => {
@@ -153,9 +153,9 @@ test('ticket-new : pré-remplissage anomalie, validation RG-1, POST /tickets/ pu
   const el = await mount('ticket-new', { anomaly: 'a2', webid: 'https://app.localhost/users/1' });
   assert.match(el.shadowRoot.querySelector('p').textContent, /a2/);
   // sans bâtiment → erreur RG-1, pas de POST
-  el.form = { title: 'Anomalie a2', description: '', priority: 'MEDIUM', building_id: '' };
+  el.form = { title: 'Anomaly a2', description: '', priority: 'MEDIUM', building_id: '' };
   await el._submit();
-  assert.ok(el.errors.some((e) => e.includes('bâtiment')));
+  assert.ok(el.errors.some((e) => e.includes('building')));
   assert.ok(!calls.some((c) => c[0] === 'post'));
   // avec bâtiment → POST avec anomaly_ref
   el.form = { ...el.form, building_id: '/buildings/1' };

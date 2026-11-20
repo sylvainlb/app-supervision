@@ -16,12 +16,13 @@ export class TicketNew extends LitElement {
 
   static styles = css`
     ${sharedStyles}
-    form { background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: 10px; box-shadow: var(--shadow); padding: 16px; max-width: 480px; }
-    form label { display: block; margin: 10px 0; font-size: 0.88rem; color: #334155; }
-    form input, form select, form textarea { width: 100%; margin-top: 4px; }
-    .errors { color: #dc2626; }
-    .anomaly-link { background: #f0fdfa; border: 1px solid #99f6e4; color: #0f766e; border-radius: 8px; padding: 8px 12px; font-size: 0.88rem; }
-    h2 { margin-top: 0; }
+    form { background: #fff; border: 1px solid var(--border, #e5eaf0); border-radius: var(--radius, 14px); box-shadow: var(--shadow); padding: 20px 22px; max-width: 520px; }
+    form label { display: block; margin: 12px 0; font-size: 0.86rem; font-weight: 600; color: #334155; }
+    form input, form select, form textarea { width: 100%; margin-top: 5px; }
+    .errors { color: #dc2626; margin: 10px 0; padding-left: 18px; }
+    .anomaly-link { background: #f0fdfa; border: 1px solid #99f6e4; color: #0f766e; border-radius: 10px; padding: 9px 13px; font-size: 0.88rem; font-weight: 500; margin-bottom: 12px; }
+    h2 { margin-top: 0; font-size: 1.3rem; }
+    button[type="submit"] { margin-top: 6px; }
   `;
 
   constructor() {
@@ -39,7 +40,7 @@ export class TicketNew extends LitElement {
       this.buildings = rows;
     });
     if (this.anomaly) {
-      this.form = { ...this.form, title: `Anomalie ${this.anomaly}` };
+      this.form = { ...this.form, title: `Anomaly ${this.anomaly}` };
     }
   }
 
@@ -54,24 +55,24 @@ export class TicketNew extends LitElement {
 
   render() {
     return html`
-      <h2>Nouveau ticket</h2>
-      ${this.anomaly ? html`<p class="anomaly-link">anomalie liée : ${this.anomaly}</p>` : ''}
+      <h2>New ticket</h2>
+      ${this.anomaly ? html`<p class="anomaly-link">linked anomaly: ${this.anomaly}</p>` : ''}
       <form @submit=${(e) => { e.preventDefault(); this._submit(); }}>
-        <label>titre <input .value=${this.form.title} @input=${(e) => { this.form = { ...this.form, title: e.target.value }; }}></label>
+        <label>title <input .value=${this.form.title} @input=${(e) => { this.form = { ...this.form, title: e.target.value }; }}></label>
         <label>description <textarea .value=${this.form.description} @input=${(e) => { this.form = { ...this.form, description: e.target.value }; }}></textarea></label>
-        <label>bâtiment
+        <label>building
           <select @change=${(e) => { this.form = { ...this.form, building_id: e.target.value }; }}>
-            <option value="">— choisir —</option>
+            <option value="">— select —</option>
             ${this.buildings.map((b) => html`<option value=${b['@id']}>${field(b, 'name') ?? b['@id']}</option>`)}
           </select>
         </label>
-        <label>priorité
+        <label>priority
           <select @change=${(e) => { this.form = { ...this.form, priority: e.target.value }; }}>
             ${PRIORITIES.map((p) => html`<option value=${p} ?selected=${p === this.form.priority}>${p}</option>`)}
           </select>
         </label>
         ${this.errors.length > 0 ? html`<ul class="errors">${this.errors.map((e) => html`<li>${e}</li>`)}</ul>` : ''}
-        <button type="submit">créer</button>
+        <button type="submit">Create</button>
       </form>`;
   }
 }

@@ -27,26 +27,26 @@
       ],
       "sections": [
         {
-          "title": "Vue d'ensemble du parc",
+          "title": "Site overview",
           "components": [
             "kpi-summary"
           ]
         },
         {
-          "title": "Carte du parc",
+          "title": "Site map",
           "components": [
             "building-map"
           ]
         },
         {
-          "title": "Consommation nette (réseau)",
+          "title": "Net consumption (grid)",
           "components": [
             "energy-chart"
           ]
         },
         {
-          "title": "Anomalies détectées",
-          "hint": "Détections automatiques du système (données gold, lecture seule). Pour agir sur une anomalie, cliquez sur « Créer un ticket d'intervention » : un ticket est une action humaine suivie jusqu'à sa clôture.",
+          "title": "Detected anomalies",
+          "hint": "Automatic system detections (gold data, read-only). To act on an anomaly, click \"Create intervention ticket\": a ticket is a human action tracked through to closure.",
           "components": [
             "anomaly-list"
           ]
@@ -72,8 +72,8 @@
       ],
       "sections": [
         {
-          "title": "Anomalies détectées",
-          "hint": "Ce sont des détection automatiques (lecture seule) : on ne peut pas les modifier ici. Chaque anomalie peut être transformée en ticket d'intervention.",
+          "title": "Detected anomalies",
+          "hint": "These are automatic detections (read-only) — they cannot be edited here. Each anomaly can be turned into an intervention ticket.",
           "components": [
             "anomaly-list"
           ]
@@ -91,8 +91,8 @@
       ],
       "sections": [
         {
-          "title": "Tickets d'intervention",
-          "hint": "Les tickets sont les actions créées par l'équipe (manuellement ou depuis une anomalie) : assignation, suivi de statut (ouvert → en cours → résolu → clôturé).",
+          "title": "Intervention tickets",
+          "hint": "Tickets are actions created by the team (manually or from an anomaly): assignment and status tracking (open → in progress → resolved → closed).",
           "components": [
             "ticket-board"
           ]

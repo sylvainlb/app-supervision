@@ -19,16 +19,17 @@ export class TicketDetail extends OrbitComponent {
 
   static styles = css`
     ${OrbitComponent.styles}
-    h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; }
-    .fiche { background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: 10px; box-shadow: var(--shadow); padding: 14px 16px; margin-bottom: 14px; }
-    .fiche p { margin: 6px 0; color: #334155; font-size: 0.92rem; }
-    .actions { margin: 12px 0; }
-    .actions button { margin-right: 8px; }
-    section.comments { background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: 10px; padding: 14px 16px; }
+    h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font-size: 1.3rem; }
+    .fiche { background: #fff; border: 1px solid var(--border, #e5eaf0); border-radius: var(--radius, 14px); box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 16px; }
+    .fiche p { margin: 7px 0; color: #334155; font-size: 0.92rem; line-height: 1.5; }
+    .actions { margin: 14px 0; display: flex; gap: 10px; flex-wrap: wrap; }
+    .actions button { margin-right: 0; text-transform: capitalize; }
+    section.comments { background: #fff; border: 1px solid var(--border, #e5eaf0); border-radius: var(--radius, 14px); box-shadow: var(--shadow); padding: 16px 20px; }
+    section.comments h3 { margin: 0 0 8px; font-size: 1rem; }
     section.comments ul { list-style: none; padding: 0; }
-    section.comments li { border-bottom: 1px solid #f1f5f9; padding: 8px 0; font-size: 0.9rem; color: #334155; }
+    section.comments li { border-bottom: 1px solid #f1f5f9; padding: 9px 0; font-size: 0.9rem; color: #334155; }
     section.comments li:last-child { border-bottom: 0; }
-    .comment-form { display: flex; gap: 8px; margin-top: 10px; }
+    .comment-form { display: flex; gap: 10px; margin-top: 12px; }
     .comment-form input { flex: 1; }
   `;
 
@@ -57,7 +58,7 @@ export class TicketDetail extends OrbitComponent {
       this.refresh();
     } catch (e) {
       if (e?.status === 412 || actionForStatus(e?.status) === 'conflict-reload') {
-        this.toast = 'modifié entre-temps — ressource rechargée, merci de réessayer';
+        this.toast = 'modified in the meantime — resource reloaded, please try again';
         this.refresh();
       } else {
         throw e;
@@ -83,21 +84,21 @@ export class TicketDetail extends OrbitComponent {
       ${this.toast ? html`<div class="toast" role="status">${this.toast}</div>` : ''}
       <div class="fiche">
         <p>${field(t, 'description') ?? ''}</p>
-        <p>bâtiment : ${field(t, 'building_id') ?? ''} ·
+        <p>building: ${field(t, 'building_id') ?? ''} ·
            <span class="badge pri-${field(t, 'priority') ?? 'MEDIUM'}">${field(t, 'priority') ?? 'MEDIUM'}</span>
-           · créé par ${field(t, 'created_by') ?? ''} · assigné à ${field(t, 'assigned_to') ?? 'personne'}</p>
-        ${field(t, 'anomaly_ref') ? html`<p>anomalie liée : ${field(t, 'anomaly_ref')}</p>` : ''}
+           · created by ${field(t, 'created_by') ?? ''} · assigned to ${field(t, 'assigned_to') ?? 'nobody'}</p>
+        ${field(t, 'anomaly_ref') ? html`<p>linked anomaly: ${field(t, 'anomaly_ref')}</p>` : ''}
       </div>
       <div class="actions">
         ${transitions.filter((x) => x.allowed).map((x) => html`
           <button @click=${() => this._changeStatus(x.to)}>${x.to}</button>`)}
       </div>
       <section class="comments">
-        <h3>Commentaires</h3>
+        <h3>Comments</h3>
         <ul>${this.comments.map((c) => html`<li><strong>${field(c, 'author') ?? ''}</strong> · ${(field(c, 'ts') ?? '').slice(0, 19).replace('T', ' ')} — ${field(c, 'text') ?? ''}</li>`)}</ul>
         <div class="comment-form">
-          <input .value=${this.commentText} @input=${(e) => { this.commentText = e.target.value; }} placeholder="Ajouter un commentaire…">
-          <button @click=${() => this._addComment()}>ajouter</button>
+          <input .value=${this.commentText} @input=${(e) => { this.commentText = e.target.value; }} placeholder="Add a comment…">
+          <button @click=${() => this._addComment()}>add</button>
         </div>
       </section>`;
   }

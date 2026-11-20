@@ -9,9 +9,9 @@ import { field } from '../../src/lib/context.js';
 import { computeBuildingStates, STATE } from './logic.js';
 
 const STATE_LABEL = {
-  [STATE.OK]: { label: 'OK', cls: 'st-ok', desc: 'aucune anomalie active' },
-  [STATE.ANOMALY]: { label: 'Anomalie', cls: 'st-anomaly', desc: 'anomalie active détectée' },
-  [STATE.HIGH]: { label: 'Critique', cls: 'st-high', desc: 'anomalie de sévérité haute' },
+  [STATE.OK]: { label: 'OK', cls: 'st-ok', desc: 'no active anomaly' },
+  [STATE.ANOMALY]: { label: 'Anomaly', cls: 'st-anomaly', desc: 'active anomaly detected' },
+  [STATE.HIGH]: { label: 'Critical', cls: 'st-high', desc: 'high-severity anomaly' },
 };
 
 export class BuildingMap extends OrbitComponent {
@@ -23,29 +23,48 @@ export class BuildingMap extends OrbitComponent {
 
   static styles = css`
     ${OrbitComponent.styles}
-    .map { height: 380px; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); background: #aad3df; }
+    .map { height: 400px; border-radius: var(--radius, 14px); overflow: hidden; box-shadow: var(--shadow-lg); background: #aad3df; border: 1px solid var(--border); }
     /* Pastille bâtiment sur la carte (divIcon Leaflet) */
     .bmk { background: transparent; border: none; }
     .bmk-dot {
-      display: block; width: 22px; height: 22px; border-radius: 50%;
-      border: 3px solid #fff; box-shadow: 0 1px 6px rgba(15, 23, 42, 0.5);
+      display: block; width: 26px; height: 26px; border-radius: 50%;
+      border: 3px solid #fff; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.55);
+      position: relative;
     }
-    .leaflet-container { background: #aad3df; } /* tuiles OSM manquantes → fond neutre, pas de blanc cassé */
-    .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.82rem; color: var(--muted); margin: 8px 2px 12px; }
-    .legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
-    ul.markers { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+    /* Halo pulsant sur les états critiques */
+    .bmk-dot.st-high::after, .bmk-dot.st-anomaly::after {
+      content: ""; position: absolute; inset: -3px; border-radius: 50%;
+      border: 2px solid currentColor; opacity: 0; animation: bmk-pulse 1.8s ease-out infinite;
+    }
+    .bmk-dot.st-high::after { color: #dc2626; }
+    .bmk-dot.st-anomaly::after { color: #d97706; }
+    @keyframes bmk-pulse {
+      0% { transform: scale(0.7); opacity: 0.9; }
+      100% { transform: scale(2.1); opacity: 0; }
+    }
+    .leaflet-container { background: #aad3df; font-family: inherit; } /* tuiles OSM manquantes → fond neutre, pas de blanc cassé */
+    .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: var(--shadow-lg); }
+    .legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.82rem; color: var(--muted); margin: 12px 2px 14px; }
+    .legend > span {
+      display: inline-flex; align-items: center; gap: 7px; background: #fff;
+      border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; box-shadow: var(--shadow);
+    }
+    .legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+    .legend .hint { margin-left: auto; background: transparent; border: 0; box-shadow: none; font-style: italic; }
+    ul.markers { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
     .marker {
-      display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+      display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
       background: #fff; color: var(--ink); border: 1px solid var(--border); border-left: 4px solid #9ca3af;
-      border-radius: 8px; padding: 10px 12px; cursor: pointer; font-size: 0.9rem;
+      border-radius: 12px; padding: 12px 14px; cursor: pointer; font-size: 0.9rem;
+      box-shadow: var(--shadow); transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
     }
-    .marker:hover { background: #f8fafc; }
-    .marker .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .marker:hover { background: #f0fdfa; transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .marker .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(15,23,42,.06); }
     .marker.st-ok { border-left-color: #059669; } .marker.st-ok .dot { background: #059669; }
     .marker.st-anomaly { border-left-color: #d97706; } .marker.st-anomaly .dot { background: #d97706; }
     .marker.st-high { border-left-color: #dc2626; } .marker.st-high .dot { background: #dc2626; }
     .marker .name { font-weight: 600; }
-    .marker .sub { display: block; font-size: 0.78rem; color: var(--muted); font-weight: 400; }
+    .marker .sub { display: block; font-size: 0.78rem; color: var(--muted); font-weight: 400; margin-top: 1px; }
   `;
 
   constructor() {
@@ -124,10 +143,10 @@ export class BuildingMap extends OrbitComponent {
         const name = field(building, 'name') ?? building['@id'];
         const icon = L.divIcon({
           className: 'bmk',
-          html: `<span class="bmk-dot" style="background:${color}"></span>`,
-          iconSize: [22, 22],
-          iconAnchor: [11, 11],
-          popupAnchor: [0, -12],
+          html: `<span class="bmk-dot ${s.cls}" style="background:${color};color:${color}"></span>`,
+          iconSize: [26, 26],
+          iconAnchor: [13, 13],
+          popupAnchor: [0, -14],
         });
         const marker = L.marker([field(building, 'lat'), field(building, 'lon')], { icon, title: name }).addTo(this._markers);
         marker.bindPopup(`<strong>${name}</strong><br>${s.label} — ${s.desc}`);
@@ -145,7 +164,7 @@ export class BuildingMap extends OrbitComponent {
       <div class="legend">
         ${Object.values(STATE_LABEL).map((s) => html`
           <span><span class="dot" style="background:${s.cls === 'st-ok' ? '#059669' : s.cls === 'st-anomaly' ? '#d97706' : '#dc2626'}"></span>${s.label} : ${s.desc}</span>`)}
-        <span style="margin-left:auto">Cliquez sur un bâtiment pour voir son détail</span>
+        <span class="hint">Click a building to see its details</span>
       </div>
       <ul class="markers">
         ${states.map(({ building, state, anomalies }) => {
@@ -153,11 +172,11 @@ export class BuildingMap extends OrbitComponent {
           return html`
           <li>
             <button class="marker ${s.cls}"
-              title="${anomalies.length} anomalie(s) active(s)"
+              title="${anomalies.length} active anomaly(s)"
               @click=${() => this.navigate('building-detail', building['@id'])}>
               <span class="dot"></span>
               <span><span class="name">${field(building, 'name') ?? building['@id']}</span>
-              <span class="sub">${s.label} · ${anomalies.length} anomalie(s) · ${field(building, 'meter_id') ?? ''}</span></span>
+              <span class="sub">${s.label} · ${anomalies.length} anomaly(s) · ${field(building, 'meter_id') ?? ''}</span></span>
             </button>
           </li>`;
         })}

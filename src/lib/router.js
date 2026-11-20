@@ -37,13 +37,13 @@ export function userLabel(claims) {
 // Menu latéral : libellés FR + visibilité par rôle (spec §8 — le rôle pilote
 // l'assemblage des écrans, jamais la décision d'accès).
 export const LABELS = {
-  dashboard: 'Tableau de bord',
-  'building-detail': 'Bâtiment',
-  anomalies: 'Anomalies détectées',
-  tickets: "Tickets d'intervention",
-  'ticket-new': 'Nouveau ticket',
+  dashboard: 'Dashboard',
+  'building-detail': 'Building',
+  anomalies: 'Detected anomalies',
+  tickets: 'Intervention tickets',
+  'ticket-new': 'New ticket',
   'ticket-detail': 'Ticket',
-  interventions: 'Mes interventions',
+  interventions: 'My interventions',
   admin: 'Administration',
 };
 

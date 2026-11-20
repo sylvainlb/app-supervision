@@ -15,13 +15,22 @@ export class AnomalyList extends OrbitComponent {
 
   static styles = css`
     ${OrbitComponent.styles}
-    ul { list-style: none; padding: 0; display: grid; gap: 8px; }
-    li.anomaly { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; box-shadow: var(--shadow); }
-    li.anomaly .meta { flex: 1; font-size: 0.88rem; color: #334155; }
-    .badge.sev-HIGH { background: #dc2626; } .badge.sev-CRITICAL { background: #7f1d1d; }
-    .badge.sev-MEDIUM { background: #d97706; } .badge.sev-LOW { background: #6b7280; }
+    ul { list-style: none; padding: 0; display: grid; gap: 10px; }
+    li.anomaly {
+      display: flex; align-items: center; gap: 14px; background: #fff;
+      border: 1px solid var(--border); border-left: 4px solid #94a3b8; border-radius: 12px;
+      padding: 12px 16px; box-shadow: var(--shadow);
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    li.anomaly:hover { transform: translateX(3px); box-shadow: var(--shadow-lg); }
+    li.anomaly:has(.sev-HIGH) { border-left-color: #ea580c; }
+    li.anomaly:has(.sev-CRITICAL) { border-left-color: #b91c1c; }
+    li.anomaly:has(.sev-MEDIUM) { border-left-color: #d97706; }
+    li.anomaly:has(.sev-LOW) { border-left-color: #64748b; }
+    li.anomaly .meta { flex: 1; font-size: 0.88rem; color: #334155; line-height: 1.45; }
     .empty { color: var(--muted); padding: 12px; }
-    .filters { margin-bottom: 10px; }
+    .filters { margin-bottom: 14px; }
+    .filters select { box-shadow: var(--shadow); font-weight: 500; }
   `;
 
   constructor() {
@@ -37,24 +46,24 @@ export class AnomalyList extends OrbitComponent {
     return html`
       <div class="filters">
         <select @change=${(e) => { this.filterSeverity = e.target.value; }}>
-          <option value="">toutes sévérités</option>
+          <option value="">all severities</option>
           ${severities.map((s) => html`<option value=${s} ?selected=${s === this.filterSeverity}>${s}</option>`)}
         </select>
       </div>
-      ${rows.length === 0 ? html`<div class="empty">Aucune anomalie active — tout est normal.</div>` : html`
+      ${rows.length === 0 ? html`<div class="empty">No active anomaly — everything is normal.</div>` : html`
       <ul>
         ${rows.map((a) => {
           const sev = String(field(a, 'severity') ?? '').toUpperCase();
-          const sevLabel = { HIGH: 'Élevée', CRITICAL: 'Critique', MEDIUM: 'Moyenne', LOW: 'Faible' }[sev] ?? sev;
+          const sevLabel = { HIGH: 'High', CRITICAL: 'Critical', MEDIUM: 'Medium', LOW: 'Low' }[sev] ?? sev;
           return html`
           <li class="anomaly">
             <span class="badge sev-${sev}">${sevLabel}</span>
             <span class="meta">
-              <strong>Compteur ${field(a, 'meter_id') ?? '?'}</strong> — détectée le ${String(anomalyTs(a) ?? '').slice(0, 19).replace('T', ' à ')}
-              — écart z=${field(a, 'z_score') ?? '?'} (seuil ~3)
-              ${field(a, 'active_power_kw') != null ? html`<br>puissance mesurée : ${Math.round(field(a, 'active_power_kw') * 10) / 10} kW` : ''}
+              <strong>Meter ${field(a, 'meter_id') ?? '?'}</strong> — detected on ${String(anomalyTs(a) ?? '').slice(0, 19).replace('T', ' at ')}
+              — z-score=${field(a, 'z_score') ?? '?'} (threshold ~3)
+              ${field(a, 'active_power_kw') != null ? html`<br>measured power: ${Math.round(field(a, 'active_power_kw') * 10) / 10} kW` : ''}
             </span>
-            <button @click=${() => this._createTicket(a)}>Créer un ticket d'intervention</button>
+            <button @click=${() => this._createTicket(a)}>Create intervention ticket</button>
           </li>`;
         })}
       </ul>`}`;
