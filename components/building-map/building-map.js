@@ -58,7 +58,7 @@ export class BuildingMap extends OrbitComponent {
       border-radius: 12px; padding: 12px 14px; cursor: pointer; font-size: 0.9rem;
       box-shadow: var(--shadow); transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
     }
-    .marker:hover { background: #f0fdfa; transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .marker:hover { background: #ecfdf5; transform: translateY(-2px); box-shadow: var(--shadow-lg); }
     .marker .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(15,23,42,.06); }
     .marker.st-ok { border-left-color: #059669; } .marker.st-ok .dot { background: #059669; }
     .marker.st-anomaly { border-left-color: #d97706; } .marker.st-anomaly .dot { background: #d97706; }

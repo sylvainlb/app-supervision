@@ -19,10 +19,10 @@
       #header {
         position: fixed; top: 0; left: 0; right: 0; height: 58px; z-index: 100;
         display: flex; align-items: center; gap: 12px;
-        background: linear-gradient(100deg, #0b1220 0%, #0f172a 55%, #134e4a 130%);
+        background: linear-gradient(100deg, #0b1220 0%, #0f172a 55%, #064e3b 130%);
         color: #f8fafc; padding: 0 22px;
         box-shadow: 0 2px 12px rgba(2, 6, 23, 0.35);
-        border-bottom: 1px solid rgba(94, 234, 212, 0.25);
+        border-bottom: 1px solid rgba(110, 231, 183, 0.25);
       }
       #header .title {
         font-size: 1.12rem; font-weight: 700; letter-spacing: 0.2px; color: #f8fafc;
@@ -31,8 +31,8 @@
       #header .title .logo {
         display: inline-flex; align-items: center; justify-content: center;
         width: 30px; height: 30px; border-radius: 9px;
-        background: linear-gradient(135deg, #14b8a6, #0f766e);
-        box-shadow: 0 2px 8px rgba(20, 184, 166, 0.45), inset 0 1px 0 rgba(255,255,255,0.25);
+        background: linear-gradient(135deg, #10b981, #047857);
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.45), inset 0 1px 0 rgba(255,255,255,0.25);
       }
       #header .title .logo svg { width: 17px; height: 17px; }
       #menu h1 {
@@ -50,12 +50,12 @@
         border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 0.83rem; font-weight: 500;
         transition: background 0.15s ease, border-color 0.15s ease;
       }
-      #header button:hover { background: rgba(20, 184, 166, 0.18); border-color: #14b8a6; color: #5eead4; }
+      #header button:hover { background: rgba(16, 185, 129, 0.18); border-color: #10b981; color: #6ee7b7; }
       #layout { display: block; padding-top: 58px; min-height: 100vh; }
       /* Menu toujours visible, même quand le contenu scrolle */
       #menu {
         position: fixed; top: 58px; left: 0; bottom: 0; width: 236px;
-        background: linear-gradient(180deg, #0f172a 0%, #0c1425 100%);
+        background: linear-gradient(180deg, #0f172a 0%, #052e16 100%);
         padding: 18px 10px; overflow-y: auto; z-index: 90;
         border-right: 1px solid rgba(148, 163, 184, 0.12);
       }
@@ -68,8 +68,8 @@
       #menu a svg { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.85; }
       #menu a:hover { background: rgba(30, 41, 59, 0.8); color: #f1f5f9; }
       #menu a.active {
-        background: linear-gradient(90deg, rgba(19, 78, 74, 0.9), rgba(19, 78, 74, 0.35));
-        color: #5eead4; font-weight: 600; border-left-color: #14b8a6;
+        background: linear-gradient(90deg, rgba(6, 78, 59, 0.9), rgba(6, 78, 59, 0.35));
+        color: #6ee7b7; font-weight: 600; border-left-color: #34d399;
       }
       #menu a.active svg { opacity: 1; }
       #app { margin-left: 236px; padding: 28px 32px; min-height: calc(100vh - 58px); }

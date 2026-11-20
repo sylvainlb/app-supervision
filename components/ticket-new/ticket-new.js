@@ -20,7 +20,7 @@ export class TicketNew extends LitElement {
     form label { display: block; margin: 12px 0; font-size: 0.86rem; font-weight: 600; color: #334155; }
     form input, form select, form textarea { width: 100%; margin-top: 5px; }
     .errors { color: #dc2626; margin: 10px 0; padding-left: 18px; }
-    .anomaly-link { background: #f0fdfa; border: 1px solid #99f6e4; color: #0f766e; border-radius: 10px; padding: 9px 13px; font-size: 0.88rem; font-weight: 500; margin-bottom: 12px; }
+    .anomaly-link { background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; border-radius: 10px; padding: 9px 13px; font-size: 0.88rem; font-weight: 500; margin-bottom: 12px; }
     h2 { margin-top: 0; font-size: 1.3rem; }
     button[type="submit"] { margin-top: 6px; }
   `;

@@ -1,10 +1,10 @@
 /* Design system global (light DOM : header, menu, layout). */
 :root {
-  --brand: #0d9488;        /* teal-600 */
-  --brand-light: #14b8a6;  /* teal-500 */
-  --brand-dark: #0f766e;   /* teal-700 */
-  --brand-deep: #115e59;   /* teal-800 */
-  --brand-soft: #ccfbf1;   /* teal-100 */
+  --brand: #059669;        /* emerald-600 */
+  --brand-light: #10b981;  /* emerald-500 */
+  --brand-dark: #047857;   /* emerald-700 */
+  --brand-deep: #065f46;   /* emerald-800 */
+  --brand-soft: #d1fae5;   /* emerald-100 */
   --ink: #0f172a;          /* slate-900 */
   --muted: #64748b;        /* slate-500 */
   --bg: #f4f6f9;
@@ -27,7 +27,7 @@ body {
   font-family: var(--font);
   color: var(--ink);
   background:
-    radial-gradient(1100px 340px at 85% -80px, rgba(20, 184, 166, 0.10), transparent 60%),
+    radial-gradient(1100px 340px at 85% -80px, rgba(16, 185, 129, 0.10), transparent 60%),
     linear-gradient(180deg, #eef2f7 0%, var(--bg) 320px);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;

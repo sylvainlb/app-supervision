@@ -22,7 +22,7 @@ export class EnergyChart extends OrbitComponent {
     ${OrbitComponent.styles}
     .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
     .toolbar strong { font-size: 1.05rem; font-weight: 700; }
-    .freshness { font-size: 0.77rem; font-weight: 600; background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; border-radius: 999px; padding: 4px 11px; }
+    .freshness { font-size: 0.77rem; font-weight: 600; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; border-radius: 999px; padding: 4px 11px; }
     .toolbar label { margin-left: auto; font-size: 0.85rem; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; }
     .chart-wrap { height: 320px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius, 14px); box-shadow: var(--shadow); padding: 14px; }
     .chart-wrap canvas { max-height: 100%; }
@@ -80,9 +80,9 @@ export class EnergyChart extends OrbitComponent {
     const canvas = this.renderRoot.querySelector('canvas');
     if (!canvas) return;
     if (this._chart) { this._chart.destroy(); this._chart = null; }
-    // Courbes lissées + remplissage en dégradé (teal) sous la courbe.
+    // Courbes lissées + remplissage en dégradé (emerald) sous la courbe.
     const ctx = canvas.getContext('2d');
-    const PALETTE = ['#0d9488', '#6366f1', '#d97706', '#0284c7', '#db2777'];
+    const PALETTE = ['#059669', '#6366f1', '#d97706', '#0284c7', '#db2777'];
     const datasets = series.datasets.map((d, i) => {
       const color = PALETTE[i % PALETTE.length];
       // happy-dom / vieux contextes : createLinearGradient peut manquer → repli couleur pleine transparente.
@@ -108,7 +108,7 @@ export class EnergyChart extends OrbitComponent {
     });
     this._chart = new Chart(ctx, {
       type: 'line',
-      data: { labels: series.labels, datasets },
+      data: { labels: series.labels.map((l) => String(l).slice(11, 16)), datasets },
       options: {
         responsive: true,
         maintainAspectRatio: false,
