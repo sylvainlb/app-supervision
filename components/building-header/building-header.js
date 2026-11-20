@@ -12,7 +12,7 @@ export class BuildingHeader extends OrbitComponent {
       border: 1px solid var(--border); border-radius: var(--radius, 14px);
       box-shadow: var(--shadow); padding: 18px 22px; margin-bottom: 18px;
     }
-    .fiche::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: linear-gradient(180deg, #10b981, #047857); }
+    .fiche::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: linear-gradient(180deg, #34d399, #10b981); }
     h2 { margin: 0 0 8px; font-size: 1.35rem; font-weight: 700; }
     .meta { color: var(--muted); font-size: 0.9rem; display: flex; gap: 10px; flex-wrap: wrap; }
     .meta span { background: #f1f5f9; border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; }

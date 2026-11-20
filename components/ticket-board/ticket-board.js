@@ -31,7 +31,7 @@ export class TicketBoard extends OrbitComponent {
       cursor: pointer; box-shadow: var(--shadow); font-size: 0.88rem;
       transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
     }
-    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: #6ee7b7; }
+    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: #a7f3d0; }
     .card strong { font-weight: 600; line-height: 1.35; }
     .card .meta { color: var(--muted, #64748b); font-size: 0.77rem; margin-top: 7px; display: flex; gap: 8px; align-items: center; }
   `;

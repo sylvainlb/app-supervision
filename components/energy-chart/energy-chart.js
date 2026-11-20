@@ -82,7 +82,7 @@ export class EnergyChart extends OrbitComponent {
     if (this._chart) { this._chart.destroy(); this._chart = null; }
     // Courbes lissées + remplissage en dégradé (emerald) sous la courbe.
     const ctx = canvas.getContext('2d');
-    const PALETTE = ['#059669', '#6366f1', '#d97706', '#0284c7', '#db2777'];
+    const PALETTE = ['#10b981', '#6366f1', '#d97706', '#0284c7', '#db2777'];
     const datasets = series.datasets.map((d, i) => {
       const color = PALETTE[i % PALETTE.length];
       // happy-dom / vieux contextes : createLinearGradient peut manquer → repli couleur pleine transparente.

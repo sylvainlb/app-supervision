@@ -37,18 +37,18 @@ export async function resolveMembers(data) {
 }
 
 export const sharedStyles = css`    :host {
-    --brand: #059669; --brand-light: #10b981; --brand-dark: #047857; --ink: #0f172a; --muted: #64748b;
+    --brand: #10b981; --brand-light: #34d399; --brand-dark: #059669; --ink: #0f172a; --muted: #64748b;
     --border: #e5eaf0;
     --shadow: 0 1px 2px rgba(15,23,42,.05), 0 6px 18px rgba(15,23,42,.06);
     --shadow-lg: 0 4px 10px rgba(15,23,42,.07), 0 18px 44px rgba(15,23,42,.13);
     display: block; font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #111827; }
     button {
-      background: linear-gradient(135deg, var(--brand-light, #10b981), var(--brand, #059669)); color: #fff; border: 0; border-radius: 10px;
-      padding: 8px 16px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
-      box-shadow: 0 1px 3px rgba(5,150,105,.35);
+      background: linear-gradient(135deg, var(--brand-light, #34d399), var(--brand, #10b981)); color: #064e3b; border: 0; border-radius: 10px;
+      padding: 8px 16px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 1px 3px rgba(16,185,129,.35);
       transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
     }
-    button:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(5,150,105,.4); }
+    button:hover { filter: brightness(1.04); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,.45); }
     button:active { transform: translateY(0); }
     button.secondary { background: #fff; color: var(--ink, #0f172a); border: 1px solid var(--border, #e5eaf0); box-shadow: var(--shadow); }
     button.secondary:hover { background: #f3f4f6; box-shadow: var(--shadow-lg); }
@@ -58,8 +58,8 @@ export const sharedStyles = css`    :host {
       transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
     }
     input:focus, select:focus, textarea:focus {
-      outline: none; border-color: var(--brand, #059669); background: #fff;
-      box-shadow: 0 0 0 3px rgba(16,185,129,.18);
+      outline: none; border-color: var(--brand, #10b981); background: #fff;
+      box-shadow: 0 0 0 3px rgba(52,211,153,.28);
     }
     table { border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border, #e5eaf0); }
     th { background: #f8fafc; text-align: left; font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted, #64748b); }

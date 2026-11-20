@@ -14,11 +14,11 @@ export class KpiSummary extends OrbitComponent {
       transition: transform .18s ease, box-shadow .18s ease;
     }
     .kpi:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
-    .kpi::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: linear-gradient(180deg, var(--brand-light, #10b981), var(--brand, #059669)); }
+    .kpi::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: linear-gradient(180deg, var(--brand-light, #34d399), var(--brand, #10b981)); }
     .kpi .icon {
       position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; border-radius: 11px;
       display: flex; align-items: center; justify-content: center;
-      background: var(--brand-soft, #d1fae5); color: var(--brand-dark, #047857);
+      background: var(--brand-soft, #d1fae5); color: var(--brand-dark, #059669);
     }
     .kpi .icon svg { width: 20px; height: 20px; }
     .kpi .value { font-size: 2rem; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
