@@ -23,3 +23,11 @@ ul { padding: 0; }
 body { font-family: var(--font); background: var(--bg); color: var(--ink); }
 a { color: var(--brand); }
 button { font-family: inherit; }
+
+/* Sections du tableau de bord (orbit.json → route.sections) */
+.dash-section { margin-bottom: 28px; }
+.dash-section > h2 {
+  font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0 0 12px;
+  padding-bottom: 6px; border-bottom: 2px solid var(--brand); display: inline-block;
+}
+.dash-section { border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; }

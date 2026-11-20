@@ -24,6 +24,32 @@
         "building-map",
         "energy-chart",
         "anomaly-list"
+      ],
+      "sections": [
+        {
+          "title": "Vue d'ensemble du parc",
+          "components": [
+            "kpi-summary"
+          ]
+        },
+        {
+          "title": "Carte du parc",
+          "components": [
+            "building-map"
+          ]
+        },
+        {
+          "title": "Consommation nette (réseau)",
+          "components": [
+            "energy-chart"
+          ]
+        },
+        {
+          "title": "Anomalies détectées",
+          "components": [
+            "anomaly-list"
+          ]
+        }
       ]
     },
     {
@@ -33,6 +59,7 @@
         "gestionnaire"
       ],
       "components": [
+        "building-header",
         "energy-chart"
       ]
     },
@@ -110,6 +137,8 @@
     "solid-display": "@startinblox/core",
     "solid-form": "@startinblox/core",
     "solid-ac-checker": "@startinblox/core",
-    "solid-router": "@startinblox/core"
+    "solid-router": "@startinblox/core",
+    "kpi-summary": "components/kpi-summary/kpi-summary.js",
+    "building-header": "components/building-header/building-header.js"
   }
 }

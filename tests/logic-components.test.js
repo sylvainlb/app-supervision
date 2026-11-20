@@ -125,3 +125,17 @@ test('user-admin : validation webid IRI + rôle', () => {
   assert.ok(validateUser({ webid: 'https://pod/users/u1', name: 'U1', role: 'superadmin' }).some((e) => e.includes('rôle')));
   assert.deepEqual(userPayload({ webid: 'https://pod/users/u1', name: 'U1', email: 'u1@x.io', role: 'technicien' }).role, 'technicien');
 });
+
+test('kpi-summary : agrégats du tableau de bord', async () => {
+  const { computeKpis } = await import('../components/kpi-summary/logic.js');
+  const k = computeKpis(
+    [{ '@id': 'b1' }, { '@id': 'b2' }],
+    [{ '@id': 'a1', severity: 'HIGH' }, { '@id': 'a2', severity: 'LOW' }, { '@id': 'a3', severity: 'HIGH' }],
+    [{ status: 'OPEN', anomaly_ref: 'a3' }, { status: 'CLOSED', anomaly_ref: 'a1' }, { status: 'IN_PROGRESS' }],
+  );
+  // a1 est inactive (ticket CLOSED lié), a3 active mais ticket ouvert → active, a2 active
+  assert.equal(k.buildings, 2);
+  assert.equal(k.anomaliesActive, 2); // a2 + a3 (a1 close)
+  assert.equal(k.anomaliesCritical, 1); // a3 haute active
+  assert.equal(k.ticketsOpen, 2); // OPEN + IN_PROGRESS
+});

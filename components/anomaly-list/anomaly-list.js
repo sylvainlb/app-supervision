@@ -15,11 +15,13 @@ export class AnomalyList extends OrbitComponent {
 
   static styles = css`
     ${OrbitComponent.styles}
-    .filters { margin-bottom: 12px; }
-    ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-    li { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: 8px; box-shadow: var(--shadow); padding: 10px 14px; }
-    li .meta { flex: 1; color: #334155; font-size: 0.9rem; }
-    li button { margin-left: auto; }
+    ul { list-style: none; padding: 0; display: grid; gap: 8px; }
+    li.anomaly { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; box-shadow: var(--shadow); }
+    li.anomaly .meta { flex: 1; font-size: 0.88rem; color: #334155; }
+    .badge.sev-HIGH { background: #dc2626; } .badge.sev-CRITICAL { background: #7f1d1d; }
+    .badge.sev-MEDIUM { background: #d97706; } .badge.sev-LOW { background: #6b7280; }
+    .empty { color: var(--muted); padding: 12px; }
+    .filters { margin-bottom: 10px; }
   `;
 
   constructor() {
@@ -39,14 +41,22 @@ export class AnomalyList extends OrbitComponent {
           ${severities.map((s) => html`<option value=${s} ?selected=${s === this.filterSeverity}>${s}</option>`)}
         </select>
       </div>
-      ${rows.length === 0 ? html`<div class="empty">aucune anomalie</div>` : html`
+      ${rows.length === 0 ? html`<div class="empty">Aucune anomalie active — tout est normal.</div>` : html`
       <ul>
-        ${rows.map((a) => html`
-          <li>
-            <span class="badge sev-${String(field(a, 'severity') ?? '').toUpperCase()}">${String(field(a, 'severity') ?? '').toUpperCase()}</span>
-            <span class="meta">${String(anomalyTs(a) ?? '').slice(0, 19).replace('T', ' ')} — ${field(a, 'meter_id')} — z=${field(a, 'z_score') ?? ''}</span>
-            <button @click=${() => this._createTicket(a)}>Créer un ticket</button>
-          </li>`)}
+        ${rows.map((a) => {
+          const sev = String(field(a, 'severity') ?? '').toUpperCase();
+          const sevLabel = { HIGH: 'Élevée', CRITICAL: 'Critique', MEDIUM: 'Moyenne', LOW: 'Faible' }[sev] ?? sev;
+          return html`
+          <li class="anomaly">
+            <span class="badge sev-${sev}">${sevLabel}</span>
+            <span class="meta">
+              <strong>Compteur ${field(a, 'meter_id') ?? '?'}</strong> — détectée le ${String(anomalyTs(a) ?? '').slice(0, 19).replace('T', ' à ')}
+              — écart z=${field(a, 'z_score') ?? '?'} (seuil ~3)
+              ${field(a, 'active_power_kw') != null ? html`<br>puissance mesurée : ${Math.round(field(a, 'active_power_kw') * 10) / 10} kW` : ''}
+            </span>
+            <button @click=${() => this._createTicket(a)}>Créer un ticket d'intervention</button>
+          </li>`;
+        })}
       </ul>`}`;
   }
 

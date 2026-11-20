@@ -60,7 +60,7 @@ test('anomaly-list : filtre sévérité, état vide, bouton « Créer un ticket 
   assert.equal(events.at(-1).query.prefill.anomaly_ref, 'a2');
   el.filterSeverity = 'CRITICAL';
   await el.updateComplete;
-  assert.match(el.shadowRoot.querySelector('.empty').textContent, /aucune anomalie/);
+  assert.match(el.shadowRoot.querySelector('.empty').textContent, /Aucune anomalie active/);
 });
 
 test('ticket-board : colonnes par statut avec compteurs, clic → détail', async () => {

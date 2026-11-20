@@ -20,6 +20,8 @@ import '../components/ticket-board/ticket-board.js';
 import '../components/ticket-detail/ticket-detail.js';
 import '../components/ticket-new/ticket-new.js';
 import '../components/user-admin/user-admin.js';
+import '../components/kpi-summary/kpi-summary.js';
+import '../components/building-header/building-header.js';
 
 declare global {
   interface Window {
@@ -98,21 +100,37 @@ function renderMenu(role: string): void {
   });
 }
 
+function mountInto(parent: HTMLElement, tag: string): void {
+  const el = document.createElement(tag) as HTMLElement & { dataSrc?: string; building?: string; anomaly?: string; webid?: string };
+  if (tag === 'ticket-detail' || tag === 'building-header') el.dataSrc = window.location.pathname;
+  if (tag === 'ticket-new' && lastNav.query?.anomaly) el.anomaly = String(lastNav.query.anomaly);
+  if (tag === 'energy-chart' && window.location.pathname.startsWith('/buildings/')) {
+    el.building = window.location.pathname;
+  }
+  parent.appendChild(el);
+}
+
 function render(): void {
   const app = document.getElementById('app');
   if (!app) return;
   const m = matchPath(window.location.pathname, orbit.routes);
+  const route = m?.route;
   const name = m?.name ?? 'dashboard';
   app.replaceChildren();
-  for (const tag of componentsFor(name, orbit.routes)) {
-    const el = document.createElement(tag) as HTMLElement & { dataSrc?: string; building?: string; anomaly?: string; webid?: string };
-    if (tag === 'ticket-detail') el.dataSrc = window.location.pathname; // /tickets/<pk>
-    if (tag === 'ticket-new' && lastNav.query?.anomaly) el.anomaly = String(lastNav.query.anomaly);
-    if (tag === 'energy-chart' && window.location.pathname.startsWith('/buildings/')) {
-      el.building = window.location.pathname;
+  // Route avec sections titrées (ex. tableau de bord) : <section><h2>…</h2>composants</section>
+  if (route?.sections?.length) {
+    for (const section of route.sections) {
+      const sec = document.createElement('section');
+      sec.className = 'dash-section';
+      const h = document.createElement('h2');
+      h.textContent = section.title;
+      sec.appendChild(h);
+      for (const tag of section.components) mountInto(sec, tag);
+      app.appendChild(sec);
     }
-    app.appendChild(el);
+    return;
   }
+  for (const tag of componentsFor(name, orbit.routes)) mountInto(app, tag);
 }
 
 function renderAll(): void {

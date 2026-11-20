@@ -4,6 +4,8 @@
 import { html, css } from 'lit';
 import { OrbitComponent } from '../boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
+
+const STATUS_LABEL = { OPEN: 'Ouvert', IN_PROGRESS: 'En cours', RESOLVED: 'Résolu', CLOSED: 'Clôturé' };
 import { groupByStatus } from './logic.js';
 
 export class TicketBoard extends OrbitComponent {
@@ -29,7 +31,7 @@ export class TicketBoard extends OrbitComponent {
       <div class="board">
         ${Object.entries(groups).map(([status, tickets]) => html`
           <section class="column" data-status=${status}>
-            <h3>${status} <span class="count">${tickets.length}</span></h3>
+            <h3>${STATUS_LABEL[status] ?? status} <span class="count">${tickets.length}</span></h3>
             ${tickets.map((t) => html`
               <div class="card" @click=${() => this.navigate('ticket-detail', t['@id'])}>
                 <strong>${field(t, 'title')}</strong>
