@@ -21,16 +21,17 @@ export function componentsFor(name, routes) {
   return routes.find((r) => r.name === name)?.components ?? [];
 }
 
-// Libellé utilisateur pour le header, depuis les claims OIDC (webid + role, D-7).
+// Libellé utilisateur pour le header : vrai nom (ressource LDP /users/<id>) si connu,
+// sinon webid/claims OIDC (D-7).
 /**
- * @param {{webid?:string, preferred_username?:string, role?:string}|null|undefined} claims
+ * @param {{name?:string, webid?:string, preferred_username?:string, role?:string}|null|undefined} claims
  * @returns {string}
  */
 export function userLabel(claims) {
   if (!claims) return '';
-  const webid = claims.webid ?? claims.preferred_username ?? '';
+  const name = claims.name ?? claims.webid ?? claims.preferred_username ?? '';
   const role = claims.role ?? '';
-  return role ? `${webid} (${role})` : webid;
+  return role ? `${name} (${role})` : name;
 }
 
 // Menu latéral : libellés FR + visibilité par rôle (spec §8 — le rôle pilote
@@ -38,8 +39,8 @@ export function userLabel(claims) {
 export const LABELS = {
   dashboard: 'Tableau de bord',
   'building-detail': 'Bâtiment',
-  anomalies: 'Anomalies',
-  tickets: 'Tickets',
+  anomalies: 'Anomalies détectées',
+  tickets: "Tickets d'intervention",
   'ticket-new': 'Nouveau ticket',
   'ticket-detail': 'Ticket',
   interventions: 'Mes interventions',

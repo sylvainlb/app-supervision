@@ -24,6 +24,12 @@ export class BuildingMap extends OrbitComponent {
   static styles = css`
     ${OrbitComponent.styles}
     .map { height: 380px; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); background: #aad3df; }
+    /* Pastille bâtiment sur la carte (divIcon Leaflet) */
+    .bmk { background: transparent; border: none; }
+    .bmk-dot {
+      display: block; width: 22px; height: 22px; border-radius: 50%;
+      border: 3px solid #fff; box-shadow: 0 1px 6px rgba(15, 23, 42, 0.5);
+    }
     .leaflet-container { background: #aad3df; } /* tuiles OSM manquantes → fond neutre, pas de blanc cassé */
     .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.82rem; color: var(--muted); margin: 8px 2px 12px; }
     .legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
@@ -85,12 +91,9 @@ export class BuildingMap extends OrbitComponent {
   updated() {
     const L = window.L;
     if (!L) return;
-    // Icônes de marqueurs en URL absolue (la détection auto du chemin échoue en shadow DOM).
-    L.Icon.Default.mergeOptions({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    });
+    // Marqueur = pastille colorée selon l'état (même code couleur que la légende/liste) :
+    // bien visible sur la carte, contrairement à l'icône Leaflet par défaut trop petite.
+    const STATE_COLOR = { [STATE.OK]: '#059669', [STATE.ANOMALY]: '#d97706', [STATE.HIGH]: '#dc2626' };
     const states = computeBuildingStates(this.objects, this.anomalies, this.tickets)
       .filter(({ building }) => typeof field(building, 'lat') === 'number' && typeof field(building, 'lon') === 'number');
     const div = this.renderRoot.querySelector('#map');
@@ -117,8 +120,18 @@ export class BuildingMap extends OrbitComponent {
       this._markers.clearLayers();
       for (const { building, state } of states) {
         const s = STATE_LABEL[state] ?? STATE_LABEL[STATE.OK];
-        const marker = L.marker([field(building, 'lat'), field(building, 'lon')]).addTo(this._markers);
-        marker.bindPopup(`<strong>${field(building, 'name') ?? building['@id']}</strong><br>${s.label} — ${s.desc}`);
+        const color = STATE_COLOR[state] ?? STATE_COLOR[STATE.OK];
+        const name = field(building, 'name') ?? building['@id'];
+        const icon = L.divIcon({
+          className: 'bmk',
+          html: `<span class="bmk-dot" style="background:${color}"></span>`,
+          iconSize: [22, 22],
+          iconAnchor: [11, 11],
+          popupAnchor: [0, -12],
+        });
+        const marker = L.marker([field(building, 'lat'), field(building, 'lon')], { icon, title: name }).addTo(this._markers);
+        marker.bindPopup(`<strong>${name}</strong><br>${s.label} — ${s.desc}`);
+        marker.bindTooltip(name, { direction: 'top', offset: [0, -12] });
         marker.on('click', () => this.navigate('building-detail', building['@id']));
       }
       if (this._markers.getLayers().length) this._map.fitBounds(this._markers.getBounds().pad(0.2));

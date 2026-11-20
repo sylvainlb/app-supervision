@@ -12,6 +12,8 @@ import './styles.css';
 import { config } from './config.js';
 import { installFixtureFallback, installFixtureProxy } from './lib/fixtures.js';
 import { matchPath, componentsFor, menuItems, userLabel } from './lib/router.js';
+import { getJson } from '../components/boilerplate/index.js';
+import { field } from './lib/context.js';
 import orbit from '../orbit.json';
 import '../components/building-map/building-map.js';
 import '../components/energy-chart/energy-chart.js';
@@ -50,6 +52,8 @@ function loginRedirect(): Promise<never> {
     // Bearer (déviation DPoP notée ; le challenge WWW-Authenticate: DPoP reste côté serveur).
     tokenType: 'Bearer',
     handleRedirect: (url: string) => {
+      // scope=openid : offline_access est refusé par Keycloak 26.4 pour ce client
+      // (not_allowed) ; le vrai nom passe par le claim « name » mappé côté client.
       window.location.assign(url.replace('scope=openid%20offline_access', 'scope=openid'));
     },
   }) as Promise<never>;
@@ -63,12 +67,46 @@ function currentRole(): string {
   return window.appRole ?? 'gestionnaire';
 }
 
-// Header : utilisateur connecté (webId OIDC) + déconnexion.
+// Vrai nom de l'utilisateur, mis en cache : d'abord via l'endpoint userinfo OIDC de
+// Keycloak (claims name/given_name — /users/<id> est protégé par ACL, lisible admin
+// seulement), repli sur la ressource LDP si userinfo échoue.
+const userNameCache = new Map<string, string>();
+async function resolveUserName(webid: string): Promise<string> {
+  if (userNameCache.has(webid)) return userNameCache.get(webid) ?? '';
+  let name = '';
+  try {
+    const res = await session.fetch(`${config.oidcIssuer}/protocol/openid-connect/userinfo`);
+    if (res.ok) {
+      const info = (await res.json()) as Record<string, unknown>;
+      name = String(
+        info.name ??
+        [info.given_name, info.family_name].filter(Boolean).join(' ') ??
+        info.preferred_username ?? ''
+      );
+    }
+  } catch { /* repli LDP ci-dessous */ }
+  if (!name) {
+    try {
+      const data = await getJson(new URL(webid).pathname); // ex. /users/1
+      name = String(field(data, 'name') ?? field(data, 'email') ?? '');
+    } catch { /* repli sur le webid */ }
+  }
+  userNameCache.set(webid, name);
+  return name;
+}
+
+// Header : utilisateur connecté (nom réel LDP + rôle) + déconnexion.
 function renderHeader(): void {
   const user = document.getElementById('user');
   if (user) {
     const webid = session.info.isLoggedIn ? session.info.webId ?? '' : '';
-    user.textContent = webid ? userLabel({ webid }) : '';
+    const role = currentRole();
+    user.textContent = webid ? userLabel({ webid, role }) : '';
+    if (webid) {
+      void resolveUserName(webid).then((name) => {
+        if (name) user.textContent = userLabel({ webid, name, role });
+      });
+    }
   }
   const logout = document.getElementById('logout');
   if (logout && !logout.dataset.wired) {
@@ -149,6 +187,12 @@ function render(): void {
       const h = document.createElement('h2');
       h.textContent = section.title;
       sec.appendChild(h);
+      if (section.hint) {
+        const p = document.createElement('p');
+        p.className = 'sec-hint';
+        p.textContent = section.hint;
+        sec.appendChild(p);
+      }
       for (const tag of section.components) mountInto(sec, tag);
       app.appendChild(sec);
     }

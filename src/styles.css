@@ -31,6 +31,7 @@ button { font-family: inherit; }
   padding-bottom: 6px; border-bottom: 2px solid var(--brand); display: inline-block;
 }
 .dash-section { border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; }
+.sec-hint { font-size: 0.85rem; color: var(--muted); margin: -6px 0 14px; max-width: 70ch; }
 
 /* Lien « retour » sur les pages de détail */
 .back-link {

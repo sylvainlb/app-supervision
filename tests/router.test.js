@@ -57,3 +57,8 @@ test('userLabel : webid + rôle depuis les claims OIDC (D-7)', () => {
   assert.equal(userLabel(null), '');
   assert.equal(userLabel({}), '');
 });
+
+test('userLabel : vrai nom LDP prioritaire sur le webid', () => {
+  assert.equal(userLabel({ name: 'Alice Gestionnaire', webid: 'http://localhost/users/1', role: 'gestionnaire' }), 'Alice Gestionnaire (gestionnaire)');
+  assert.equal(userLabel({ name: 'Karim Aziz' }), 'Karim Aziz');
+});

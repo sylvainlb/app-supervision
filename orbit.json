@@ -46,6 +46,7 @@
         },
         {
           "title": "Anomalies détectées",
+          "hint": "Détections automatiques du système (données gold, lecture seule). Pour agir sur une anomalie, cliquez sur « Créer un ticket d'intervention » : un ticket est une action humaine suivie jusqu'à sa clôture.",
           "components": [
             "anomaly-list"
           ]
@@ -69,6 +70,15 @@
       "roles": [
         "gestionnaire"
       ],
+      "sections": [
+        {
+          "title": "Anomalies détectées",
+          "hint": "Ce sont des détection automatiques (lecture seule) : on ne peut pas les modifier ici. Chaque anomalie peut être transformée en ticket d'intervention.",
+          "components": [
+            "anomaly-list"
+          ]
+        }
+      ],
       "components": [
         "anomaly-list"
       ]
@@ -78,6 +88,15 @@
       "path": "/tickets",
       "roles": [
         "gestionnaire"
+      ],
+      "sections": [
+        {
+          "title": "Tickets d'intervention",
+          "hint": "Les tickets sont les actions créées par l'équipe (manuellement ou depuis une anomalie) : assignation, suivi de statut (ouvert → en cours → résolu → clôturé).",
+          "components": [
+            "ticket-board"
+          ]
+        }
       ],
       "components": [
         "ticket-board"
