@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.POD_URL': JSON.stringify(podUrl),
       'import.meta.env.OIDC_ISSUER': JSON.stringify(env.OIDC_ISSUER ?? ''),
       'import.meta.env.OIDC_CLIENT_ID': JSON.stringify(env.OIDC_CLIENT_ID ?? ''),
+      'import.meta.env.VITE_FIXTURES': JSON.stringify(env.VITE_FIXTURES ?? '1'),
     },
     server: {
       port: 5173,

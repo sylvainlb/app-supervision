@@ -5,4 +5,6 @@ export const config = {
   oidcIssuer: import.meta.env.OIDC_ISSUER as string,
   // Client front pré-enregistré statiquement dans le realm Keycloak (décision D-7).
   oidcClientId: (import.meta.env.OIDC_CLIENT_ID as string) ?? 'fap-light-ui',
+  // Fixtures de démo actives sauf VITE_FIXTURES=0 (repli si le back ne répond pas).
+  fixtures: (import.meta.env.VITE_FIXTURES as string) ?? '1',
 };

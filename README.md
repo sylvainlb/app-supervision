@@ -52,6 +52,28 @@ POD_URL=https://<pod> OIDC_ISSUER=https://<pod>/auth/realms/fap-light npm run bu
 # copier dist/ sur le serveur, route caddy /app/* → statique (spec front §13.6)
 ```
 
+## Authentification OIDC
+
+Login via `@inrupt/solid-client-authn-browser` (login direct avec `clientId` statique
+`fap-light-ui` — Keycloak ne supporte pas le dynamic registration, décision D-7) :
+- pas de session au chargement → redirect automatique vers
+  `https://app.localhost/auth/realms/fap-light/protocol/openid-connect/auth` ;
+- 401 du LDP → purge du cache sibStore + re-login ;
+- `fetch` authentifié (DPoP) injecté dans `window.sibStore.fetchAuthn` (§13.7).
+`<sib-auth>` sert à la restauration de session et à l'affichage du webId.
+Note : `overrides` npm épinglent `@inrupt/oidc-client-ext`/`solid-client-authn-core`
+à 1.11.2 (aligné sur `@inrupt/solid-client-authn-browser@1.11.2`, sinon
+`removeOidcQueryParam is not a function`).
+
+## Fixtures de démo
+
+Si le back ne répond pas (LDP 404/500, réseau coupé), le front retombe sur des
+**données exemple** (`src/lib/fixtures.js`) : 4 bâtiments géolocalisés (Lyon), 4 tickets
+tous statuts, 4 anomalies, commentaires, utilisateurs, et séries horaires synthétiques
+pour le proxy `/app/query`. Dès que le back répond, les vraies données repassent devant.
+Désactivable : `VITE_FIXTURES=0` dans `.env`. Les mutations (POST/PATCH/DELETE) restent
+en mémoire de session.
+
 ## Tests de conformité
 
 ```sh
