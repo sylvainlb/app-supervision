@@ -45,6 +45,7 @@ export const LABELS = {
   'ticket-detail': 'Ticket',
   interventions: 'My interventions',
   admin: 'Administration',
+  store: 'App store',
 };
 
 // route visible si le rôle y est autorisé, ou si admin (voit tout).

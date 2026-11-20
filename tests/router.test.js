@@ -43,9 +43,9 @@ test('menuItems : libellés FR, pas de routes de détail, visibilité par rôle 
   const all = menuItems(routes, 'gestionnaire');
   assert.ok(!all.some((i) => i.name === 'ticket-detail' || i.name === 'building-detail'), 'pas de routes :id dans le menu');
   const gest = all.filter((i) => i.visible).map((i) => i.name);
-  assert.deepEqual(gest, ['dashboard', 'anomalies', 'tickets', 'ticket-new']);
+  assert.deepEqual(gest, ['dashboard', 'anomalies', 'tickets', 'ticket-new', 'store']); // route /store (app store) visible par tous les rôles authentifiés
   const tech = menuItems(routes, 'technicien').filter((i) => i.visible).map((i) => i.name);
-  assert.deepEqual(tech, ['interventions']);
+  assert.deepEqual(tech, ['interventions', 'store']); // /store : tout utilisateur authentifié (§1.6.2)
   const admin = menuItems(routes, 'admin').filter((i) => i.visible).map((i) => i.name);
   assert.ok(admin.includes('admin') && admin.includes('dashboard'), 'admin voit tout');
   assert.ok(all.every((i) => i.label && i.label.length > 0), 'chaque entrée a un libellé');

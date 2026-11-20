@@ -41,6 +41,60 @@ export const FIXTURES = {
       { '@id': `${POD}/tickets/10`, 'tickets:title': 'Outage, East Workshop', 'tickets:description': 'Outage on M-LYO-004, resolved.', 'tickets:status': 'CLOSED', 'tickets:priority': 'MEDIUM', 'tickets:building_id': `${POD}/buildings/4`, 'tickets:anomaly_ref': null, 'tickets:created_by': `${POD}/users/3`, 'tickets:assigned_to': `${POD}/users/2`, 'tickets:created_at': '2026-11-18T08:00:00Z', 'tickets:updated_at': '2026-11-19T07:00:00Z' },
     ],
   },
+  // App store (app-store-spec.md) : catalogue des features + prefs de l'user 1.
+  // Le seed réel est app-specific (fourni via le model.json de l'app) ; ici une
+  // démo couvrant les routes de l'app + l'entrée /store elle-même.
+  '/features/': {
+    '@id': `${POD}/features/`,
+    'ldp:contains': [
+      { '@id': `${POD}/features/building-map` },
+      { '@id': `${POD}/features/anomaly-list` },
+      { '@id': `${POD}/features/ticket-board` },
+      { '@id': `${POD}/features/user-admin` },
+      { '@id': `${POD}/features/app-store` },
+    ],
+  },
+  '/features/building-map': {
+    '@id': `${POD}/features/building-map`, slug: 'building-map',
+    title_i18n: { fr: 'Tableau de bord' }, description_i18n: { fr: 'Carte du parc et état des anomalies.' },
+    icon: 'dashboard', menu_order: 10, role_min: 'all', component: 'building-map', route: '/',
+    config_schema: { fields: [] }, default_enabled: true,
+  },
+  '/features/anomaly-list': {
+    '@id': `${POD}/features/anomaly-list`, slug: 'anomaly-list',
+    title_i18n: { fr: 'Anomalies' }, description_i18n: { fr: 'Détections automatiques (gold, read-only).' },
+    icon: 'warning', menu_order: 20, role_min: 'gestionnaire', component: 'anomaly-list', route: '/anomalies',
+    config_schema: { fields: [{ key: 'severity_min', label: 'Sévérité min', type: 'enum', options: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'], default: 'LOW' }] },
+    default_enabled: true,
+  },
+  '/features/ticket-board': {
+    '@id': `${POD}/features/ticket-board`, slug: 'ticket-board',
+    title_i18n: { fr: 'Tickets' }, description_i18n: { fr: 'Interventions : assignation et suivi des statuts.' },
+    icon: 'confirmation_number', menu_order: 30, role_min: 'gestionnaire', component: 'ticket-board', route: '/tickets',
+    config_schema: { fields: [] }, default_enabled: true,
+  },
+  '/features/user-admin': {
+    '@id': `${POD}/features/user-admin`, slug: 'user-admin',
+    title_i18n: { fr: 'Administration' }, description_i18n: { fr: 'Utilisateurs et rôles (admin).' },
+    icon: 'admin_panel_settings', menu_order: 90, role_min: 'admin', component: 'user-admin', route: '/admin',
+    config_schema: { fields: [] }, default_enabled: true,
+  },
+  '/features/app-store': {
+    '@id': `${POD}/features/app-store`, slug: 'app-store',
+    title_i18n: { fr: 'App store' }, description_i18n: { fr: 'Activer/configurer les fonctionnalités.' },
+    icon: 'storefront', menu_order: 100, role_min: 'all', component: 'app-store', route: '/store',
+    config_schema: { fields: [] }, default_enabled: true,
+  },
+  '/prefs/1': {
+    '@id': `${POD}/prefs/1`,
+    prefs: {
+      'building-map': { enabled: true, config: {} },
+      'anomaly-list': { enabled: true, config: { severity_min: 'LOW' } },
+      'ticket-board': { enabled: true, config: {} },
+      'user-admin': { enabled: true, config: {} },
+      'app-store': { enabled: true, config: {} },
+    },
+  },
   '/tickets/7/comments/': {
     '@id': `${POD}/tickets/7/comments/`,
     'ldp:contains': [
@@ -126,18 +180,64 @@ export function installFixtureFallback(store, { enabled = true } = {}) {
   return store;
 }
 
-// Repli fixture pour le proxy /app/query (fetchAuthn) : renvoie des séries horaires synth.
+// Repli fixture pour fetchAuthn : /app/query → séries horaires synth ; toute autre
+// requête LDP (GET /features/, /prefs/<pk>, ressources des conteneurs…) retombe sur
+// les FIXTURES si le back ne répond pas (réseau coupé ou statut >= 400, sauf 401
+// qu'on laisse passer pour le handler global de refresh/login). PATCH applique un
+// merge-patch RFC 7386 en mémoire sur la ressource fixture.
 export function installFixtureProxy(fetchFn, { enabled = true } = {}) {
   if (!enabled) return fetchFn;
-  return async (url, init) => {
-    if (url === '/app/query' || url.endsWith('/app/query')) {
+  const data = structuredClone(FIXTURES);
+  const pathOf = (url) => {
+    const u = new URL(String(url), POD);
+    return u.pathname.replace(/\/+$/, '') + (String(url).endsWith('/') ? '/' : '');
+  };
+  const findResource = (path) => {
+    if (data[path]) return data[path];
+    for (const key of Object.keys(data)) {
+      const list = data[key]?.['ldp:contains'];
+      if (Array.isArray(list)) {
+        const item = list.find((x) => x['@id'] === `${POD}${path}`);
+        if (item) return item;
+      }
+    }
+    return null;
+  };
+  const mergePatch = (target, patch) => { // RFC 7386 récursif
+    for (const [k, v] of Object.entries(patch ?? {})) {
+      if (v === null) delete target[k];
+      else if (v && typeof v === 'object' && !Array.isArray(v) &&
+               target[k] && typeof target[k] === 'object' && !Array.isArray(target[k])) mergePatch(target[k], v);
+      else target[k] = v;
+    }
+    return target;
+  };
+  let seq = 0;
+  return async (url, init = {}) => {
+    const u = String(url);
+    if (u === '/app/query' || u.endsWith('/app/query')) {
       try {
-        const res = await fetchFn(url, init);
+        const res = await fetchFn(u, init);
         if (res.ok) return res; // le back répond → source de vérité
       } catch { /* réseau coupé → fixture */ }
       const { assetId, from, to } = JSON.parse(init.body);
       return { ok: true, status: 200, json: async () => fixtureProxyResponse(assetId, from, to) };
     }
-    return fetchFn(url, init);
+    try {
+      const res = await fetchFn(u, init);
+      if (res.ok) return res;          // back = source de vérité
+      if (res.status === 401) return res; // laisse passer le handler 401 global (login)
+    } catch { /* réseau coupé → fixture */ }
+    const path = pathOf(u);
+    const method = init.method ?? 'GET';
+    if (method === 'GET') {
+      const r = findResource(path);
+      if (r) return { ok: true, status: 200, headers: { get: (h) => (h === 'etag' ? `"fx${++seq}"` : null) }, json: async () => structuredClone(r) };
+    }
+    if (method === 'PATCH' && path.match(/^\/prefs\/\d+$/) && data[path]) {
+      mergePatch(data[path], JSON.parse(init.body ?? '{}')); // forme R1 : {"prefs": {…}}
+      return { ok: true, status: 200, headers: { get: (h) => (h === 'etag' ? `"fx${++seq}"` : null) }, json: async () => structuredClone(data[path]) };
+    }
+    return { ok: false, status: 404, headers: { get: () => null }, json: async () => ({ error: 'not found (fixture fallback)' }) };
   };
 }

@@ -143,6 +143,18 @@
       "components": [
         "user-admin"
       ]
+    },
+    {
+      "name": "store",
+      "path": "/store",
+      "roles": [
+        "gestionnaire",
+        "technicien",
+        "admin"
+      ],
+      "components": [
+        "app-store"
+      ]
     }
   ],
   "components": {
@@ -158,6 +170,8 @@
     "solid-ac-checker": "@startinblox/core",
     "solid-router": "@startinblox/core",
     "kpi-summary": "components/kpi-summary/kpi-summary.js",
-    "building-header": "components/building-header/building-header.js"
+    "building-header": "components/building-header/building-header.js",
+    "app-store": "components/app-store/app-store.js",
+    "app-menu": "components/app-menu/app-menu.js"
   }
 }

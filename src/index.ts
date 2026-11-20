@@ -24,6 +24,10 @@ import '../components/ticket-new/ticket-new.js';
 import '../components/user-admin/user-admin.js';
 import '../components/kpi-summary/kpi-summary.js';
 import '../components/building-header/building-header.js';
+// App store (app-store-spec.md v0.4) : helpers window.appStore + blox <app-menu>/<app-store>.
+import { appStore } from '../components/shared/app-store-api.js';
+import '../components/app-menu/app-menu.js';
+import '../components/app-store/app-store.js';
 
 declare global {
   interface Window {
@@ -39,14 +43,16 @@ declare global {
 // de toute façon émis). Via handleRedirect, sans patcher la librairie.
 const session = new Session();
 
-function loginRedirect(): Promise<never> {
+function loginRedirect(redirectPath?: string): Promise<never> {
   return session.login({
     oidcIssuer: config.oidcIssuer,
     clientId: config.oidcClientId,
     // URL de retour PROPRE (sans query) : repartir de location.href réinjecterait
     // ?code=…&session_state=… dans redirect_uri → l'URL grossit à chaque boucle et
     // Keycloak finit par la rejeter (> 4000 car. → invalid_redirect_uri).
-    redirectUrl: window.location.origin + window.location.pathname,
+    // redirectPath (boot) = deep link demandé : la lib ayant pu réécrire l'URL vers
+    // l'ancien callback '/', on ne se fie pas à location.pathname ici.
+    redirectUrl: window.location.origin + (redirectPath ?? window.location.pathname),
     // Le FAP-LDP valide les tokens via userinfo en « Bearer » (fap-ldp ldp-container.js) :
     // un token DPoP-bound (cnf) est refusé par userinfo → 401. On demande donc un token
     // Bearer (déviation DPoP notée ; le challenge WWW-Authenticate: DPoP reste côté serveur).
@@ -129,6 +135,15 @@ const MENU_ICONS: Record<string, string> = {
 function renderMenu(role: string): void {
   const nav = document.getElementById('menu');
   if (!nav) return;
+  // Menu dynamique généré depuis les prefs (app-store-spec §1.6.1) quand le
+  // catalogue /features/ est servi par le back ; sinon menu statique de secours.
+  if ((window as unknown as { __appStoreOK?: boolean }).__appStoreOK) {
+    nav.replaceChildren();
+    const el = document.createElement('app-menu');
+    el.setAttribute('theme', 'dark');
+    nav.appendChild(el);
+    return;
+  }
   const current = window.location.pathname;
   const links = menuItems(orbit.routes, role)
     .filter((item) => item.visible)
@@ -177,6 +192,15 @@ function render(): void {
   const route = m?.route;
   const name = m?.name ?? 'dashboard';
   app.replaceChildren();
+  // App store non déployé côté back (GET /features/ → 404) : panneau explicite
+  // au lieu du composant, qui sinon afficherait une erreur sèche.
+  if (name === 'store' && !(window as unknown as { __appStoreOK?: boolean }).__appStoreOK) {
+    const p = document.createElement('p');
+    p.className = 'error';
+    p.textContent = "App store indisponible : GET /features/ → 404 côté serveur. Intégrer app-store/model/app-store.model.json au model.json de l'app (boot) + sql/012_backfill_prefs.sql (rôle admin) + seed 101_seed_demo.sql, ou lancer en démo avec VITE_FIXTURES=1.";
+    app.appendChild(p);
+    return;
+  }
   // Pages de détail (chemin avec paramètre) : lien « retour » vers la liste d'origine.
   if (route?.path.includes(':')) {
     const back = backTarget(name, currentRole());
@@ -256,22 +280,45 @@ async function main(): Promise<void> {
   await window.orbit.ready;
   // Session OIDC D'ABORD (callback ?code=… ou restauration) : les composants ne sont
   // montés qu'une fois la session connue, sinon leurs appels LDP partent en 401.
+  // On mémorise l'URL de boot : restorePreviousSession réécrit l'URL vers l'URL de
+  // redirect mémorisée (ex. « / ») via replaceState — il faut restaurer le deep link
+  // demandé (ex. /store, /tickets/22) quand on n'était PAS sur un callback ?code=….
+  const bootUrl = window.location.pathname + window.location.search;
+  const wasCallback = new URLSearchParams(window.location.search).has('code');
   try {
     await session.handleIncomingRedirect({ restorePreviousSession: true });
   } catch (err) {
     console.warn('[app-supervision] handleIncomingRedirect en erreur :', err);
   }
+  // La lib peut récrire l'URL (replaceState vers l'URL de callback mémorisée) un tick
+  // APRÈS la résolution de sa promesse : on attend, puis on restaure le deep link demandé.
+  if (!wasCallback) {
+    await new Promise((r) => setTimeout(r, 150));
+    if (window.location.pathname + window.location.search !== bootUrl) {
+      window.history.replaceState({}, '', bootUrl);
+    }
+  }
   if (!session.info.isLoggedIn) {
     // Pas de session : on rend le shell (jamais de page blanche) puis on redirige.
     document.dispatchEvent(new CustomEvent('orbit-ready'));
     renderAll();
-    await loginRedirect(); // navigue vers Keycloak
+    await loginRedirect(wasCallback ? undefined : bootUrl); // navigue vers Keycloak
     return;
   }
+  // App store : helpers configurés avec la session (§1.9.12 — webid → /prefs/<pk>),
+  // puis catalogue + prefs chargées. Si /features/ n'est pas servi (app-store non
+  // déployé côté back), __appStoreOK=false → menu statique de secours.
+  appStore.configure({
+    podUrl: config.podUrl,
+    getWebid: () => session.info.webId ?? '',
+    getRole: () => currentRole(),
+  });
+  (window as unknown as { __appStoreOK?: boolean }).__appStoreOK =
+    await appStore.refresh().then(() => true).catch(() => false);
   // Le shell est rendu QUOI QU'IL ARRIVE : une erreur ne doit pas laisser une page blanche.
   document.dispatchEvent(new CustomEvent('orbit-ready'));
   renderAll();
-  console.info(`[app-supervision] pod=${config.podUrl} issuer=${config.oidcIssuer} webid=${session.info.webId ?? ''}`);
+  console.info(`[app-supervision] pod=${config.podUrl} issuer=${config.oidcIssuer} webid=${session.info.webId ?? ''} appStore=${(window as unknown as { __appStoreOK?: boolean }).__appStoreOK}`);
 }
 
 // Clic sur un lien « retour » (rendu dans #app) → même navigation que le menu.
