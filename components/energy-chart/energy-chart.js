@@ -3,9 +3,10 @@
 // window (24h | 7d | 30d). Hourly → proxy POST /app/query (§13.3, C1.9) ; agrégats → conteneur LDP publié.
 // Badge de fraîcheur RG-4. Chart.js si disponible (window.Chart), sinon tableau repli.
 import { html, css } from 'lit';
-import { OrbitComponent } from '../boilerplate/index.js';
+import { OrbitComponent, resolveMembers, getJson } from '../boilerplate/index.js';
+import { field } from '../../src/lib/context.js';
 import { queryGold } from '../../src/lib/gold-access.js';
-import { metricAccess, metricQuery, buildSeries, formatFreshness, latestTimestamp, WINDOWS } from './logic.js';
+import { metricAccess, selectWindow, buildSeries, formatFreshness, latestTimestamp, WINDOWS } from './logic.js';
 
 export class EnergyChart extends OrbitComponent {
   static properties = {
@@ -39,12 +40,14 @@ export class EnergyChart extends OrbitComponent {
       // Ne jamais extraire la méthode (perd le `this`) : wrapper résolu à l'appel.
       const fetchFn = (u, i) => (window.sibStore?.fetchAuthn ?? fetch)(u, i);
       const res = await queryGold(fetchFn, this._proxyParams());
-      this.rows = res.rows ?? [];
+      // Le proxy renvoie {columns, rows} avec rows = tableaux positionnels → objets.
+      const cols = res.columns ?? [];
+      this.rows = (res.rows ?? []).map((r) => (Array.isArray(r) ? Object.fromEntries(cols.map((c, i) => [c, r[i]])) : r));
     } else {
-      const data = await window.sibStore.getData(access.container);
-      const rows = data?.['ldp:contains'] ?? [];
+      const data = await getJson(access.container);
+      const rows = await resolveMembers(data);
       this.rows = this.building
-        ? rows.filter((r) => r.meter_id === this.building || r.building === this.building)
+        ? rows.filter((r) => field(r, 'meter_id') === this.building || field(r, 'building') === this.building)
         : rows;
     }
     this._renderChart();
@@ -52,8 +55,10 @@ export class EnergyChart extends OrbitComponent {
   }
 
   _proxyParams() {
-    const req = metricQuery(this.metric, this.window);
-    return JSON.parse(req.body); // {assetId, from, to}
+    // assetId = nom du metric (net_grid_hourly…) ; buildProxyRequest fait le mapping
+    // vers l'id catalogue DSP (dataset:facis:…) — ne pas mapper deux fois.
+    const { from, to } = selectWindow(this.window);
+    return { assetId: this.metric, from, to };
   }
 
   isEmpty() {

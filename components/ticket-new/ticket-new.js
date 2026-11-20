@@ -1,7 +1,8 @@
 // ticket-new — formulaire de création de ticket (spec front §7.4 : pré-rempli depuis
 // ?anomaly=<@id> : titre + tickets:anomaly_ref). POST /tickets/ puis retour à la liste.
 import { LitElement, html, css } from 'lit';
-import { sharedStyles } from '../boilerplate/index.js';
+import { sharedStyles , resolveMembers, getJson } from '../boilerplate/index.js';
+import { field } from '../../src/lib/context.js';
 import { validateTicket, buildTicketPayload, PRIORITIES } from './logic.js';
 
 export class TicketNew extends LitElement {
@@ -34,8 +35,8 @@ export class TicketNew extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    window.sibStore.getData('/buildings/').then((d) => {
-      this.buildings = d?.['ldp:contains'] ?? [];
+    getJson('/buildings/').then((d) => resolveMembers(d)).then((rows) => {
+      this.buildings = rows;
     });
     if (this.anomaly) {
       this.form = { ...this.form, title: `Anomalie ${this.anomaly}` };
@@ -61,7 +62,7 @@ export class TicketNew extends LitElement {
         <label>bâtiment
           <select @change=${(e) => { this.form = { ...this.form, building_id: e.target.value }; }}>
             <option value="">— choisir —</option>
-            ${this.buildings.map((b) => html`<option value=${b['@id']}>${b['buildings:name'] ?? b['@id']}</option>`)}
+            ${this.buildings.map((b) => html`<option value=${b['@id']}>${field(b, 'name') ?? b['@id']}</option>`)}
           </select>
         </label>
         <label>priorité

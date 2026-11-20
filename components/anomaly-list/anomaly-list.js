@@ -3,7 +3,8 @@
 // « Créer un ticket » → requestNavigation route ticket-new avec ?anomaly=<@id> (pré-remplit anomaly_ref).
 import { html, css } from 'lit';
 import { OrbitComponent } from '../boilerplate/index.js';
-import { filterAnomalies, ticketPrefill } from './logic.js';
+import { field } from '../../src/lib/context.js';
+import { filterAnomalies, ticketPrefill, anomalyTs } from './logic.js';
 
 export class AnomalyList extends OrbitComponent {
   static properties = {
@@ -30,7 +31,7 @@ export class AnomalyList extends OrbitComponent {
 
   renderContent() {
     const rows = filterAnomalies(this.objects, { severity: this.filterSeverity || undefined, building: this.filterBuilding || undefined });
-    const severities = [...new Set(this.objects.map((a) => a.severity).filter(Boolean))];
+    const severities = [...new Set(this.objects.map((a) => String(field(a, 'severity') ?? '').toUpperCase()).filter(Boolean))];
     return html`
       <div class="filters">
         <select @change=${(e) => { this.filterSeverity = e.target.value; }}>
@@ -42,8 +43,8 @@ export class AnomalyList extends OrbitComponent {
       <ul>
         ${rows.map((a) => html`
           <li>
-            <span class="badge sev-${a.severity}">${a.severity}</span>
-            <span class="meta">${a.ts} — ${a.meter_id} — ${a.type}</span>
+            <span class="badge sev-${String(field(a, 'severity') ?? '').toUpperCase()}">${String(field(a, 'severity') ?? '').toUpperCase()}</span>
+            <span class="meta">${String(anomalyTs(a) ?? '').slice(0, 19).replace('T', ' ')} — ${field(a, 'meter_id')} — z=${field(a, 'z_score') ?? ''}</span>
             <button @click=${() => this._createTicket(a)}>Créer un ticket</button>
           </li>`)}
       </ul>`}`;

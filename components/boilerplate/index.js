@@ -7,6 +7,35 @@
 import { LitElement, html, css } from 'lit';
 import { Task } from '@lit/task';
 
+// Lecture JSON-LD BRUTE via le fetch authentifié injecté dans sibStore (§13.7 :
+// point d'injection unique window.sibStore.fetchAuthn — DPoP/Bearer + réécriture
+// absolue vers POD_URL + repli fixtures faits dans index.ts).
+// On n'utilise PAS sibStore.getData() ici : il renvoie des proxies CustomGetter dont
+// les champs ne sont lisibles qu'en async via get(path) — illisible pour nos blox custom.
+export async function getJson(url) {
+  const fetchFn = window.sibStore?.fetchAuthn ?? fetch;
+  const res = await fetchFn(url, { headers: { accept: 'application/ld+json' } });
+  if (!res.ok) {
+    const err = new Error(`GET ${url} → ${res.status}`);
+    err.status = res.status;
+    try { err.body = await res.json(); } catch { /* body pas JSON */ }
+    throw err;
+  }
+  return res.json();
+}
+
+// Résout les membres d'un conteneur LDP (qui ne liste que des @id) en ressources
+// complètes via getJson(@id). Membres déjà complets (fixtures) inchangés.
+export async function resolveMembers(data) {
+  const members = data?.['ldp:contains'] ?? (Array.isArray(data) ? data : []);
+  return Promise.all(members.map(async (m) => {
+    if (m && typeof m === 'object' && m['@id'] && Object.keys(m).filter((k) => k !== '@id' && k !== '@type').length === 0) {
+      try { return await getJson(m['@id']); } catch { return m; }
+    }
+    return m;
+  }));
+}
+
 export const sharedStyles = css`    :host {
     --brand: #0d9488; --brand-dark: #115e59; --ink: #0f172a; --muted: #64748b;
     --border: #e2e8f0; --shadow: 0 1px 2px rgba(15,23,42,.06), 0 4px 14px rgba(15,23,42,.05);
@@ -107,9 +136,9 @@ export class OrbitComponent extends ComponentObjectsHandler {
 
   // Hook de chargement — à surcharger. Alimenter this.object / this.objects.
   async load() {
-    const data = await window.sibStore.getData(this.dataSrc);
-    const members = data?.['ldp:contains'] ?? (Array.isArray(data) ? data : []);
-    this.objects = members.filter((m) => this.hasType(m));
+    const data = await getJson(this.dataSrc);
+    const resolved = await resolveMembers(data);
+    this.objects = resolved.filter((m) => this.hasType(m));
     this.object = this.isType(data) ? data : null;
     return data;
   }

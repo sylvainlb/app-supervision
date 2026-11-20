@@ -39,8 +39,8 @@ test('anomaly-list : filtres + tri date desc + pré-remplissage ticket', () => {
   assert.deepEqual(filterAnomalies(anomalies, { building: 'M1' }).map((a) => a['@id']), ['a3', 'a1']);
   assert.deepEqual(filterAnomalies(anomalies, { from: '2026-11-19T09:30:00Z' }).map((a) => a['@id']), ['a3']);
   const prefill = ticketPrefill(anomalies[1]);
-  assert.equal(prefill['tickets:anomaly_ref'], 'a2');
-  assert.match(prefill['tickets:title'], /spike/);
+  assert.equal(prefill.anomaly_ref, 'a2');
+  assert.match(prefill.title, /spike/);
 });
 
 test('ticket-board : groupage par statut + tri priorité puis date desc', () => {
@@ -62,13 +62,13 @@ test('ticket-detail : transitions autorisées + patch merge-patch + commentaire'
   const open = { 'tickets:status': 'OPEN', 'tickets:assigned_to': 'https://pod/users/tech1' };
   const t = allowedTransitions(open, 'technicien', { assigned: true });
   assert.deepEqual(t.map((x) => x.to), ['IN_PROGRESS']);
-  assert.deepEqual(t[0].patch, { 'tickets:status': 'IN_PROGRESS' });
-  assert.deepEqual(transitionPatch('RESOLVED'), { 'tickets:status': 'RESOLVED' });
+  assert.deepEqual(t[0].patch, { status: 'IN_PROGRESS' });
+  assert.deepEqual(transitionPatch('RESOLVED'), { status: 'RESOLVED' });
   assert.equal(allowedTransitions(open, 'technicien', { assigned: false }).length, 0);
   assert.deepEqual(allowedTransitions({ 'tickets:status': 'RESOLVED' }, 'gestionnaire').map((x) => x.to).sort(), ['CLOSED', 'IN_PROGRESS']);
   const c = commentPayload('RAS', 'https://pod/users/tech1', new Date('2026-11-19T12:00:00Z'));
-  assert.equal(c['comments:author'], 'https://pod/users/tech1');
-  assert.equal(c['comments:ts'], '2026-11-19T12:00:00.000Z');
+  assert.equal(c.author, 'https://pod/users/tech1');
+  assert.equal(c.ts, '2026-11-19T12:00:00.000Z');
 });
 
 test('energy-chart : fenêtres, voie d accès, requête proxy, séries signées, fraîcheur', () => {
@@ -79,7 +79,8 @@ test('energy-chart : fenêtres, voie d accès, requête proxy, séries signées,
   assert.deepEqual(metricAccess('energy_cost_daily'), { via: 'ldp', container: '/gold/energy_cost_daily/' });
   const req = metricQuery('net_grid_hourly', '7d', now);
   assert.equal(req.url, '/app/query');
-  assert.equal(JSON.parse(req.body).assetId, 'net_grid_hourly');
+  assert.equal(JSON.parse(req.body).assetId, 'dataset:facis:net-grid-hourly');
+  assert.equal(JSON.parse(req.body).agreement, 'agreement:interne:contrat-cadre');
   const rows = [
     { ts_hour: '2026-11-19T10:00:00Z', net_grid_kw: 5 },
     { ts_hour: '2026-11-19T11:00:00Z', net_grid_kw: -2 },
@@ -96,7 +97,7 @@ test('energy-chart : queryGold appelle /app/query et gère 429', async () => {
   const fetchFn = async (url, init) => { calls.push([url, init]); return { ok: true, status: 200, json: async () => ({ rows: [] }) }; };
   await queryGold(fetchFn, { assetId: 'net_grid_hourly', from: 'a', to: 'b' });
   assert.equal(calls[0][0], '/app/query');
-  assert.deepEqual(JSON.parse(calls[0][1].body), { assetId: 'net_grid_hourly', from: 'a', to: 'b' });
+  assert.deepEqual(JSON.parse(calls[0][1].body), { agreement: 'agreement:interne:contrat-cadre', assetId: 'dataset:facis:net-grid-hourly', from: 'a', to: 'b' });
   const fetch429 = async () => ({ ok: false, status: 429, json: async () => ({}) });
   await assert.rejects(() => queryGold(fetch429, { assetId: 'net_grid_hourly', from: 'a', to: 'b' }), (e) => e.status === 429);
 });
@@ -109,12 +110,12 @@ test('ticket-new : RG-1 (bâtiment requis) + payload JSON-LD avec anomaly_ref', 
     title: 'Anomalie a2', description: 'd', priority: 'HIGH',
     building_id: '/buildings/2', anomaly_ref: 'a2', created_by: 'https://app.localhost/users/1',
   });
-  assert.equal(p['tickets:anomaly_ref'], 'a2');
-  assert.equal(p['tickets:priority'], 'HIGH');
-  assert.equal(p['tickets:building_id'], '/buildings/2');
+  assert.equal(p.anomaly_ref, 'a2');
+  assert.equal(p.priority, 'HIGH');
+  assert.equal(p.building_id, '/buildings/2');
   const p2 = buildTicketPayload({ title: 'T', building_id: '/buildings/1' });
-  assert.equal('tickets:anomaly_ref' in p2, false); // anomaly_ref facultatif (RG-1)
-  assert.equal(p2['tickets:priority'], 'MEDIUM'); // défaut §13.2
+  assert.equal('anomaly_ref' in p2, false); // anomaly_ref facultatif (RG-1)
+  assert.equal(p2.priority, 'MEDIUM'); // défaut §13.2
 });
 
 test('user-admin : validation webid IRI + rôle', () => {
@@ -122,5 +123,5 @@ test('user-admin : validation webid IRI + rôle', () => {
   assert.ok(validateUser({ webid: 'pas-une-iri', name: 'U1', role: 'admin' }).some((e) => e.includes('webid')));
   assert.ok(validateUser({ webid: 'https://pod/users/u1', name: '', role: 'admin' }).some((e) => e.includes('name')));
   assert.ok(validateUser({ webid: 'https://pod/users/u1', name: 'U1', role: 'superadmin' }).some((e) => e.includes('rôle')));
-  assert.deepEqual(userPayload({ webid: 'https://pod/users/u1', name: 'U1', email: 'u1@x.io', role: 'technicien' })['users:role'], 'technicien');
+  assert.deepEqual(userPayload({ webid: 'https://pod/users/u1', name: 'U1', email: 'u1@x.io', role: 'technicien' }).role, 'technicien');
 });

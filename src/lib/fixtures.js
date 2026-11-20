@@ -1,8 +1,9 @@
 // Fixtures de démonstration — données exemple quand le back ne répond pas
 // (LDP 404/500 ou réseau) ; activées par défaut en dev (VITE_FIXTURES != '0').
 // Le back reste la source de vérité : dès qu'il répond, les vraies données passent.
+import { config } from '../config.js';
 
-const POD = 'https://app.localhost';
+const POD = config.podUrl.replace(/\/+$/, '') || 'http://localhost'; // base absolue requise par new URL() sous Node (tests)
 
 export const FIXTURES = {
   '/users/': {

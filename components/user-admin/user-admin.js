@@ -2,6 +2,7 @@
 // Data : /users/ (ACL/RLS). CRUD via store.post/put/delete ; webid = IRI déréférençable.
 import { html, css } from 'lit';
 import { OrbitComponent } from '../boilerplate/index.js';
+import { field } from '../../src/lib/context.js';
 import { ROLES } from '../../src/lib/transitions.js';
 import { validateUser, userPayload } from './logic.js';
 
@@ -52,8 +53,8 @@ export class UserAdmin extends OrbitComponent {
         <tbody>
           ${this.objects.map((u) => html`
             <tr>
-              <td>${u['users:webid'] ?? u['@id']}</td><td>${u['users:name'] ?? ''}</td>
-              <td>${u['users:email'] ?? ''}</td><td>${u['users:role'] ?? ''}</td>
+              <td>${field(u, 'webid') ?? u['@id']}</td><td>${field(u, 'name') ?? ''}</td>
+              <td>${field(u, 'email') ?? ''}</td><td>${field(u, 'role') ?? ''}</td>
               <td><button @click=${() => this._remove(u)}>supprimer</button></td>
             </tr>`)}
         </tbody>

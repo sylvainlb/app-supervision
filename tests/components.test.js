@@ -57,7 +57,7 @@ test('anomaly-list : filtre sévérité, état vide, bouton « Créer un ticket 
   items[0].querySelector('button').click();
   assert.equal(events.at(-1).route, 'ticket-new');
   assert.equal(events.at(-1).query.anomaly, 'a2');
-  assert.equal(events.at(-1).query.prefill['tickets:anomaly_ref'], 'a2');
+  assert.equal(events.at(-1).query.prefill.anomaly_ref, 'a2');
   el.filterSeverity = 'CRITICAL';
   await el.updateComplete;
   assert.match(el.shadowRoot.querySelector('.empty').textContent, /aucune anomalie/);
@@ -92,7 +92,7 @@ test('ticket-detail : technicien assigné voit IN_PROGRESS (pas CLOSED), PATCH m
   assert.deepEqual(buttons, ['IN_PROGRESS']);
   el.shadowRoot.querySelector('.actions button').click();
   await new Promise((r) => setTimeout(r, 0));
-  assert.deepEqual(calls.find((c) => c[0] === 'patch'), ['patch', '/tickets/7', { 'tickets:status': 'IN_PROGRESS' }]);
+  assert.deepEqual(calls.find((c) => c[0] === 'patch'), ['patch', '/tickets/7', { status: 'IN_PROGRESS' }]);
   // 412 → toast + reload
   window.sibStore.patch = async () => { const e = new Error('conflict'); e.status = 412; throw e; };
   el._changeStatus('IN_PROGRESS');
@@ -113,7 +113,7 @@ test('energy-chart : metric horaire → POST /app/query via fetchAuthn, badge fr
   };
   const el = await mount('energy-chart', { metric: 'net_grid_hourly', window: '24h' });
   assert.equal(calls[0][0], '/app/query');
-  assert.equal(calls[0][1].assetId, 'net_grid_hourly');
+  assert.equal(calls[0][1].assetId, 'dataset:facis:net-grid-hourly');
   assert.match(el.shadowRoot.querySelector('.freshness').textContent, /refresh ~10 min/);
   const rows = el.shadowRoot.querySelectorAll('tbody tr');
   assert.equal(rows.length, 2);
@@ -138,7 +138,7 @@ test('user-admin : validation webid, création POST, suppression DELETE', async 
   await el._submit();
   const post = calls.find((c) => c[0] === 'post');
   assert.equal(post[1], '/users/');
-  assert.equal(post[2]['users:role'], 'technicien');
+  assert.equal(post[2].role, 'technicien');
   el._remove({ '@id': '/users/1' });
   await new Promise((r) => setTimeout(r, 0));
   assert.ok(calls.some((c) => c[0] === 'delete' && c[1] === '/users/1'));
@@ -162,8 +162,8 @@ test('ticket-new : pré-remplissage anomalie, validation RG-1, POST /tickets/ pu
   await el._submit();
   const post = calls.find((c) => c[0] === 'post');
   assert.equal(post[1], '/tickets/');
-  assert.equal(post[2]['tickets:anomaly_ref'], 'a2');
-  assert.equal(post[2]['tickets:created_by'], 'https://app.localhost/users/1');
+  assert.equal(post[2].anomaly_ref, 'a2');
+  assert.equal(post[2].created_by, 'https://app.localhost/users/1');
   assert.equal(events.at(-1).route, 'tickets');
 });
 

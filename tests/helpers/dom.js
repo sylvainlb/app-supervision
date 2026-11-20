@@ -32,6 +32,14 @@ export function mockSibStore(window, data = {}) {
       if (data[url] instanceof Error) throw data[url];
       return data[url];
     },
+    // getJson() (boilerplate) passe par fetchAuthn : on sert la même mappe en Response-like
+    fetchAuthn: async (url, init = {}) => {
+      const u = String(url);
+      calls.push(['get', u, init]);
+      if (data[u] instanceof Error) throw data[u];
+      if (u in data) return { ok: true, status: 200, json: async () => data[u] };
+      return { ok: false, status: 404, json: async () => ({ error: 'not found' }) };
+    },
     post: async (url, body) => { calls.push(['post', url, body]); return { '@id': `${url}1` }; },
     put: async (url, body) => { calls.push(['put', url, body]); return {}; },
     patch: async (url, body) => {

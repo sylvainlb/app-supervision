@@ -2,7 +2,8 @@
 // Data : /tickets/<pk> + /tickets/<pk>/comments/. Transitions RG-2 via PATCH merge-patch ;
 // 412 → recharger + toast « modifié entre-temps » (§10). Commentaires en append.
 import { html, css } from 'lit';
-import { OrbitComponent } from '../boilerplate/index.js';
+import { OrbitComponent, resolveMembers, getJson } from '../boilerplate/index.js';
+import { field } from '../../src/lib/context.js';
 import { actionForStatus } from '../../src/lib/http-contract.js';
 import { allowedTransitions, commentPayload } from './logic.js';
 
@@ -41,17 +42,17 @@ export class TicketDetail extends OrbitComponent {
   }
 
   async load() {
-    const data = await window.sibStore.getData(this.dataSrc);
+    const data = await getJson(this.dataSrc);
     this.object = this.isType(data) ? data : null;
-    const comments = await window.sibStore.getData(`${this.dataSrc}/comments/`).catch(() => ({ 'ldp:contains': [] }));
-    this.comments = comments?.['ldp:contains'] ?? [];
+    const comments = await getJson(`${this.dataSrc}/comments/`).catch(() => ({ 'ldp:contains': [] }));
+    this.comments = await resolveMembers(comments);
     return data;
   }
 
   async _changeStatus(to) {
     this.toast = '';
     try {
-      await window.sibStore.patch(this.dataSrc, { 'tickets:status': to });
+      await window.sibStore.patch(this.dataSrc, { status: to });
       document.dispatchEvent(new CustomEvent('save', { detail: { resource: { '@id': this.dataSrc } } }));
       this.refresh();
     } catch (e) {
@@ -74,17 +75,18 @@ export class TicketDetail extends OrbitComponent {
 
   renderContent() {
     const t = this.object ?? {};
-    const assigned = t['tickets:assigned_to'] === this.webid;
+    const idOf = (v) => String(v ?? '').replace(/.*\//, '');
+    const assigned = idOf(this.webid) !== '' && idOf(field(t, 'assigned_to')) === idOf(this.webid);
     const transitions = allowedTransitions(t, this.role, { assigned });
     return html`
-      <h2>${t['tickets:title'] ?? ''} <span class="badge st-${t['tickets:status'] ?? 'OPEN'}">${t['tickets:status'] ?? ''}</span></h2>
+      <h2>${field(t, 'title') ?? ''} <span class="badge st-${field(t, 'status') ?? 'OPEN'}">${field(t, 'status') ?? ''}</span></h2>
       ${this.toast ? html`<div class="toast" role="status">${this.toast}</div>` : ''}
       <div class="fiche">
-        <p>${t['tickets:description'] ?? ''}</p>
-        <p>bâtiment : ${t['tickets:building_id'] ?? ''} ·
-           <span class="badge pri-${t['tickets:priority'] ?? 'MEDIUM'}">${t['tickets:priority'] ?? 'MEDIUM'}</span>
-           · créé par ${t['tickets:created_by'] ?? ''} · assigné à ${t['tickets:assigned_to'] ?? 'personne'}</p>
-        ${t['tickets:anomaly_ref'] ? html`<p>anomalie liée : ${t['tickets:anomaly_ref']}</p>` : ''}
+        <p>${field(t, 'description') ?? ''}</p>
+        <p>bâtiment : ${field(t, 'building_id') ?? ''} ·
+           <span class="badge pri-${field(t, 'priority') ?? 'MEDIUM'}">${field(t, 'priority') ?? 'MEDIUM'}</span>
+           · créé par ${field(t, 'created_by') ?? ''} · assigné à ${field(t, 'assigned_to') ?? 'personne'}</p>
+        ${field(t, 'anomaly_ref') ? html`<p>anomalie liée : ${field(t, 'anomaly_ref')}</p>` : ''}
       </div>
       <div class="actions">
         ${transitions.filter((x) => x.allowed).map((x) => html`
@@ -92,7 +94,7 @@ export class TicketDetail extends OrbitComponent {
       </div>
       <section class="comments">
         <h3>Commentaires</h3>
-        <ul>${this.comments.map((c) => html`<li><strong>${c['comments:author'] ?? ''}</strong> · ${c['comments:ts'] ?? ''} — ${c['comments:text'] ?? ''}</li>`)}</ul>
+        <ul>${this.comments.map((c) => html`<li><strong>${field(c, 'author') ?? ''}</strong> · ${(field(c, 'ts') ?? '').slice(0, 19).replace('T', ' ')} — ${field(c, 'text') ?? ''}</li>`)}</ul>
         <div class="comment-form">
           <input .value=${this.commentText} @input=${(e) => { this.commentText = e.target.value; }} placeholder="Ajouter un commentaire…">
           <button @click=${() => this._addComment()}>ajouter</button>

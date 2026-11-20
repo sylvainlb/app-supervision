@@ -11,6 +11,7 @@ export function validateUser({ webid, name, email, role } = {}) {
   return errors;
 }
 
+// Clés non préfixées (@vocab du conteneur /users/).
 export function userPayload({ webid, name, email, role }) {
-  return { 'users:webid': webid, 'users:name': name, 'users:email': email, 'users:role': role };
+  return { webid, name, email, role };
 }

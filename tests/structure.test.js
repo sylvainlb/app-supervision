@@ -10,7 +10,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CUSTOM_COMPONENTS = ['building-map', 'energy-chart', 'anomaly-list', 'ticket-board', 'ticket-detail', 'user-admin'];
 
 test('§4 : fichiers racine requis', () => {
-  for (const f of ['orbit.json', 'package.json', '.gitignore', 'src/index.ts', 'src/config.ts']) {
+  for (const f of ['orbit.json', 'package.json', '.gitignore', 'src/index.ts', 'src/config.js']) {
     assert.ok(existsSync(join(root, f)), `manquant: ${f}`);
   }
 });
@@ -27,10 +27,10 @@ test('§4 : .gitignore exclut node_modules/ et dist/', () => {
   assert.match(gitignore, /dist\//);
 });
 
-test('§1.4/§13.6 : config.ts lit POD_URL/OIDC_ISSUER/OIDC_CLIENT_ID, rien en dur', () => {
-  const src = readFileSync(join(root, 'src/config.ts'), 'utf8');
+test('§1.4/§13.6 : config.js lit POD_URL/OIDC_ISSUER/OIDC_CLIENT_ID, rien en dur', () => {
+  const src = readFileSync(join(root, 'src/config.js'), 'utf8');
   for (const env of ['POD_URL', 'OIDC_ISSUER', 'OIDC_CLIENT_ID']) {
-    assert.ok(src.includes(env), `config.ts doit lire ${env}`);
+    assert.ok(src.includes(env), `config.js doit lire ${env}`);
   }
-  assert.ok(!/https:\/\/[a-z0-9.-]+\//i.test(src.replace(/https:\/\/<pod>/g, '')), 'pas de pod en dur dans config.ts');
+  assert.ok(!/https:\/\/[a-z0-9.-]+\//i.test(src.replace(/https:\/\/<pod>/g, '')), 'pas de pod en dur dans config.js');
 });

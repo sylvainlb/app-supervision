@@ -10,7 +10,7 @@ sibStore, blox du Store en ES modules CDN, composants custom Lit, sib-auth/OIDC)
 ├── orbit.json          ← config Orbit : routes §8, composants §6, oidc §13.6, npm épinglé
 ├── src/
 │   ├── index.ts        ← bootstrap Orbit + injection fetchAuthn (sib-auth) dans sibStore §13.7
-│   ├── config.ts       ← env : POD_URL, OIDC_ISSUER, OIDC_CLIENT_ID
+│   ├── config.js       ← env : POD_URL, OIDC_ISSUER, OIDC_CLIENT_ID (fallback Node pour tests)
 │   └── lib/            ← logique pure testée (contrat HTTP, transitions, gold, ETag, context)
 ├── components/
 │   ├── boilerplate/    ← hiérarchie vendored §6.2 : LitElement → ComponentObjectHandler
@@ -23,44 +23,71 @@ sibStore, blox du Store en ES modules CDN, composants custom Lit, sib-auth/OIDC)
 
 ## Lancer en local avec le back FAP-light
 
-**1. Back** (stack 1 VM : postgres + ORCE + caddy + Keycloak) :
+**1. Back** (stack 1 VM : postgres + ORCE + caddy + Keycloak) — voir `../app-supervision-backend` :
 
 ```sh
-cd ../fap-light-serveur
-cp .env.example .env        # éditer les secrets si besoin (FAP_DOMAIN=localhost par défaut)
-./scripts/deploy.sh         # build + up + attente santé
-# → LDP/JSON-LD : https://app.localhost/ (caddy :443, certificat auto-signé en local :
-#   l'accepter dans le navigateur) ; Keycloak : https://app.localhost/auth/realms/fap-light
-#   (console admin : http://localhost:8080) ; ORCE : http://localhost:1880
+cd ../app-supervision-backend
+./scripts/start.sh          # démarre le back (idempotent)
+# → LDP/JSON-LD : http://localhost/ (dev = HTTP pur) ; Keycloak (IdP) :
+#   http://localhost/auth/realms/fap-light ; ORCE/éditeur : http://localhost/editor/
 ```
 
-**2. Front** :
+**2. Front** (AUTONOME du back : aucun fichier du client n'est servi par le backend) :
 
 ```sh
 cd ../app-supervision
-cp .env.example .env        # POD_URL=http://localhost, OIDC_ISSUER=.../auth/realms/fap-light
 npm ci
-npm run dev                 # → http://localhost:5173 (proxy Vite same-origin vers le back)
+npm run dev                 # → http://app.localhost/  (port 80 : caddy du back proxifie app.localhost → ce serveur vite)
+#   configure auto au 1er lancement : ./scripts/configure.sh http://localhost
+#   (POD_URL = le BACK ; OIDC_ISSUER = http://localhost/auth/realms/fap-light)
 ```
 
-En dev, `vite.config.ts` proxage `/tickets`, `/buildings`, `/users`, `/gold`,
-`/app/query` et `/auth` vers `POD_URL` (pas de CORS). En production, pas de proxy :
-le build est servi en same-origin par caddy à `https://<pod>/app/` :
-
-```sh
-POD_URL=https://<pod> OIDC_ISSUER=https://<pod>/auth/realms/fap-light npm run build
-# copier dist/ sur le serveur, route caddy /app/* → statique (spec front §13.6)
-```
+Le client n'a **aucun proxy vite** vers le back : tous les appels partent en absolu vers
+`POD_URL` (cross-origin depuis `http://app.localhost/`) — le CORS est géré par le back
+(origine déclarée dans `FRONT_ORIGINS` du backend) et `/auth` par Keycloak (`webOrigins`).
+Un proxy vite casserait le DPoP (`DPoP HTTP URL mismatch`).
+En production : `./scripts/configure.sh https://fap.example.com && npm run build`,
+puis déployer `dist/` sur l'origine prévue dans `FRONT_ORIGINS` (ex. `https://app.fap.example.com`).
 
 ## Authentification OIDC
 
-Login via `@inrupt/solid-client-authn-browser` (login direct avec `clientId` statique
-`fap-light-ui` — Keycloak ne supporte pas le dynamic registration, décision D-7) :
+Une seule `Session` `@inrupt/solid-client-authn-browser` (login direct avec `clientId`
+statique `fap-light-ui` — Keycloak ne fait pas de dynamic registration, D-7 ; `<sib-auth>`
+n'est pas utilisé car il embarque la même lib en double et les deux se disputent le code) :
+
 - pas de session au chargement → redirect automatique vers
-  `https://app.localhost/auth/realms/fap-light/protocol/openid-connect/auth` ;
-- 401 du LDP → purge du cache sibStore + re-login ;
-- `fetch` authentifié (DPoP) injecté dans `window.sibStore.fetchAuthn` (§13.7).
-`<sib-auth>` sert à la restauration de session et à l'affichage du webId.
+  `${OIDC_ISSUER}/protocol/openid-connect/auth` (`http://localhost/auth/realms/fap-light/...` en dev) ;
+- le scope `offline_access` (en dur dans oidc-client-ext) est retiré de l'URL d'autorisation
+  via `handleRedirect` — Keycloak 26.4 le refuse pour ce client (`not_allowed`) ;
+- `tokenType: 'Bearer'` : le FAP-LDP valide les tokens via userinfo en Bearer
+  (`fap-ldp/core/nodes/nodes/ldp-container.js`) → un token DPoP-bound (cnf) serait refusé ;
+- 401 du LDP → purge du cache + re-login ;
+- `session.fetch` injecté dans `window.sibStore.fetchAuthn` (§13.7, point d'injection unique),
+  avec réécriture des URL relatives en absolues vers `POD_URL` et repli fixtures (`VITE_FIXTURES`).
+
+Lecture des données : `getJson(url)` (components/boilerplate) = `fetchAuthn` + JSON brut.
+`sibStore.getData()` renvoie des proxies `CustomGetter` (champs lisibles seulement via
+`await proxy.get(path)`) — illisible pour nos blox custom, d'où le JSON brut.
+Les conteneurs LDP ne listant que des `@id`, `resolveMembers()` résout chaque membre.
+Champs lus par nom local via `field(obj, 'lat')` (le back préfixe par table :
+`app_buildings:lat`, `app_tickets:status`, `gold_anomaly_candidates:severity`…).
+Écritures (POST/PATCH) en clés non préfixées — le serveur mappe par nom local (@vocab).
+
+## Données gold
+
+- Publiées en conteneurs LDP (`/gold/anomaly_candidates/`, …) → lecture LDP directe.
+- Volumineuses (horaires) → proxy signé côté serveur `POST /app/query`, body
+  `{agreement, assetId, from, to}` avec `assetId` = id catalogue DSP
+  (`dataset:facis:net-grid-hourly`) et `agreement:interne:contrat-cadre`.
+  Jamais de HMAC côté navigateur (§13.1). Réponse `{columns, rows[]}` avec rows positionnels.
+
+## Dev local (HTTP pur)
+
+Back sur `http://localhost` (:80, ENV=dev) — Keycloak sert sous `/auth`
+(`--http-relative-path /auth`, caddy ne strippe pas, `KC_PROXY_HEADERS=xforwarded`
+pour la validation DPoP htu). Front : `npm run dev` → `http://localhost:5173/`,
+`.env` : `POD_URL=http://localhost`, `OIDC_ISSUER=http://localhost/auth/realms/fap-light`.
+Comptes Keycloak : alice / bob / admin (mdp `dev`).
 Note : `overrides` npm épinglent `@inrupt/oidc-client-ext`/`solid-client-authn-core`
 à 1.11.2 (aligné sur `@inrupt/solid-client-authn-browser@1.11.2`, sinon
 `removeOidcQueryParam is not a function`).

@@ -7,17 +7,18 @@ test('§13.3 : mapping définitif LDP vs DSP', () => {
   assert.deepEqual(accessPlan('anomaly_candidates'), { via: 'ldp', container: '/gold/anomaly_candidates/' });
   assert.deepEqual(accessPlan('city_dashboard_summary'), { via: 'ldp', container: '/gold/city_dashboard_summary/' });
   assert.deepEqual(accessPlan('energy_cost_daily'), { via: 'ldp', container: '/gold/energy_cost_daily/' });
-  assert.deepEqual(accessPlan('net_grid_hourly'), { via: 'proxy', container: null });
-  assert.deepEqual(accessPlan('pv_performance_hourly'), { via: 'proxy', container: null });
+  assert.deepEqual(accessPlan('net_grid_hourly'), { via: 'proxy', container: null, datasetId: 'dataset:facis:net-grid-hourly' });
+  assert.deepEqual(accessPlan('pv_performance_hourly'), { via: 'proxy', container: null, datasetId: 'dataset:facis:energy-balance-hourly' });
   assert.throws(() => accessPlan('bronze_raw'), /inconnu/);
 });
 
-test('C1.9 : contrat proxy = POST /app/query, body {assetId, from, to}', () => {
+test('C1.9 : contrat proxy = POST /app/query, body {agreement, assetId, from, to}', () => {
   const req = buildProxyRequest({ assetId: 'net_grid_hourly', from: '2026-11-19T00:00:00Z', to: '2026-11-20T00:00:00Z' });
   assert.equal(req.method, 'POST');
   assert.equal(req.url, '/app/query');
   assert.deepEqual(JSON.parse(req.body), {
-    assetId: 'net_grid_hourly',
+    agreement: 'agreement:interne:contrat-cadre',
+    assetId: 'dataset:facis:net-grid-hourly',
     from: '2026-11-19T00:00:00Z',
     to: '2026-11-20T00:00:00Z',
   });

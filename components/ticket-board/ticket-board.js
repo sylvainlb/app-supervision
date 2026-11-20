@@ -3,6 +3,7 @@
 // Pas de drag & drop en v1 ; clic carte → route détail.
 import { html, css } from 'lit';
 import { OrbitComponent } from '../boilerplate/index.js';
+import { field } from '../../src/lib/context.js';
 import { groupByStatus } from './logic.js';
 
 export class TicketBoard extends OrbitComponent {
@@ -31,10 +32,10 @@ export class TicketBoard extends OrbitComponent {
             <h3>${status} <span class="count">${tickets.length}</span></h3>
             ${tickets.map((t) => html`
               <div class="card" @click=${() => this.navigate('ticket-detail', t['@id'])}>
-                <strong>${t['tickets:title']}</strong>
+                <strong>${field(t, 'title')}</strong>
                 <div class="meta">
-                  <span class="badge pri-${t['tickets:priority'] ?? 'MEDIUM'}">${t['tickets:priority'] ?? 'MEDIUM'}</span>
-                  <span>${t['tickets:created_at'] ?? ''}</span>
+                  <span class="badge pri-${field(t, 'priority') ?? 'MEDIUM'}">${field(t, 'priority') ?? 'MEDIUM'}</span>
+                  <span>${(field(t, 'created_at') ?? '').slice(0, 19).replace('T', ' ')}</span>
                 </div>
               </div>`)}
           </section>`)}

@@ -32,7 +32,7 @@ test('§8 : les 6 routes déclarées avec rôles et composants', () => {
 test('§13.6 : oidc = realm fap-light + clientId statique fap-light-ui (D-7)', () => {
   assert.match(orbit.client.oidc.issuer, /\/auth\/realms\/fap-light$/);
   assert.equal(orbit.client.oidc.clientId, 'fap-light-ui');
-  assert.match(orbit.client.url, /^https:\/\//);
+  assert.match(orbit.client.url, /^https?:\/\//); // http en dev local (ENV=dev), https en prod
 });
 
 test('§13.6 : versions npm épinglées exactes (pas de ^ ni ~)', () => {

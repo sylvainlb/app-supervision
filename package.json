@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Front-end de l'application de supervision energetique (spec supervision-energetique-front-technique.md)",
   "scripts": {
-    "dev": "vite",
+    "dev": "bash scripts/dev.sh",
     "test": "node --test tests/",
     "build": "vite build",
     "serve": "vite preview"

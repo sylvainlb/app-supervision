@@ -25,7 +25,7 @@ export function metricQuery(metric, range, now) {
 
 // Série graphique : net_grid signée (conso positive / injection négative, deux couleurs).
 export function buildSeries(rows, metric) {
-  const labels = rows.map((r) => r.ts_hour ?? r.ts ?? '');
+  const labels = rows.map((r) => r.hour ?? r.ts_hour ?? r.ts ?? '');
   if (metric === 'net_grid_hourly') {
     return {
       labels,
@@ -51,5 +51,5 @@ export function formatFreshness(ts) {
 }
 
 export function latestTimestamp(rows) {
-  return (rows ?? []).map((r) => r.ts_hour ?? r.ts ?? '').sort().at(-1) ?? null;
+  return (rows ?? []).map((r) => r.hour ?? r.ts_hour ?? r.ts ?? '').sort().at(-1) ?? null;
 }

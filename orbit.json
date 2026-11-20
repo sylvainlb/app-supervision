@@ -1,8 +1,8 @@
 {
   "client": {
-    "url": "https://<pod>/",
+    "url": "http://localhost/",
     "oidc": {
-      "issuer": "https://<pod>/auth/realms/fap-light",
+      "issuer": "http://localhost/auth/realms/fap-light",
       "clientId": "fap-light-ui"
     }
   },
@@ -14,14 +14,90 @@
     "chart.js": "4.4.4"
   },
   "routes": [
-    { "name": "dashboard", "path": "/", "roles": ["gestionnaire"], "components": ["building-map", "energy-chart", "anomaly-list"] },
-    { "name": "building-detail", "path": "/buildings/:id", "roles": ["gestionnaire"], "components": ["energy-chart", "solid-display"] },
-    { "name": "anomalies", "path": "/anomalies", "roles": ["gestionnaire"], "components": ["anomaly-list", "solid-form"] },
-    { "name": "tickets", "path": "/tickets", "roles": ["gestionnaire"], "components": ["ticket-board", "ticket-detail", "solid-form"] },
-    { "name": "ticket-new", "path": "/tickets/new", "roles": ["gestionnaire"], "components": ["ticket-new"] },
-    { "name": "ticket-detail", "path": "/tickets/:id", "roles": ["gestionnaire", "technicien"], "components": ["ticket-detail"] },
-    { "name": "interventions", "path": "/interventions", "roles": ["technicien"], "components": ["ticket-board", "ticket-detail"] },
-    { "name": "admin", "path": "/admin", "roles": ["admin"], "components": ["user-admin"] }
+    {
+      "name": "dashboard",
+      "path": "/",
+      "roles": [
+        "gestionnaire"
+      ],
+      "components": [
+        "building-map",
+        "energy-chart",
+        "anomaly-list"
+      ]
+    },
+    {
+      "name": "building-detail",
+      "path": "/buildings/:id",
+      "roles": [
+        "gestionnaire"
+      ],
+      "components": [
+        "energy-chart"
+      ]
+    },
+    {
+      "name": "anomalies",
+      "path": "/anomalies",
+      "roles": [
+        "gestionnaire"
+      ],
+      "components": [
+        "anomaly-list"
+      ]
+    },
+    {
+      "name": "tickets",
+      "path": "/tickets",
+      "roles": [
+        "gestionnaire"
+      ],
+      "components": [
+        "ticket-board"
+      ]
+    },
+    {
+      "name": "ticket-new",
+      "path": "/tickets/new",
+      "roles": [
+        "gestionnaire"
+      ],
+      "components": [
+        "ticket-new"
+      ]
+    },
+    {
+      "name": "ticket-detail",
+      "path": "/tickets/:id",
+      "roles": [
+        "gestionnaire",
+        "technicien"
+      ],
+      "components": [
+        "ticket-detail"
+      ]
+    },
+    {
+      "name": "interventions",
+      "path": "/interventions",
+      "roles": [
+        "technicien"
+      ],
+      "components": [
+        "ticket-board",
+        "ticket-detail"
+      ]
+    },
+    {
+      "name": "admin",
+      "path": "/admin",
+      "roles": [
+        "admin"
+      ],
+      "components": [
+        "user-admin"
+      ]
+    }
   ],
   "components": {
     "building-map": "components/building-map/building-map.js",
