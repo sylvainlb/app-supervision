@@ -39,7 +39,10 @@ function loginRedirect(): Promise<never> {
   return session.login({
     oidcIssuer: config.oidcIssuer,
     clientId: config.oidcClientId,
-    redirectUrl: window.location.href,
+    // URL de retour PROPRE (sans query) : repartir de location.href réinjecterait
+    // ?code=…&session_state=… dans redirect_uri → l'URL grossit à chaque boucle et
+    // Keycloak finit par la rejeter (> 4000 car. → invalid_redirect_uri).
+    redirectUrl: window.location.origin + window.location.pathname,
     // Le FAP-LDP valide les tokens via userinfo en « Bearer » (fap-ldp ldp-container.js) :
     // un token DPoP-bound (cnf) est refusé par userinfo → 401. On demande donc un token
     // Bearer (déviation DPoP notée ; le challenge WWW-Authenticate: DPoP reste côté serveur).
