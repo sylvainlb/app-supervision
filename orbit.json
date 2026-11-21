@@ -42,7 +42,8 @@
           "title": "Net consumption (grid)",
           "components": [
             "energy-chart"
-          ]
+          ],
+          "hint": "Site-level total — sum over all monitored buildings (gold asset net_grid_hourly is aggregated per site, not per building). Click a building on the map or in the list below to open its detail page."
         },
         {
           "title": "Detected anomalies",
@@ -61,7 +62,29 @@
       ],
       "components": [
         "building-header",
-        "energy-chart"
+        "energy-chart",
+        "anomaly-list"
+      ],
+      "sections": [
+        {
+          "title": "Building detail",
+          "components": [
+            "building-header"
+          ]
+        },
+        {
+          "title": "Net consumption (grid)",
+          "hint": "Gold data is site-level (no per-building metering yet) — this chart shows the site total for context.",
+          "components": [
+            "energy-chart"
+          ]
+        },
+        {
+          "title": "Anomalies on this building",
+          "components": [
+            "anomaly-list"
+          ]
+        }
       ]
     },
     {

@@ -178,8 +178,8 @@ function mountInto(parent: HTMLElement, tag: string): void {
   const el = document.createElement(tag) as HTMLElement & { dataSrc?: string; building?: string; anomaly?: string; webid?: string };
   if (tag === 'ticket-detail' || tag === 'building-header') el.dataSrc = window.location.pathname;
   if (tag === 'ticket-new' && lastNav.query?.anomaly) el.anomaly = String(lastNav.query.anomaly);
-  if (tag === 'energy-chart' && window.location.pathname.startsWith('/buildings/')) {
-    el.building = window.location.pathname;
+  if (window.location.pathname.startsWith('/buildings/')) {
+    if (tag === 'energy-chart' || tag === 'anomaly-list') el.building = window.location.pathname;
   }
   parent.appendChild(el);
 }

@@ -24,6 +24,7 @@ export class EnergyChart extends OrbitComponent {
     .toolbar strong { font-size: 1.05rem; font-weight: 700; }
     .freshness { font-size: 0.77rem; font-weight: 600; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; border-radius: 999px; padding: 4px 11px; }
     .toolbar label { margin-left: auto; font-size: 0.85rem; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; }
+    .toolbar .note { font-size: 0.75rem; color: var(--muted, #64748b); font-weight: 400; margin-left: 8px; }
     .chart-wrap { height: 320px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius, 14px); box-shadow: var(--shadow); padding: 14px; }
     .chart-wrap canvas { max-height: 100%; }
     details.datatable { margin-top: 12px; font-size: 0.85rem; color: var(--muted); background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; box-shadow: var(--shadow); }
@@ -144,7 +145,8 @@ export class EnergyChart extends OrbitComponent {
     const fmtVal = (v) => (typeof v === 'number' ? String(Math.round(v * 10) / 10) : v);
     return html`
       <div class="toolbar">
-        <strong>${this.building ? 'Net consumption — building (grid)' : 'Net consumption — site (grid)'}</strong>
+        <strong>${this.building ? 'Net consumption — site total (grid)' : 'Net consumption — whole site (grid)'}</strong>
+        ${this.building ? html`<span class="note">per-building metering not in gold v1 — site-level data</span>` : ''}
         <span class="freshness">${formatFreshness(latestTimestamp(this.rows))}</span>
         <label>range
           <select @change=${(e) => { this.window = e.target.value; this.refresh(); }}>

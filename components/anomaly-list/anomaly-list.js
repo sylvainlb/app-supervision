@@ -2,7 +2,7 @@
 // Data : conteneur gold publié /gold/anomaly_candidates/ (§13.3). Filtres côté client.
 // « Créer un ticket » → requestNavigation route ticket-new avec ?anomaly=<@id> (pré-remplit anomaly_ref).
 import { html, css } from 'lit';
-import { OrbitComponent } from '../boilerplate/index.js';
+import { OrbitComponent, getJson } from '../boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
 import { filterAnomalies, ticketPrefill, anomalyTs } from './logic.js';
 
@@ -11,6 +11,7 @@ export class AnomalyList extends OrbitComponent {
     ...OrbitComponent.properties,
     filterSeverity: { type: String, attribute: false },
     filterBuilding: { type: String, attribute: false },
+    building: { type: String }, // IRI ou chemin /buildings/<pk> : filtre par meter_id du bâtiment
   };
 
   static styles = css`
@@ -38,6 +39,19 @@ export class AnomalyList extends OrbitComponent {
     this.dataSrc = '/gold/anomaly_candidates/';
     this.filterSeverity = '';
     this.filterBuilding = '';
+    this.building = '';
+  }
+
+  // Sur une page détail bâtiment, l'attribut building = chemin /buildings/<pk> :
+  // on résout la ressource pour récupérer son meter_id et filtrer les anomalies dessus.
+  async connectedCallback() {
+    super.connectedCallback?.();
+    if (this.building?.startsWith('/buildings/') && !this.filterBuilding) {
+      try {
+        const b = await getJson(this.building);
+        this.filterBuilding = String(field(b, 'meter_id') ?? '');
+      } catch { /* filtre ignoré si le bâtiment ne répond pas */ }
+    }
   }
 
   renderContent() {
