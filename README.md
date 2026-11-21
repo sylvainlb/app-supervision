@@ -1,8 +1,80 @@
-# app-supervision
+# app-supervision — Application de supervision énergétique
 
-Front-end de l'application de supervision énergétique — implémentation de
-`spec/supervision-energetique-front-technique.md` (stack Startin'blox : shell Orbit,
-sibStore, blox du Store en ES modules CDN, composants custom Lit, sib-auth/OIDC).
+Ce dépôt est le **front-end** de l'application de supervision énergétique — la couche la
+plus haute et le **point d'entrée utilisateur**. Ce README explique comment installer et
+lancer **toutes les couches** de la pile.
+
+Implémentation de `spec/supervision-energetique-front-technique.md` (stack Startin'blox :
+shell Orbit, sibStore, blox du Store en ES modules CDN, composants custom Lit, sib-auth/OIDC).
+
+## Pile (du haut vers le bas)
+
+```
+app-supervision (ce dépôt)      ← front — point d'entrée UTILISATEUR
+   │ consomme : LDP racine, POST /app/query, OIDC (/auth/*)
+   ▼
+app-supervision-backend         ← assemblage déployable — point d'entrée DÉPLOIEMENT
+   │   (scripts/start.sh lance toute l'infra docker)
+   ├── fap-ldp                  ← extension LDP : domaine app.*, endpoint JSON-LD, ACL/PDP
+   └── fap-light-serveur        ← cœur : PostgreSQL bronze/silver/gold + ORCE + caddy + IdP (1 VM)
+app-store + app-features        ← features activables, branchées sur le front
+spec/                           ← spécifications (documentation, à lire en premier)
+```
+
+**Règle de dépendance : front → back → fap.** Aucun fichier du front n'est servi par le
+back : en dev, `http://app.localhost/` est un proxy caddy vers le serveur Vite de l'hôte ;
+en prod, `dist/` est déployé sur une origine séparée (déclarée dans `FRONT_ORIGINS` du back).
+
+## Prérequis
+
+- Docker + docker compose (pour le back)
+- Node.js + npm (pour le front)
+
+## Installation et lancement de toutes les couches
+
+### 1. Cloner les dépôts
+
+```sh
+git clone git@github.com:sylvainlb/app-supervision.git          # ce dépôt (front)
+git clone git@github.com:sylvainlb/app-supervision-backend.git  # assemblage déployable
+git clone git@github.com:sylvainlb/fap-light-serveur.git        # cœur FAP-light
+git clone git@github.com:sylvainlb/fap-ldp.git                   # extension LDP
+git clone git@github.com:sylvainlb/app-store.git                 # mécanisme de features
+git clone git@github.com:sylvainlb/app-features.git              # composants métier
+# + le répertoire spec/ (spécifications) à côté des dépôts
+```
+
+### 2. Lire la spec
+
+`../spec/facis-fap-architecture-synthese.md` (architecture globale), puis
+`../spec/supervision-energetique-spec-fonctionnelle.md` (cas d'usage métier).
+
+### 3. Démarrer le back (toute l'infra)
+
+```sh
+cd app-supervision-backend
+cp .env.example .env     # éditer si besoin (domaines, ports)
+./scripts/start.sh       # idempotent ; --reset pour repartir à zéro
+# → LDP/JSON-LD : http://localhost/  ·  IdP Keycloak : http://localhost/auth/realms/fap-light
+# → éditeur ORCE : http://localhost/editor/  ·  comptes dev : alice / bob / admin (mdp "dev")
+```
+
+### 4. Lancer le front
+
+```sh
+cd app-supervision
+npm ci
+npm run dev              # 1er lancement : configure auto vers http://localhost (POD_URL)
+```
+
+→ ouvrir **http://app.localhost/** (caddy du back proxifie vers ce serveur Vite).
+
+### 5. (Optionnel) Activer des features
+
+`app-store` (mécanisme `<app-store>` / `<app-menu>` + modèle SQL côté FAP-LDP) et
+`app-features` (12 composants métier) s'intègrent dans ce front — voir leurs README.
+
+---
 
 ## Structure (spec §4)
 
@@ -18,7 +90,7 @@ sibStore, blox du Store en ES modules CDN, composants custom Lit, sib-auth/OIDC)
 │   └── <nom>/          ← 6 blox custom Lit §7 (building-map, energy-chart, anomaly-list,
 │                         ticket-board, ticket-detail, user-admin) + logic.js pur par composant
 ├── tests/              ← conformité spec + composants (node --test + happy-dom, sibStore mocké)
-└── dist/               ← build Vite (servi par caddy à https://<pod>/app/)
+└── dist/               ← build Vite (prod : déployé sur l'origine front FRONT_ORIGINS du back)
 ```
 
 ## Lancer en local avec le back FAP-light
