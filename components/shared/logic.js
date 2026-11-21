@@ -52,8 +52,11 @@ export function menuEntries(catalogue, prefsObj, { locale = 'fr', routeExists, r
   const knownSlugs = new Set((prefsObj ? Object.keys(prefsObj) : []));
   return (catalogue ?? [])
     .filter((f) => !routeExists || routeExists(f))
+    // route paramétrée (ex. /buildings/:id) = page de DÉTAIL : atteinte par clic
+    // sur un élément, jamais affichée telle quelle dans le menu (sans id → 404).
+    .filter((f) => !String(get(f, 'route') ?? '').includes(':'))
+    .filter((f) => (get(f, 'in_menu') ?? true) !== false) // in_menu=false → hors menu (outil ex. /store), route toujours gardée
     .filter((f) => roleAllowed(get(f, 'role_min') ?? 'all', role))
-    .filter((f) => get(f, 'in_menu') !== false) // §1.4.1 : in_menu=false → hors menu (outil, ex. app-store) ; la route reste accessible (guard)
     .map((f) => ({
       slug: get(f, 'slug'),
       title: titleOf(f, locale),
@@ -113,14 +116,14 @@ export function isConfigured(config, schema) {
 
 // ---------------------------------------------------------------------------
 // Forme R1 des PATCH (§1.5) : le jsonb prefs n'est PAS aplati à la racine —
-// body = {"prefs": {…}}. Le merge RFC 7386 est récursif : la config des autres
-// features est préservée.
+// body = {"prefs": {…}}.
 export function togglePatch(slug, enabled) {
   return { [slug]: { enabled: !!enabled } };
 }
 export function configPatch(slug, config) {
   return { [slug]: { config } };
 }
+
 /**
  * Extrait la colonne jsonb `prefs` d'une ressource JSON-LD, quel que soit le
  * préfixe de sérialisation du serveur (`prefs`, `prefs:prefs`, `app_prefs:prefs`…).
@@ -136,11 +139,11 @@ export function prefsColumn(data) {
 }
 
 /**
- * Body PATCH forme R1 : {"prefs": {…}} (jsonb NON aplati à la racine).
- * Le PEP remplace la colonne jsonb `prefs` (pas de merge profond serveur) :
- * read-modify-write — on fusionne le patch avec l'état courant (merge par slug,
- * pour garder `config` quand on ne change que `enabled`) et on envoie l'objet
- * complet ; la concurrence est gérée par If-Match → 412 (§1.9.9).
+ * Body PATCH forme R1 : {"prefs": {…}}. Constat sur le serveur live (21/11) : le PEP
+ * REMPLACE la colonne jsonb `prefs` entière (pas de merge profond serveur) →
+ * read-modify-write : on fusionne le patch avec l'état courant (merge par slug, pour
+ * préserver `config` quand on ne touche qu'à `enabled`) et on envoie l'objet complet,
+ * protégé par If-Match → 412 en cas de conflit (§1.9.9).
  */
 export function prefsPatchBody(patch, current = {}) {
   const merged = { ...current };
@@ -168,6 +171,13 @@ export function featureForPath(catalogue, pathname) {
     if (!route || !route.includes(':')) continue;
     const base = route.split(':')[0].replace(/\/+$/, '');
     if (base && (path === base || path.startsWith(base + '/'))) return f;
+  }
+  // 3e passe : préfixe simple (sous-route d'une feature, ex. /tickets/new → feature tickets)
+  for (const f of catalogue ?? []) {
+    const route = get(f, 'route');
+    if (!route || route.includes(':')) continue;
+    const base = route.replace(/\/+$/, '') || '/';
+    if (base !== '/' && path.startsWith(base + '/')) return f;
   }
   return null;
 }
@@ -228,4 +238,58 @@ export function validateConfig(schema, values) {
     if (f.type === 'object' && (typeof v !== 'object' || v === null || Array.isArray(v))) errors[f.key] = 'not_an_object';
   }
   return { ok: Object.keys(errors).length === 0, errors };
+}
+
+// ---------------------------------------------------------------------------
+// Partie 2 (v2) — features distantes : helpers purs.
+
+// Une feature est « distante » si le catalogue v2 porte cdn_url + tag
+// (colonnes 020_features_v2.sql) ; sinon elle est packagée au build (v1).
+export function isDistant(feature) {
+  return !!(get(feature, 'cdn_url') && get(feature, 'tag'));
+}
+
+// Entrée prefs d'une feature (jsonb prefs.<slug>) : {enabled, config, installed_version?, installed_sri?}.
+export function installedEntry(prefsObj, slug) {
+  return prefsObj?.[slug] ?? {};
+}
+
+// CA-A5 : une feature packagée est toujours « installée » (présente au build) ;
+// une feature distante ne l'est que si installed_version + installed_sri sont posés.
+export function isInstalled(feature, prefsObj) {
+  if (!isDistant(feature)) return true;
+  const e = installedEntry(prefsObj, get(feature, 'slug'));
+  return !!(e.installed_version && e.installed_sri);
+}
+
+// Comparaison de versions "x.y.z" (entiers pointés) : -1 / 0 / 1.
+export function compareVersions(a, b) {
+  const pa = String(a ?? '0').split('.').map((x) => parseInt(x, 10) || 0);
+  const pb = String(b ?? '0').split('.').map((x) => parseInt(x, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (d !== 0) return d < 0 ? -1 : 1;
+  }
+  return 0;
+}
+
+// CA-A6 : le catalogue annonce une version > installed_version → upgrade proposé
+// (re-vérification du nouveau sri à l'upgrade, §2.2.5).
+export function upgradeAvailable(feature, prefsObj) {
+  if (!isDistant(feature)) return false;
+  const e = installedEntry(prefsObj, get(feature, 'slug'));
+  const v = get(feature, 'version');
+  return !!(v && e.installed_version && compareVersions(v, e.installed_version) > 0);
+}
+
+// Patch d'installation (forme R1 §1.5) : active la feature ET enregistre la
+// version réellement chargée (audit front ; l'audit serveur est dans dsp.audit via E11).
+export function installPatch(slug, version, sri) {
+  return { [slug]: { enabled: true, installed_version: version, installed_sri: sri } };
+}
+
+// Patch de désinstallation (§2.2.4) : désactive + nullifie installed_* (les clés
+// null sont supprimées par le merge-patch RFC 7386 / l'objet complet envoyé).
+export function uninstallPatch(slug) {
+  return { [slug]: { enabled: false, installed_version: null, installed_sri: null } };
 }

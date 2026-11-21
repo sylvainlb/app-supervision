@@ -64,15 +64,16 @@ test('fonctionnel : refresh via repli fixture, menu dynamique trié, guard CA-A4
   await appStore.refresh();
 
   // catalogue chargé depuis la fixture ; menu = features enabled, tri menu_order
-  const slugs = ['building-map', 'anomaly-list', 'ticket-board', 'user-admin', 'app-store'];
+  const slugs = ['building-map', 'anomaly-list', 'ticket-board', 'user-admin', 'app-store', 'building-detail'];
   for (const s of slugs) assert.ok(appStore.getFeature(s), `feature fixture ${s}`);
   const entries = menuEntries(
     slugs.map((s) => appStore.getFeature(s)),
     appStore.getPrefs(),
     { locale: 'fr', role: 'gestionnaire' },
   );
-  // tri menu_order + role_min + in_menu : user-admin (role_min=admin) filtré pour un
-  // gestionnaire, app-store (in_menu=false) hors menu — outil de config, pas une feature
+  // tri menu_order + role_min + in_menu + routes paramétrées : user-admin (role_min=admin)
+  // filtré pour un gestionnaire, app-store (in_menu=false) hors menu, building-detail
+  // (route /buildings/:id) hors menu — page de détail atteinte par clic, pas par le menu
   assert.deepEqual(entries.map((e) => e.slug),
     ['building-map', 'anomaly-list', 'ticket-board']);
   assert.equal(appStore.isEnabled('ticket-board'), true);

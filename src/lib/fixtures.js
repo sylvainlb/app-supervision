@@ -52,7 +52,14 @@ export const FIXTURES = {
       { '@id': `${POD}/features/ticket-board` },
       { '@id': `${POD}/features/user-admin` },
       { '@id': `${POD}/features/app-store` },
+      { '@id': `${POD}/features/building-detail` },
     ],
+  },
+  '/features/building-detail': {
+    '@id': `${POD}/features/building-detail`, slug: 'building-detail',
+    title_i18n: { fr: 'Détail bâtiment' }, description_i18n: { fr: 'Fiche et courbes d\'un bâtiment.' },
+    icon: 'insights', menu_order: 40, in_menu: true, role_min: 'all', component: 'building-header', route: '/buildings/:id',
+    config_schema: { fields: [] }, default_enabled: true,
   },
   '/features/building-map': {
     '@id': `${POD}/features/building-map`, slug: 'building-map',
@@ -93,6 +100,7 @@ export const FIXTURES = {
       'ticket-board': { enabled: true, config: {} },
       'user-admin': { enabled: true, config: {} },
       'app-store': { enabled: true, config: {} },
+      'building-detail': { enabled: true, config: {} },
     },
   },
   '/tickets/7/comments/': {
