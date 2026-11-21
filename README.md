@@ -27,8 +27,8 @@ en prod, `dist/` est déployé sur une origine séparée (déclarée dans `FRONT
 
 ## Prérequis
 
-- Docker + docker compose (pour le back)
-- Node.js + npm (pour le front)
+- **Docker + plugin docker compose** (pour le back)
+- **Node.js ≥ 20 + npm** (pour le front ; testé avec Node v20)
 
 ## Installation et lancement de toutes les couches
 
@@ -39,27 +39,43 @@ git clone git@github.com:sylvainlb/app-supervision.git          # ce dépôt (fr
 git clone git@github.com:sylvainlb/app-supervision-backend.git  # assemblage déployable
 git clone git@github.com:sylvainlb/fap-light-serveur.git        # cœur FAP-light
 git clone git@github.com:sylvainlb/fap-ldp.git                   # extension LDP
+# Optionnels (features v2) :
 git clone git@github.com:sylvainlb/app-store.git                 # mécanisme de features
 git clone git@github.com:sylvainlb/app-features.git              # composants métier
-# + le répertoire spec/ (spécifications) à côté des dépôts
+# + le répertoire spec/ (spécifications) fourni avec les sources, à côté des dépôts
 ```
+
+> Les 4 premiers dépôts suffisent pour faire tourner l'application. `app-store` /
+> `app-features` ne servent que pour les features chargeables en v2 (le front embarque
+> déjà le mécanisme `<app-store>` / `<app-menu>` en vendored).
 
 ### 2. Lire la spec
 
 `../spec/facis-fap-architecture-synthese.md` (architecture globale), puis
 `../spec/supervision-energetique-spec-fonctionnelle.md` (cas d'usage métier).
 
-### 3. Démarrer le back (toute l'infra)
+### 3. Builder les images Docker custom du cœur (une seule fois)
+
+La stack du back référence deux images **locales** (absentes des registries) ; leurs
+Dockerfiles sont dans `fap-light-serveur` :
+
+```sh
+cd fap-light-serveur
+docker build -t fap-light-postgres:latest ./deploy/postgres   # PostgreSQL 16 + pg_cron
+docker build -t fap-light-orce:latest     ./deploy/orce       # ORCE (Node-RED) + modules runtime
+```
+
+### 4. Démarrer le back (toute l'infra)
 
 ```sh
 cd app-supervision-backend
-cp .env.example .env     # éditer si besoin (domaines, ports)
+cp .env.example .env     # les secrets sont auto-générés au 1er lancement ; éditer si besoin
 ./scripts/start.sh       # idempotent ; --reset pour repartir à zéro
 # → LDP/JSON-LD : http://localhost/  ·  IdP Keycloak : http://localhost/auth/realms/fap-light
 # → éditeur ORCE : http://localhost/editor/  ·  comptes dev : alice / bob / admin (mdp "dev")
 ```
 
-### 4. Lancer le front
+### 5. Lancer le front
 
 ```sh
 cd app-supervision
@@ -69,7 +85,7 @@ npm run dev              # 1er lancement : configure auto vers http://localhost 
 
 → ouvrir **http://app.localhost/** (caddy du back proxifie vers ce serveur Vite).
 
-### 5. (Optionnel) Activer des features
+### 6. (Optionnel) Activer des features
 
 `app-store` (mécanisme `<app-store>` / `<app-menu>` + modèle SQL côté FAP-LDP) et
 `app-features` (12 composants métier) s'intègrent dans ce front — voir leurs README.
