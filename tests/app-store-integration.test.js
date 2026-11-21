@@ -111,3 +111,22 @@ test('fonctionnel : refresh via repli fixture, menu dynamique trié, guard CA-A4
   assert.equal(navs.length, 2, 'notre événement + exactement un redirect');
   assert.ok(navs.includes('/'), 'redirect / émis une seule fois');
 });
+
+test('loader : tag déjà enregistré → pas de réimport (pas de « already defined »)', async () => {
+  const { loadRemoteModule } = await import('../components/shared/loader.js');
+  // simule un custom element déjà défini (ex. bundle dashboard embarque anomaly-list)
+  const registry = new Map([['anomaly-list', class {}]]);
+  const g = globalThis.customElements;
+  globalThis.customElements = { get: (t) => registry.get(t) };
+  try {
+    let imported = 0;
+    const res = await loadRemoteModule(
+      { cdnUrl: '/features-dist/anomalies.js', sri: 'sha384-AAAA', tag: 'anomaly-list' },
+      { fetchFn: async () => { throw new Error('fetch ne doit pas être appelé'); }, importFn: async () => { imported++; return {}; } },
+    );
+    assert.equal(imported, 0, 'aucun import si le tag est déjà enregistré');
+    assert.equal(res.alreadyRegistered, true);
+  } finally {
+    globalThis.customElements = g;
+  }
+});

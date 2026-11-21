@@ -93,6 +93,13 @@ export async function loadRemoteModule(feature, deps = {}) {
     return { module: hit.module, src: hit.src, blobUrl: hit.blobUrl };
   }
 
+  // Le tag est déjà enregistré (ex. le bundle dashboard embarque aussi <anomaly-list>) :
+  // ne PAS réimporter — CustomElementRegistry.define lèverait « already defined ».
+  if (tag && typeof customElements !== 'undefined' && customElements.get(tag)) {
+    moduleCache.set(cdnUrl, { src: null, sri, module: null, blobUrl: null, alreadyRegistered: tag });
+    return { module: null, src: null, blobUrl: null, alreadyRegistered: true };
+  }
+
   const fetchFn = deps.fetchFn ?? ((...a) => fetch(...a));
   const res = await fetchFn(cdnUrl);
   if (!res || !res.ok) throw new Error(`fetch ${cdnUrl} → ${res?.status ?? 'ERR'}`);
