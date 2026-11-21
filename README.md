@@ -180,14 +180,27 @@ Note : `overrides` npm épinglent `@inrupt/oidc-client-ext`/`solid-client-authn-
 à 1.11.2 (aligné sur `@inrupt/solid-client-authn-browser@1.11.2`, sinon
 `removeOidcQueryParam is not a function`).
 
-## Fixtures de démo
+## Données de démo au déploiement
 
-Si le back ne répond pas (LDP 404/500, réseau coupé), le front retombe sur des
-**données exemple** (`src/lib/fixtures.js`) : 4 bâtiments géolocalisés (Lyon), 4 tickets
-tous statuts, 4 anomalies, commentaires, utilisateurs, et séries horaires synthétiques
-pour le proxy `/app/query`. Dès que le back répond, les vraies données repassent devant.
-Désactivable : `VITE_FIXTURES=0` dans `.env`. Les mutations (POST/PATCH/DELETE) restent
-en mémoire de session.
+Un déploiement from-scratch **a déjà des données** — trois sources :
+
+1. **Seed SQL du back** (chargé automatiquement au boot par
+   `app-supervision-backend/scripts/deploy-local.sh`) :
+   `app-supervision-backend/sql/101_seed_demo.sql` insère les comptes applicatifs
+   (webid = claims Keycloak : alice / bob / admin), un **parc de bâtiments de démo**
+   (avec `meter_id`, géolocalisés), des **tickets** et des **commentaires**.
+   → visibles dès le 1er login dans l'UI.
+2. **Simulation capteurs** (cœur FAP-light, tick toutes les 60 s) : alimente
+   bronze → silver → gold (dont `gold.anomaly_candidates` et les agrégats horaires
+   consommés via `POST /app/query`). Les **séries horaires se remplissent progressivement**
+   après le boot (pas instantanément).
+3. **Fixtures du front** (repli uniquement) : si le back ne répond pas (LDP 404/500,
+   réseau coupé), le front retombe sur des **données exemple** (`src/lib/fixtures.js`) :
+   4 bâtiments géolocalisés (Lyon), 4 tickets tous statuts, 4 anomalies, commentaires,
+   utilisateurs, et séries horaires synthétiques pour le proxy `/app/query`.
+   Dès que le back répond, les vraies données repassent devant.
+   Désactivable : `VITE_FIXTURES=0` dans `.env`. Les mutations (POST/PATCH/DELETE)
+   restent en mémoire de session.
 
 ## Tests de conformité
 
