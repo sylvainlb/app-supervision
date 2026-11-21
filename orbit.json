@@ -1,201 +1,321 @@
 {
-  "client": {
-    "url": "http://localhost/",
-    "oidc": {
-      "issuer": "http://localhost/auth/realms/fap-light",
-      "clientId": "fap-light-ui"
-    }
-  },
-  "npm": {
-    "@startinblox/core": "2.0.6",
-    "@startinblox/oidc": "0.16.6",
-    "@lit/task": "1.0.3",
-    "lit": "3.3.3",
-    "chart.js": "4.4.4"
-  },
-  "routes": [
-    {
-      "name": "dashboard",
-      "path": "/",
-      "roles": [
-        "gestionnaire"
-      ],
-      "components": [
-        "building-map",
-        "energy-chart",
-        "anomaly-list"
-      ],
-      "sections": [
-        {
-          "title": "Site overview",
-          "components": [
-            "kpi-summary"
-          ]
-        },
-        {
-          "title": "Site map",
-          "components": [
-            "building-map"
-          ]
-        },
-        {
-          "title": "Net consumption (grid)",
-          "components": [
-            "energy-chart"
-          ],
-          "hint": "Site-level total — sum over all monitored buildings (gold asset net_grid_hourly is aggregated per site, not per building). Click a building on the map or in the list below to open its detail page."
-        },
-        {
-          "title": "Detected anomalies",
-          "hint": "Automatic system detections (gold data, read-only). To act on an anomaly, click \"Create intervention ticket\": a ticket is a human action tracked through to closure.",
-          "components": [
-            "anomaly-list"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "building-detail",
-      "path": "/buildings/:id",
-      "roles": [
-        "gestionnaire"
-      ],
-      "components": [
-        "building-header",
-        "energy-chart",
-        "anomaly-list"
-      ],
-      "sections": [
-        {
-          "title": "Building detail",
-          "components": [
-            "building-header"
-          ]
-        },
-        {
-          "title": "Net consumption (grid)",
-          "hint": "Gold data is site-level (no per-building metering yet) — this chart shows the site total for context.",
-          "components": [
-            "energy-chart"
-          ]
-        },
-        {
-          "title": "Anomalies on this building",
-          "components": [
-            "anomaly-list"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "anomalies",
-      "path": "/anomalies",
-      "roles": [
-        "gestionnaire"
-      ],
-      "sections": [
-        {
-          "title": "Detected anomalies",
-          "hint": "These are automatic detections (read-only) — they cannot be edited here. Each anomaly can be turned into an intervention ticket.",
-          "components": [
-            "anomaly-list"
-          ]
-        }
-      ],
-      "components": [
-        "anomaly-list"
-      ]
-    },
-    {
-      "name": "tickets",
-      "path": "/tickets",
-      "roles": [
-        "gestionnaire"
-      ],
-      "sections": [
-        {
-          "title": "Intervention tickets",
-          "hint": "Tickets are actions created by the team (manually or from an anomaly): assignment and status tracking (open → in progress → resolved → closed).",
-          "components": [
-            "ticket-board"
-          ]
-        }
-      ],
-      "components": [
-        "ticket-board"
-      ]
-    },
-    {
-      "name": "ticket-new",
-      "path": "/tickets/new",
-      "roles": [
-        "gestionnaire"
-      ],
-      "components": [
-        "ticket-new"
-      ]
-    },
-    {
-      "name": "ticket-detail",
-      "path": "/tickets/:id",
-      "roles": [
-        "gestionnaire",
-        "technicien"
-      ],
-      "components": [
-        "ticket-detail"
-      ]
-    },
-    {
-      "name": "interventions",
-      "path": "/interventions",
-      "roles": [
-        "technicien"
-      ],
-      "components": [
-        "ticket-board",
-        "ticket-detail"
-      ]
-    },
-    {
-      "name": "admin",
-      "path": "/admin",
-      "roles": [
-        "admin"
-      ],
-      "components": [
-        "user-admin"
-      ]
-    },
-    {
-      "name": "store",
-      "path": "/store",
-      "menu": false,
-      "roles": [
-        "gestionnaire",
-        "technicien",
-        "admin"
-      ],
-      "components": [
-        "app-store"
-      ]
-    }
-  ],
-  "components": {
-    "building-map": "components/building-map/building-map.js",
-    "energy-chart": "components/energy-chart/energy-chart.js",
-    "anomaly-list": "components/anomaly-list/anomaly-list.js",
-    "ticket-board": "components/ticket-board/ticket-board.js",
-    "ticket-detail": "components/ticket-detail/ticket-detail.js",
-    "ticket-new": "components/ticket-new/ticket-new.js",
-    "user-admin": "components/user-admin/user-admin.js",
-    "solid-display": "@startinblox/core",
-    "solid-form": "@startinblox/core",
-    "solid-ac-checker": "@startinblox/core",
-    "solid-router": "@startinblox/core",
-    "kpi-summary": "components/kpi-summary/kpi-summary.js",
-    "building-header": "components/building-header/building-header.js",
-    "app-store": "components/app-store/app-store.js",
-    "app-menu": "components/app-menu/app-menu.js"
+ "client": {
+  "url": "http://localhost/",
+  "oidc": {
+   "issuer": "http://localhost/auth/realms/fap-light",
+   "clientId": "fap-light-ui"
   }
+ },
+ "npm": {
+  "@startinblox/core": "2.0.6",
+  "@startinblox/oidc": "0.16.6",
+  "@lit/task": "1.0.3",
+  "lit": "3.3.3",
+  "chart.js": "4.4.4"
+ },
+ "routes": [
+  {
+   "name": "dashboard",
+   "path": "/",
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [
+    "building-map",
+    "energy-chart",
+    "anomaly-list"
+   ],
+   "sections": [
+    {
+     "title": "Site overview",
+     "components": [
+      "kpi-summary"
+     ]
+    },
+    {
+     "title": "Site map",
+     "components": [
+      "building-map"
+     ]
+    },
+    {
+     "title": "Net consumption (grid)",
+     "components": [
+      "energy-chart"
+     ],
+     "hint": "Site-level total — sum over all monitored buildings (gold asset net_grid_hourly is aggregated per site, not per building). Click a building on the map or in the list below to open its detail page."
+    },
+    {
+     "title": "Detected anomalies",
+     "hint": "Automatic system detections (gold data, read-only). To act on an anomaly, click \"Create intervention ticket\": a ticket is a human action tracked through to closure.",
+     "components": [
+      "anomaly-list"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "building-detail",
+   "path": "/buildings/:id",
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [
+    "building-header",
+    "energy-chart",
+    "anomaly-list"
+   ],
+   "sections": [
+    {
+     "title": "Building detail",
+     "components": [
+      "building-header"
+     ]
+    },
+    {
+     "title": "Net consumption (grid)",
+     "hint": "Gold data is site-level (no per-building metering yet) — this chart shows the site total for context.",
+     "components": [
+      "energy-chart"
+     ]
+    },
+    {
+     "title": "Anomalies on this building",
+     "components": [
+      "anomaly-list"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "anomalies",
+   "path": "/anomalies",
+   "roles": [
+    "gestionnaire"
+   ],
+   "sections": [
+    {
+     "title": "Detected anomalies",
+     "hint": "These are automatic detections (read-only) — they cannot be edited here. Each anomaly can be turned into an intervention ticket.",
+     "components": [
+      "anomaly-list"
+     ]
+    }
+   ],
+   "components": [
+    "anomaly-list"
+   ]
+  },
+  {
+   "name": "tickets",
+   "path": "/tickets",
+   "roles": [
+    "gestionnaire"
+   ],
+   "sections": [
+    {
+     "title": "Intervention tickets",
+     "hint": "Tickets are actions created by the team (manually or from an anomaly): assignment and status tracking (open → in progress → resolved → closed).",
+     "components": [
+      "ticket-board"
+     ]
+    }
+   ],
+   "components": [
+    "ticket-board"
+   ]
+  },
+  {
+   "name": "ticket-new",
+   "path": "/tickets/new",
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [
+    "ticket-new"
+   ]
+  },
+  {
+   "name": "ticket-detail",
+   "path": "/tickets/:id",
+   "roles": [
+    "gestionnaire",
+    "technicien"
+   ],
+   "components": [
+    "ticket-detail"
+   ]
+  },
+  {
+   "name": "interventions",
+   "path": "/interventions",
+   "roles": [
+    "technicien"
+   ],
+   "components": [
+    "ticket-board",
+    "ticket-detail"
+   ]
+  },
+  {
+   "name": "admin",
+   "path": "/admin",
+   "roles": [
+    "admin"
+   ],
+   "components": [
+    "user-admin"
+   ]
+  },
+  {
+   "name": "store",
+   "path": "/store",
+   "menu": false,
+   "roles": [
+    "gestionnaire",
+    "technicien",
+    "admin"
+   ],
+   "components": [
+    "app-store"
+   ]
+  },
+  {
+   "name": "alert-rules",
+   "path": "/alerts",
+   "menu": false,
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [],
+   "dynamic": true
+  },
+  {
+   "name": "sla-dashboard",
+   "path": "/sla",
+   "menu": false,
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [],
+   "dynamic": true
+  },
+  {
+   "name": "report-builder",
+   "path": "/reports",
+   "menu": false,
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [],
+   "dynamic": true
+  },
+  {
+   "name": "budget-tracker",
+   "path": "/budget",
+   "menu": false,
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [],
+   "dynamic": true
+  },
+  {
+   "name": "price-optimizer",
+   "path": "/optimize",
+   "menu": false,
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [],
+   "dynamic": true
+  },
+  {
+   "name": "pv-selfconsumption",
+   "path": "/pv",
+   "menu": false,
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [],
+   "dynamic": true
+  },
+  {
+   "name": "benchmark",
+   "path": "/benchmark",
+   "menu": false,
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [],
+   "dynamic": true
+  },
+  {
+   "name": "regulatory-export",
+   "path": "/regulatory",
+   "menu": false,
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [],
+   "dynamic": true
+  },
+  {
+   "name": "weather-correlation",
+   "path": "/weather",
+   "menu": false,
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [],
+   "dynamic": true
+  },
+  {
+   "name": "city-events",
+   "path": "/city",
+   "menu": false,
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [],
+   "dynamic": true
+  },
+  {
+   "name": "ai-assistant",
+   "path": "/assistant",
+   "menu": false,
+   "roles": [
+    "gestionnaire"
+   ],
+   "components": [],
+   "dynamic": true
+  },
+  {
+   "name": "data-sharing",
+   "path": "/sharing",
+   "menu": false,
+   "roles": [
+    "admin"
+   ],
+   "components": [],
+   "dynamic": true
+  }
+ ],
+ "components": {
+  "building-map": "components/building-map/building-map.js",
+  "energy-chart": "components/energy-chart/energy-chart.js",
+  "anomaly-list": "components/anomaly-list/anomaly-list.js",
+  "ticket-board": "components/ticket-board/ticket-board.js",
+  "ticket-detail": "components/ticket-detail/ticket-detail.js",
+  "ticket-new": "components/ticket-new/ticket-new.js",
+  "user-admin": "components/user-admin/user-admin.js",
+  "solid-display": "@startinblox/core",
+  "solid-form": "@startinblox/core",
+  "solid-ac-checker": "@startinblox/core",
+  "solid-router": "@startinblox/core",
+  "kpi-summary": "components/kpi-summary/kpi-summary.js",
+  "building-header": "components/building-header/building-header.js",
+  "app-store": "components/app-store/app-store.js",
+  "app-menu": "components/app-menu/app-menu.js"
+ }
 }

@@ -120,7 +120,9 @@ export const appStore = {
     if (iri) {
       jobs.push(getJsonMeta(iri).then((r) => {
         state.prefs = r.data;
-        state.prefsObj = prefsColumn(r.data); // clé sérialisée : prefs / prefs:prefs / app_prefs:prefs…
+        // copie défensive : nouvelle référence à chaque refresh → re-render lit garanti
+        // même si la source renvoie le même objet muté en place (mock de test, cache…)
+        state.prefsObj = { ...prefsColumn(r.data) }; // clé sérialisée : prefs / prefs:prefs / app_prefs:prefs…
         state.etag = r.etag;
       }));
     }
@@ -143,6 +145,15 @@ export const appStore = {
     return state.catalogue.find((f) => getField(f, 'slug') === slug) ?? null;
   },
 
+  getCatalogue() {
+    return state.catalogue;
+  },
+
+  /** v2 — feature (catalogue) dont la route Orbit correspond au path demandé (§2.2.7). */
+  getFeatureByRoute(pathname) {
+    return featureForPath(state.catalogue, pathname);
+  },
+
   getPrefs() {
     return state.prefsObj;
   },
@@ -156,10 +167,9 @@ export const appStore = {
 
   /**
    * §1.5 + §1.9.9 — PATCH merge-patch sur /prefs/<pk>, body forme R1 :
-   * {"prefs": {"<slug>": {"enabled": false}}}. Le PEP remplace la colonne jsonb
-   * `prefs` (pas de merge profond serveur) : read-modify-write, on envoie l'objet
-   * prefs complet fusionné avec l'état courant, protégé par If-Match (412 →
-   * rechargement + AppStoreConflictError). Succès → read-after-write + `save`.
+   * {"prefs": {"<slug>": {"enabled": false}}} (merge RFC 7386 récursif).
+   * Succès → read-after-write (refresh) + événement `save` avec l'@id des prefs.
+   * 412 → prefs rechargées + AppStoreConflictError.
    */
   async patchPrefs(patch) {
     const iri = this.mePrefsIri();
@@ -172,7 +182,7 @@ export const appStore = {
     const res = await fetchAuthn()(iri, {
       method: 'PATCH',
       headers,
-      body: JSON.stringify(prefsPatchBody(patch, state.prefsObj)),
+      body: JSON.stringify(prefsPatchBody(patch, state.prefsObj)), // read-modify-write : objet complet (§1.5)
     });
     if (res.status === 412) {
       await this.refresh(); // §1.9.9 : recharger les prefs
@@ -185,7 +195,7 @@ export const appStore = {
       throw err;
     }
     const data = await res.json().catch(() => null);
-    if (data) state.prefsObj = prefsColumn(data);          // read-after-write immédiat (CA-A2)
+    if (data) state.prefsObj = { ...prefsColumn(data) };     // read-after-write immédiat (CA-A2) — copie défensive (re-render lit)
     if (data?.['@id']) state.prefs = data;
     state.etag = res.headers?.get?.('etag') ?? state.etag;
     emit();

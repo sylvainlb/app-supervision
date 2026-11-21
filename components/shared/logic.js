@@ -293,3 +293,51 @@ export function installPatch(slug, version, sri) {
 export function uninstallPatch(slug) {
   return { [slug]: { enabled: false, installed_version: null, installed_sri: null } };
 }
+
+// ---------------------------------------------------------------------------
+// Organisation du store (spec §1.6.2 révisée) : catégories (rayons) + recherche.
+// La colonne app.features.category (migration 021) vaut 'supervision',
+// 'operations', 'energy', 'compliance', 'tools'… ou NULL (→ rayon « autres »).
+// Le menu (<app-menu>) reste plat : la catégorisation ne vit que dans /store.
+export const CATEGORY_ORDER = ['supervision', 'operations', 'energy', 'compliance', 'tools'];
+
+export const CATEGORY_LABELS = {
+  en: { supervision: 'Supervision', operations: 'Operations', energy: 'Energy & optimization', compliance: 'Compliance & reporting', tools: 'Tools', _other: 'Other' },
+  fr: { supervision: 'Supervision', operations: 'Exploitation', energy: 'Énergie & optimisation', compliance: 'Conformité & reporting', tools: 'Outils', _other: 'Autres' },
+};
+
+export function categoryLabel(cat, locale = 'en') {
+  const labels = CATEGORY_LABELS[locale] ?? CATEGORY_LABELS.en;
+  if (!cat) return labels._other;
+  return labels[cat] ?? cat;
+}
+
+// Regroupe les features par catégorie : ordre fixe CATEGORY_ORDER, inconnues par
+// ordre alphabétique, sans catégorie ('') toujours en dernier.
+export function groupByCategory(features, locale = 'en') {
+  const byCat = new Map();
+  for (const f of features ?? []) {
+    const c = String(get(f, 'category') ?? '');
+    if (!byCat.has(c)) byCat.set(c, []);
+    byCat.get(c).push(f);
+  }
+  const cats = [...byCat.keys()].sort((a, b) => {
+    if (a === '') return 1;
+    if (b === '') return -1;
+    const ia = CATEGORY_ORDER.indexOf(a);
+    const ib = CATEGORY_ORDER.indexOf(b);
+    if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+    return a.localeCompare(b);
+  });
+  return cats.map((c) => ({ category: c, label: categoryLabel(c, locale), features: byCat.get(c) }));
+}
+
+// Recherche texte sur slug + titre + description (insensible à la casse).
+export function featureMatchesQuery(f, query, locale = 'en') {
+  const q = String(query ?? '').trim().toLowerCase();
+  if (!q) return true;
+  const desc = get(f, 'description_i18n') ?? {};
+  const hay = [get(f, 'slug'), titleOf(f, locale), desc[locale] ?? desc.en ?? desc.fr ?? '']
+    .join(' ').toLowerCase();
+  return hay.includes(q);
+}

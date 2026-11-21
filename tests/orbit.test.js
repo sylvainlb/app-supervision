@@ -20,7 +20,7 @@ test('§8 : les 6 routes déclarées avec rôles et composants', () => {
     { name: 'admin', path: '/admin', roles: ['admin'] },
     { name: 'store', path: '/store', roles: ['gestionnaire', 'technicien', 'admin'] },
   ];
-  assert.equal(orbit.routes.length, 9);
+  assert.equal(orbit.routes.length, 21); // 9 packagées + 12 distantes (v2, menu:false, components:[])
   for (const exp of expected) {
     const route = orbit.routes.find((r) => r.name === exp.name);
     assert.ok(route, `route manquante: ${exp.name}`);
