@@ -99,6 +99,22 @@ feature à la volée (vérif SRI avant import). Le dépôt `app-features` ne ser
 **modifie** une feature : `app-features/scripts/build.mjs` puis
 `app-supervision/scripts/build-features.mjs` régénèrent les bundles.
 
+**Mode de livraison actuel : 100 % same-origin, aucun CDN externe.** Deux familles :
+
+- **Features de base** (dashboard, anomalies, tickets, interventions, building-detail,
+  store, admin) : composants **packagés dans l'app** (`components/`, déclarés dans
+  `orbit.json`, import statique dans le bundle Vite).
+- **12 features métier v2** (`alert-rules`, `sla-dashboard`, …) : bundles
+  `public/features-dist/<slug>.js` servis par **ce front lui-même** — le seed met des
+  `cdn_url` **relatifs** (`/features-dist/<slug>.js`, générés par
+  `scripts/build-features.mjs`), chargés à la volée via `import()` avec vérif SRI
+  (`components/shared/loader.js`).
+
+Le **CDN jsDelivr n'est prévu qu'en prod** (package `@facis/app-features` publié sur npm :
+`cdn_url` = `https://cdn.jsdelivr.net/npm/@facis/app-features@<version>/dist/<slug>.js`).
+Tant que le catalogue seedé contient des URLs relatives, aucun appel externe n'est fait —
+même en prod.
+
 ---
 
 ## Structure (spec §4)
