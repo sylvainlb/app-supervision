@@ -37,10 +37,10 @@ export function featureEnabled(prefsObj, feature) {
 }
 
 // ---------------------------------------------------------------------------
-// Titre localisé §1.9.2 : title_i18n[locale] → fallback fr → fallback slug.
-export function titleOf(feature, locale = 'fr') {
+// Titre localisé §1.9.2 : title_i18n[locale] → fallback en → fallback fr → fallback slug.
+export function titleOf(feature, locale = 'en') {
   const t = get(feature, 'title_i18n') ?? {};
-  return t[locale] ?? t.fr ?? get(feature, 'slug') ?? '';
+  return t[locale] ?? t.en ?? t.fr ?? get(feature, 'slug') ?? '';
 }
 
 // ---------------------------------------------------------------------------
@@ -48,7 +48,7 @@ export function titleOf(feature, locale = 'fr') {
 // (menu_order ASC, slug ASC) (§1.9.1), slugs des prefs inconnus du catalogue
 // ignorés (§1.9.4d). routeExists(slug/route) filtre les features dont la route
 // n'existe pas dans orbit.json (§1.9.8).
-export function menuEntries(catalogue, prefsObj, { locale = 'fr', routeExists, role } = {}) {
+export function menuEntries(catalogue, prefsObj, { locale = 'en', routeExists, role } = {}) {
   const knownSlugs = new Set((prefsObj ? Object.keys(prefsObj) : []));
   return (catalogue ?? [])
     .filter((f) => !routeExists || routeExists(f))

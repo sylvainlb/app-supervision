@@ -40,21 +40,29 @@ export class AppMenu extends OrbitComponent {
       color: var(--ink); text-decoration: none; font-size: 0.92rem; font-weight: 500;
       transition: background .12s ease;
     }
-    .menu-link:hover { background: #ecfdf5; color: #065f46; }
-    .menu-link.active {
-      background: linear-gradient(90deg, #d1fae5, rgba(209,250,229,.35));
-      color: #047857; font-weight: 700;
-    }
+    .menu-link:hover { background: #f0fdfa; }
+    .menu-link.active { background: #ccfbf1; color: var(--brand-dark); font-weight: 700; }
     .menu-link .icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--muted); }
-    .menu-link.active .icon { color: #047857; }
+    .menu-link.active .icon { color: var(--brand-dark); }
     h1 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px 12px; }
+    /* thème sombre (shell à menu latéral foncé) : <app-menu theme="dark"> */
+    :host([theme="dark"]) { --ink: #e2e8f0; --muted: #94a3b8; --border: rgba(148,163,184,.18); }
+    :host([theme="dark"]) .menu-link { color: #94a3b8; }
+    :host([theme="dark"]) .menu-link:hover { background: rgba(30,41,59,.8); color: #f1f5f9; }
+    :host([theme="dark"]) .menu-link.active {
+      background: linear-gradient(90deg, rgba(6,78,59,.9), rgba(6,78,59,.35));
+      color: #6ee7b7; font-weight: 600;
+    }
+    :host([theme="dark"]) .menu-link.active .icon { color: #34d399; }
+    :host([theme="dark"]) .menu-link .icon { color: #94a3b8; }
+    :host([theme="dark"]) h1 { color: #64748b; padding: 0 14px 10px; margin: 0 0 6px; }
   `;
 
   constructor() {
     super();
     this.dataSrc = '/features/';
     this.prefsObj = {};
-    this.locale = window.getLocale?.() ?? 'fr';
+    this.locale = window.getLocale?.() ?? 'en';
   }
 
   async load() {
