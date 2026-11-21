@@ -17,12 +17,16 @@ export class TicketNew extends LitElement {
   static styles = css`
     ${sharedStyles}
     form { background: #fff; border: 1px solid var(--border, #e5eaf0); border-radius: var(--radius, 14px); box-shadow: var(--shadow); padding: 20px 22px; max-width: 520px; }
-    form label { display: block; margin: 12px 0; font-size: 0.86rem; font-weight: 600; color: #334155; }
-    form input, form select, form textarea { width: 100%; margin-top: 5px; }
-    .errors { color: #dc2626; margin: 10px 0; padding-left: 18px; }
-    .anomaly-link { background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; border-radius: 10px; padding: 9px 13px; font-size: 0.88rem; font-weight: 500; margin-bottom: 12px; }
+    /* grille verticale propre : libellé au-dessus, champ pleine largeur en dessous */
+    form label { display: grid; gap: 6px; margin: 0 0 14px; font-size: 0.86rem; font-weight: 600; color: #334155; }
+    form input, form select, form textarea { width: 100%; }
+    form textarea { min-height: 96px; resize: vertical; }
+    form select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, #64748b 50%), linear-gradient(135deg, #64748b 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 32px; }
+    .errors { color: #dc2626; margin: 0 0 12px; padding-left: 18px; }
+    .anomaly-link { background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; border-radius: 10px; padding: 9px 13px; font-size: 0.88rem; font-weight: 500; margin-bottom: 14px; overflow-wrap: anywhere; }
     h2 { margin-top: 0; font-size: 1.3rem; }
-    button[type="submit"] { margin-top: 6px; }
+    .form-foot { display: flex; justify-content: flex-end; margin-top: 4px; }
+    button[type="submit"] { min-width: 130px; }
   `;
 
   constructor() {
@@ -62,8 +66,8 @@ export class TicketNew extends LitElement {
         <label>description <textarea .value=${this.form.description} @input=${(e) => { this.form = { ...this.form, description: e.target.value }; }}></textarea></label>
         <label>building
           <select @change=${(e) => { this.form = { ...this.form, building_id: e.target.value }; }}>
-            <option value="">— select —</option>
-            ${this.buildings.map((b) => html`<option value=${b['@id']}>${field(b, 'name') ?? b['@id']}</option>`)}
+            <option value="" ?selected=${!this.form.building_id}>— select —</option>
+            ${this.buildings.map((b) => html`<option value=${b['@id']} ?selected=${b['@id'] === this.form.building_id}>${field(b, 'name') ?? b['@id']}</option>`)}
           </select>
         </label>
         <label>priority
@@ -72,7 +76,7 @@ export class TicketNew extends LitElement {
           </select>
         </label>
         ${this.errors.length > 0 ? html`<ul class="errors">${this.errors.map((e) => html`<li>${e}</li>`)}</ul>` : ''}
-        <button type="submit">Create</button>
+        <div class="form-foot"><button type="submit">Create</button></div>
       </form>`;
   }
 }
