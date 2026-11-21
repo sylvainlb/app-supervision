@@ -12,8 +12,10 @@
 // - Admin (v1) : édition des métadonnées UNIQUEMENT des features déjà
 //   packagées (§1.9.8) → PATCH /features/<slug> (IRI par slug, CA-A7).
 import { html, css } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { OrbitComponent, getJson, resolveMembers } from '../boilerplate/index.js';
 import appStore, { AppStoreConflictError } from '../shared/app-store-api.js';
+import { iconSvg } from '../shared/icons.js';
 import {
   titleOf, featureEnabled, isConfigured, configDefaults,
   togglePatch, configPatch, validateConfig, normalizeFieldValue, roleAllowed,
@@ -46,7 +48,7 @@ export class AppStore extends OrbitComponent {
     ul.features { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
     .feature { display: flex; flex-direction: column; gap: 8px; }
     .feature .head { display: flex; align-items: center; gap: 10px; }
-    .feature .material-icons { font-size: 24px; color: var(--brand-dark); }
+    .feature .icon { width: 24px; height: 24px; flex-shrink: 0; color: var(--brand-dark); }
     .feature h3 { margin: 0; font-size: 1rem; }
     .feature .desc { font-size: 0.84rem; color: var(--muted); margin: 0; }
     .feature .actions { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
@@ -314,7 +316,7 @@ export class AppStore extends OrbitComponent {
           return html`
             <li class="card feature">
               <div class="head">
-                <span class="material-icons">${field(f, 'icon') || 'extension'}</span>
+                ${unsafeHTML(iconSvg(field(f, 'icon') || 'extension'))}
                 <h3>${titleOf(f, this.locale)}</h3>
                 ${configured ? html`<span class="badge configured">configuré</span>` : ''}
               </div>

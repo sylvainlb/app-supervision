@@ -151,7 +151,6 @@ function renderMenu(role: string): void {
   if ((window as unknown as { __appStoreOK?: boolean }).__appStoreOK) {
     nav.replaceChildren();
     const el = document.createElement('app-menu');
-    el.setAttribute('theme', 'dark');
     nav.appendChild(el);
     return;
   }

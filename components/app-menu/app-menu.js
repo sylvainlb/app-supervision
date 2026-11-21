@@ -11,10 +11,12 @@
 // - Se met à jour à chaud : abonnement appStore.onChange + événement `save`
 //   (contrat §1.9.9) — le boilerplate OrbitComponent écoute déjà `save`.
 import { html, css } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { unsafeStatic, html as staticHtml } from 'lit/static-html.js';
 import { OrbitComponent, getJson, resolveMembers } from '../boilerplate/index.js';
 import appStore from '../shared/app-store-api.js';
 import { menuEntries, titleOf, get } from '../shared/logic.js';
+import { iconSvg } from '../shared/icons.js';
 
 // solid-link si le Store SIB est chargé (Orbit prod), sinon <a> — même contrat
 // : les deux dispatchent `requestNavigation`.
@@ -38,22 +40,14 @@ export class AppMenu extends OrbitComponent {
       color: var(--ink); text-decoration: none; font-size: 0.92rem; font-weight: 500;
       transition: background .12s ease;
     }
-    .menu-link:hover { background: #f0fdfa; }
-    .menu-link.active { background: #ccfbf1; color: var(--brand-dark); font-weight: 700; }
-    .menu-link .material-icons { font-size: 20px; color: var(--muted); }
-    .menu-link.active .material-icons { color: var(--brand-dark); }
-    h1 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px 12px; }
-    /* thème sombre (shell à menu latéral foncé) : <app-menu theme="dark"> */
-    :host([theme="dark"]) { --ink: #e2e8f0; --muted: #94a3b8; --border: rgba(148,163,184,.18); }
-    :host([theme="dark"]) .menu-link { color: #94a3b8; }
-    :host([theme="dark"]) .menu-link:hover { background: rgba(30,41,59,.8); color: #f1f5f9; }
-    :host([theme="dark"]) .menu-link.active {
-      background: linear-gradient(90deg, rgba(6,78,59,.9), rgba(6,78,59,.35));
-      color: #6ee7b7; font-weight: 600;
+    .menu-link:hover { background: #ecfdf5; color: #065f46; }
+    .menu-link.active {
+      background: linear-gradient(90deg, #d1fae5, rgba(209,250,229,.35));
+      color: #047857; font-weight: 700;
     }
-    :host([theme="dark"]) .menu-link.active .material-icons { color: #34d399; }
-    :host([theme="dark"]) .menu-link .material-icons { color: #94a3b8; }
-    :host([theme="dark"]) h1 { color: #64748b; padding: 0 14px 10px; margin: 0 0 6px; }
+    .menu-link .icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--muted); }
+    .menu-link.active .icon { color: #047857; }
+    h1 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px 12px; }
   `;
 
   constructor() {
@@ -123,7 +117,7 @@ export class AppMenu extends OrbitComponent {
                 ev.preventDefault();
                 this.navigate(e.route, e.route);
               }}
-            ><span class="material-icons">${e.icon || 'extension'}</span><span class="lbl">${e.title || titleOf({ slug: e.slug }, this.locale)}</span></${LINK_TAG}>`;
+            >${unsafeHTML(iconSvg(e.icon || 'extension'))}<span class="lbl">${e.title || titleOf({ slug: e.slug }, this.locale)}</span></${LINK_TAG}>`;
           })}
         </ul>
       </nav>`;
