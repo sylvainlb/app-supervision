@@ -90,6 +90,15 @@ npm run dev              # 1er lancement : configure auto vers http://localhost 
 `app-store` (mécanisme `<app-store>` / `<app-menu>` + modèle SQL côté FAP-LDP) et
 `app-features` (12 composants métier) s'intègrent dans ce front — voir leurs README.
 
+**Bonne nouvelle : aucun build nécessaire pour faire tourner les features.** Les bundles
+sont déjà versionnés dans ce dépôt (`public/features-dist/`, 22 fichiers + `manifest.json`
+avec SRI), le catalogue `app.features` est seedé au boot du back
+(`app-supervision-backend/sql/130_app_store_catalogue_v2.sql`, `cdn_url` en
+`/features-dist/<slug>.js` same-origin en dev), et `<dynamic-feature>` charge chaque
+feature à la volée (vérif SRI avant import). Le dépôt `app-features` ne sert que si l'on
+**modifie** une feature : `app-features/scripts/build.mjs` puis
+`app-supervision/scripts/build-features.mjs` régénèrent les bundles.
+
 ---
 
 ## Structure (spec §4)
