@@ -12,7 +12,7 @@
 // merge-patch RFC 7386 avec body {"prefs": {…}} (forme R1 — le jsonb n'est PAS
 // aplati à la racine). Erreurs dspace:Error ; ETag/If-Match ; 412 → recharger.
 import {
-  parseWebidPk, prefsPath, featureEnabled, featureForPath, prefsPatchBody, roleAllowed, get as getField,
+  parseWebidPk, prefsPath, featureEnabled, featureForPath, prefsPatchBody, prefsColumn, roleAllowed, get as getField,
 } from './logic.js';
 
 export class AppStoreConflictError extends Error {
@@ -28,6 +28,7 @@ const state = {
   getWebid: () => window.appSession?.info?.webId ?? window.sibAuth?.info?.webId ?? '',
   getRole: () => window.appRole ?? '',
   catalogue: [],      // membres résolus de /features/
+  catalogueMissing: false, // GET /features/ → 404 : modèle non déployé côté serveur
   prefs: null,        // ressource /prefs/<pk> (objet JSON-LD complet)
   prefsObj: {},       // colonne jsonb aplatie prefs.prefs
   prefsIri: null,     // path relatif "/prefs/<pk>"
@@ -95,14 +96,31 @@ export const appStore = {
     return state.getRole?.() ?? null;
   },
 
+  /** GET /features/ → 404 : modèle app-store non déployé côté serveur. */
+  isCatalogueMissing() {
+    return state.catalogueMissing;
+  },
+
+  /** URL du pod configurée au boot (configure({podUrl})) — appels proxy absolus (CORS géré back). */
+  getPodUrl() {
+    return state.podUrl;
+  },
+
   /** Charge (ou recharge) catalogue + prefs. Read-after-write : après chaque PATCH. */
   async refresh() {
     const iri = this.mePrefsIri();
-    const jobs = [getJsonMeta('/features/').then(async (r) => { state.catalogue = await resolveMembers(r.data); })];
+    const jobs = [getJsonMeta('/features/')
+      .then(async (r) => { state.catalogue = await resolveMembers(r.data); state.catalogueMissing = false; })
+      .catch((e) => {
+        // Catalogue absent (sql/010–012 ou model.json non appliqué) : état explicite,
+        // pas un crash — <app-store> rend un panneau de procédure (voir tck).
+        if (e.status === 404) { state.catalogueMissing = true; state.catalogue = []; return; }
+        throw e;
+      })];
     if (iri) {
       jobs.push(getJsonMeta(iri).then((r) => {
         state.prefs = r.data;
-        state.prefsObj = r.data?.prefs ?? r.data?.['prefs:prefs'] ?? {};
+        state.prefsObj = prefsColumn(r.data); // clé sérialisée : prefs / prefs:prefs / app_prefs:prefs…
         state.etag = r.etag;
       }));
     }
@@ -138,9 +156,10 @@ export const appStore = {
 
   /**
    * §1.5 + §1.9.9 — PATCH merge-patch sur /prefs/<pk>, body forme R1 :
-   * {"prefs": {"<slug>": {"enabled": false}}} (merge RFC 7386 récursif).
-   * Succès → read-after-write (refresh) + événement `save` avec l'@id des prefs.
-   * 412 → prefs rechargées + AppStoreConflictError.
+   * {"prefs": {"<slug>": {"enabled": false}}}. Le PEP remplace la colonne jsonb
+   * `prefs` (pas de merge profond serveur) : read-modify-write, on envoie l'objet
+   * prefs complet fusionné avec l'état courant, protégé par If-Match (412 →
+   * rechargement + AppStoreConflictError). Succès → read-after-write + `save`.
    */
   async patchPrefs(patch) {
     const iri = this.mePrefsIri();
@@ -153,7 +172,7 @@ export const appStore = {
     const res = await fetchAuthn()(iri, {
       method: 'PATCH',
       headers,
-      body: JSON.stringify(prefsPatchBody(patch)),
+      body: JSON.stringify(prefsPatchBody(patch, state.prefsObj)),
     });
     if (res.status === 412) {
       await this.refresh(); // §1.9.9 : recharger les prefs
@@ -166,7 +185,7 @@ export const appStore = {
       throw err;
     }
     const data = await res.json().catch(() => null);
-    if (data?.prefs) state.prefsObj = data.prefs;       // read-after-write immédiat (CA-A2)
+    if (data) state.prefsObj = prefsColumn(data);          // read-after-write immédiat (CA-A2)
     if (data?.['@id']) state.prefs = data;
     state.etag = res.headers?.get?.('etag') ?? state.etag;
     emit();

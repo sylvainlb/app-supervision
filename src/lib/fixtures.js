@@ -82,7 +82,7 @@ export const FIXTURES = {
   '/features/app-store': {
     '@id': `${POD}/features/app-store`, slug: 'app-store',
     title_i18n: { fr: 'App store' }, description_i18n: { fr: 'Activer/configurer les fonctionnalités.' },
-    icon: 'storefront', menu_order: 100, role_min: 'all', component: 'app-store', route: '/store',
+    icon: 'storefront', menu_order: 100, in_menu: false, role_min: 'all', component: 'app-store', route: '/store',
     config_schema: { fields: [] }, default_enabled: true,
   },
   '/prefs/1': {

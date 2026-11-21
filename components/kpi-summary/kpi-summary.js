@@ -12,8 +12,11 @@ export class KpiSummary extends OrbitComponent {
       background: #fff; border: 1px solid var(--border); border-radius: var(--radius, 14px);
       box-shadow: var(--shadow); padding: 16px 18px;
       transition: transform .18s ease, box-shadow .18s ease;
+      cursor: pointer; display: block; width: 100%; text-align: left; font: inherit; color: inherit;
     }
     .kpi:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .kpi:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+    .kpi .hint { font-size: 0.72rem; color: var(--brand-dark, #059669); margin-top: 8px; font-weight: 600; }
     .kpi::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: linear-gradient(180deg, var(--brand-light, #34d399), var(--brand, #10b981)); }
     .kpi .icon {
       position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; border-radius: 11px;
@@ -37,6 +40,7 @@ export class KpiSummary extends OrbitComponent {
     super();
     this.dataSrc = '/buildings/';
     this.kpis = null;
+    this.buildings = [];
   }
 
   isEmpty() { return false; } // le contenu vient de this.kpis, pas de objects
@@ -47,12 +51,18 @@ export class KpiSummary extends OrbitComponent {
       getJson('/gold/anomaly_candidates/').catch(() => ({ 'ldp:contains': [] })),
       getJson('/tickets/').catch(() => ({ 'ldp:contains': [] })),
     ]);
+    this.buildings = await resolveMembers(buildings);
     this.kpis = computeKpis(
-      await resolveMembers(buildings),
+      this.buildings,
       await resolveMembers(anomalies),
       await resolveMembers(tickets),
     );
     return this.kpis;
+  }
+
+  _goBuilding() {
+    const first = [...(this.buildings ?? [])].filter((b) => b?.['@id']).sort((a, b) => String(a['@id']).localeCompare(String(b['@id'])))[0];
+    if (first) this.navigate('building-detail', first['@id']);
   }
 
   renderContent() {
@@ -62,18 +72,24 @@ export class KpiSummary extends OrbitComponent {
     const iconTicket = html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.5 2.5 0 0 0 0 5v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2.5 2.5 0 0 0 0-5z"/><line x1="13" y1="5" x2="13" y2="19" stroke-dasharray="2.5 3"/></svg>`;
     return html`
       <div class="kpis">
-        <div class="kpi">
+        <button type="button" class="kpi" title="Open building detail"
+          @click=${() => this._goBuilding()}>
           <span class="icon">${iconBuilding}</span>
           <div class="value">${k.buildings}</div><div class="label">monitored buildings</div>
-        </div>
-        <div class="kpi ${k.anomaliesCritical > 0 ? 'warn' : k.anomaliesActive > 0 ? 'caution' : ''}">
+          <div class="hint">View site map ↓</div>
+        </button>
+        <button type="button" class="kpi ${k.anomaliesCritical > 0 ? 'warn' : k.anomaliesActive > 0 ? 'caution' : ''}" title="Open detected anomalies"
+          @click=${() => this.navigate('anomalies', '/anomalies')}>
           <span class="icon">${iconAlert}</span>
           <div class="value">${k.anomaliesActive}</div><div class="label">active anomalies${k.anomaliesCritical ? ` (${k.anomaliesCritical} high)` : ''}</div>
-        </div>
-        <div class="kpi ${k.ticketsOpen > 0 ? 'caution' : ''}">
+          <div class="hint">View anomalies →</div>
+        </button>
+        <button type="button" class="kpi ${k.ticketsOpen > 0 ? 'caution' : ''}" title="Open intervention tickets"
+          @click=${() => this.navigate('tickets', '/tickets')}>
           <span class="icon">${iconTicket}</span>
           <div class="value">${k.ticketsOpen}</div><div class="label">open tickets</div>
-        </div>
+          <div class="hint">View tickets →</div>
+        </button>
       </div>`;
   }
 }

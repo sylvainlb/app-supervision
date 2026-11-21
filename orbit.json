@@ -147,6 +147,7 @@
     {
       "name": "store",
       "path": "/store",
+      "menu": false,
       "roles": [
         "gestionnaire",
         "technicien",

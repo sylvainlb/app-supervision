@@ -53,6 +53,7 @@ export function menuEntries(catalogue, prefsObj, { locale = 'fr', routeExists, r
   return (catalogue ?? [])
     .filter((f) => !routeExists || routeExists(f))
     .filter((f) => roleAllowed(get(f, 'role_min') ?? 'all', role))
+    .filter((f) => get(f, 'in_menu') !== false) // §1.4.1 : in_menu=false → hors menu (outil, ex. app-store) ; la route reste accessible (guard)
     .map((f) => ({
       slug: get(f, 'slug'),
       title: titleOf(f, locale),
@@ -120,8 +121,33 @@ export function togglePatch(slug, enabled) {
 export function configPatch(slug, config) {
   return { [slug]: { config } };
 }
-export function prefsPatchBody(patch) {
-  return { prefs: patch };
+/**
+ * Extrait la colonne jsonb `prefs` d'une ressource JSON-LD, quel que soit le
+ * préfixe de sérialisation du serveur (`prefs`, `prefs:prefs`, `app_prefs:prefs`…).
+ */
+export function prefsColumn(data) {
+  if (!data || typeof data !== 'object') return {};
+  for (const k of Object.keys(data)) {
+    if (k === 'prefs' || k.endsWith(':prefs')) {
+      if (data[k] && typeof data[k] === 'object' && !Array.isArray(data[k])) return data[k];
+    }
+  }
+  return {};
+}
+
+/**
+ * Body PATCH forme R1 : {"prefs": {…}} (jsonb NON aplati à la racine).
+ * Le PEP remplace la colonne jsonb `prefs` (pas de merge profond serveur) :
+ * read-modify-write — on fusionne le patch avec l'état courant (merge par slug,
+ * pour garder `config` quand on ne change que `enabled`) et on envoie l'objet
+ * complet ; la concurrence est gérée par If-Match → 412 (§1.9.9).
+ */
+export function prefsPatchBody(patch, current = {}) {
+  const merged = { ...current };
+  for (const [slug, val] of Object.entries(patch ?? {})) {
+    merged[slug] = { ...(current?.[slug] ?? {}), ...(val ?? {}) };
+  }
+  return { prefs: merged };
 }
 
 // ---------------------------------------------------------------------------

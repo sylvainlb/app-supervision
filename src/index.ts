@@ -31,8 +31,9 @@ import '../components/app-store/app-store.js';
 
 declare global {
   interface Window {
-    orbit?: { ready?: Promise<void> };
-    sibStore?: Record<string, unknown> & { getData: (url: string) => Promise<unknown> };
+    // `any` : demo.ts déclare aussi ces globales (any) — TS2717 sinon.
+    orbit?: any;
+    sibStore?: any;
     appRole?: string;
   }
 }
@@ -121,6 +122,15 @@ function renderHeader(): void {
       void session.logout().finally(() => window.location.assign(window.location.pathname));
     });
   }
+  // App store : outil de configuration du menu, à part des entrées de navigation.
+  // Page pleine dans le main (#app) via la route /store — pas de menu latéral.
+  const storeBtn = document.getElementById('appstore');
+  if (storeBtn && !storeBtn.dataset.wired) {
+    storeBtn.dataset.wired = '1';
+    storeBtn.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('requestNavigation', { detail: { route: 'store', resource: '/store' } }));
+    });
+  }
 }
 
 // Icônes SVG inline (stroke currentColor) pour les entrées du menu.
@@ -130,6 +140,7 @@ const MENU_ICONS: Record<string, string> = {
   tickets: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.5 2.5 0 0 0 0 5v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2.5 2.5 0 0 0 0-5z"/><line x1="13" y1="5" x2="13" y2="19" stroke-dasharray="2.5 3"/></svg>',
   interventions: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L3 18l3 3 5.7-5.7a4.5 4.5 0 0 0 6-6L14 13l-3-3 3.7-3.7z"/></svg>',
   admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>',
+  'ticket-new': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
 };
 
 function renderMenu(role: string): void {
@@ -146,7 +157,7 @@ function renderMenu(role: string): void {
   }
   const current = window.location.pathname;
   const links = menuItems(orbit.routes, role)
-    .filter((item) => item.visible)
+    .filter((item) => item.visible && item.menu !== false) // menu:false (ex. /store) : hors menu, atteint via le header
     .map((item) => {
       const active = current === item.path ? ' class="active"' : '';
       const icon = MENU_ICONS[item.name] ?? '';

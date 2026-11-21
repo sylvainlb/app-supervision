@@ -94,6 +94,7 @@ export class AppStore extends OrbitComponent {
         this.catalogueMissing = true;
         this.objects = [];
         await appStore.whenReady().catch(() => {});
+        this.catalogueMissing = appStore.isCatalogueMissing() || this.catalogueMissing;
         this.prefsObj = appStore.getPrefs();
         return null;
       }

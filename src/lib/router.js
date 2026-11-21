@@ -50,9 +50,9 @@ export const LABELS = {
 
 // route visible si le rôle y est autorisé, ou si admin (voit tout).
 /**
- * @param {Array<{name:string, path:string, roles?:string[]}>} routes
+ * @param {Array<{name:string, path:string, roles?:string[], menu?:boolean}>} routes
  * @param {string} role
- * @returns {Array<{name:string, path:string, label:string, visible:boolean}>}
+ * @returns {Array<{name:string, path:string, label:string, visible:boolean, menu:boolean}>}
  */
 export function menuItems(routes, role) {
   return routes
@@ -62,5 +62,6 @@ export function menuItems(routes, role) {
       path: r.path,
       label: LABELS[r.name] ?? r.name,
       visible: role === 'admin' || (r.roles ?? []).includes(role),
+      menu: r.menu !== false, // route "outil" (ex. /store, menu:false) : listée avec menu:false, filtrée par le consommateur (header)
     }));
 }

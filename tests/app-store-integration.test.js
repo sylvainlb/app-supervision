@@ -37,7 +37,7 @@ test('fixtures : catalogue /features/ + prefs /prefs/1 présents (mode démo)', 
   const src = readFileSync(join(root, 'src/lib/fixtures.js'), 'utf8');
   assert.match(src, /'\/features\/':/);
   assert.match(src, /'\/prefs\/1':/);
-  assert.match(src, /'\/features\/app-store'/); // entrée /store dans le menu
+  assert.match(src, /'\/features\/app-store'/); // entrée app-store du catalogue (in_menu: false, hors menu)
 });
 
 test('fonctionnel : refresh via repli fixture, menu dynamique trié, guard CA-A4 anti-boucle', async () => {
@@ -71,9 +71,10 @@ test('fonctionnel : refresh via repli fixture, menu dynamique trié, guard CA-A4
     appStore.getPrefs(),
     { locale: 'fr', role: 'gestionnaire' },
   );
-  // tri menu_order + role_min : user-admin (role_min=admin) filtré pour un gestionnaire
+  // tri menu_order + role_min + in_menu : user-admin (role_min=admin) filtré pour un
+  // gestionnaire, app-store (in_menu=false) hors menu — outil de config, pas une feature
   assert.deepEqual(entries.map((e) => e.slug),
-    ['building-map', 'anomaly-list', 'ticket-board', 'app-store']);
+    ['building-map', 'anomaly-list', 'ticket-board']);
   assert.equal(appStore.isEnabled('ticket-board'), true);
 
   // guard CA-A4 : installer, puis navigation
