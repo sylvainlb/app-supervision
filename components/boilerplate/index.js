@@ -42,6 +42,9 @@ export const sharedStyles = css`    :host {
     --shadow: 0 1px 2px rgba(15,23,42,.05), 0 6px 18px rgba(15,23,42,.06);
     --shadow-lg: 0 4px 10px rgba(15,23,42,.07), 0 18px 44px rgba(15,23,42,.13);
     display: block; font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #111827; }
+    /* Curseur « main » sur tout ce qui est cliquable (y compris <a> sans href :
+       le navigateur ne met le pointer que sur les liens avec href). */
+    a, button, summary, [role="button"], [data-route], .clickable { cursor: pointer; }
     button {
       background: linear-gradient(135deg, var(--brand-light, #34d399), var(--brand, #10b981)); color: #064e3b; border: 0; border-radius: 10px;
       padding: 8px 16px; font-size: 0.9rem; font-weight: 700; cursor: pointer;

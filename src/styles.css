@@ -35,6 +35,9 @@ body {
 }
 a { color: var(--brand); }
 button { font-family: inherit; }
+/* Curseur « main » partout où c'est cliquable — y compris les <a> sans href
+   (menu, liens de navigation) qui n'ont pas le pointer par défaut. */
+a, button, summary, [role="button"], [data-route], .clickable { cursor: pointer; }
 
 /* Sections du tableau de bord (orbit.json → route.sections) */
 .dash-section { margin-bottom: 34px; padding-bottom: 26px; border-bottom: 1px solid var(--border); }
