@@ -11,6 +11,7 @@ import { groupByStatus } from './logic.js';
 export class TicketBoard extends OrbitComponent {
   static styles = css`
     ${OrbitComponent.styles}
+    .board-head { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 12px; }
     .board { display: flex; gap: 16px; align-items: flex-start; }
     .column {
       flex: 1; min-width: 0; background: #f6f8fb; border: 1px solid var(--border, #e5eaf0);
@@ -44,6 +45,9 @@ export class TicketBoard extends OrbitComponent {
   renderContent() {
     const groups = groupByStatus(this.objects);
     return html`
+      <div class="board-head">
+        <button type="button" @click=${() => this.navigate('ticket-new', '/tickets/new')}>+ New ticket</button>
+      </div>
       <div class="board">
         ${Object.entries(groups).map(([status, tickets]) => html`
           <section class="column" data-status=${status}>
