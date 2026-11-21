@@ -15,18 +15,15 @@ import { matchPath, componentsFor, menuItems, userLabel } from './lib/router.js'
 import { getJson } from '../components/boilerplate/index.js';
 import { field } from './lib/context.js';
 import orbit from '../orbit.json';
-import '../components/building-map/building-map.js';
-import '../components/energy-chart/energy-chart.js';
-import '../components/anomaly-list/anomaly-list.js';
-import '../components/ticket-board/ticket-board.js';
-import '../components/ticket-detail/ticket-detail.js';
-import '../components/ticket-new/ticket-new.js';
-import '../components/user-admin/user-admin.js';
-import '../components/kpi-summary/kpi-summary.js';
-import '../components/building-header/building-header.js';
+// v2 : AUCUN composant métier importé statiquement — tout passe par le CDN
+// (bundle public/features-dist/<slug>.js, SRI vérifié avant import, voir render()).
+// Seuls restent packagés : le mécanisme app store (<app-menu>/<app-store>/<dynamic-feature>,
+// bootstrap) et le boilerplate. En mode fixtures (VITE_FIXTURES=1, sans back), les
+// composants métier sont chargés à la demande en chunks séparés (voir render()).
+import { loadRemoteModule } from '../components/shared/loader.js';
 // App store (app-store-spec.md v0.4) : helpers window.appStore + blox <app-menu>/<app-store>.
 import { appStore } from '../components/shared/app-store-api.js';
-import { isDistant, get as getField } from '../components/shared/logic.js';
+import { isDistant, isInstalled, installPatch, get as getField } from '../components/shared/logic.js';
 import '../components/app-menu/app-menu.js';
 import '../components/app-store/app-store.js';
 import '../components/dynamic-feature/dynamic-feature.js';
@@ -198,7 +195,7 @@ function backTarget(name: string, role: string): { route: string; path: string; 
   return null;
 }
 
-function render(): void {
+async function render(): Promise<void> {
   const app = document.getElementById('app');
   if (!app) return;
   const m = matchPath(window.location.pathname, orbit.routes);
@@ -210,7 +207,7 @@ function render(): void {
   if (name === 'store' && !(window as unknown as { __appStoreOK?: boolean }).__appStoreOK) {
     const p = document.createElement('p');
     p.className = 'error';
-    p.textContent = "App store indisponible : GET /features/ → 404 côté serveur. Intégrer app-store/model/app-store.model.json au model.json de l'app (boot) + sql/012_backfill_prefs.sql (rôle admin) + seed 101_seed_demo.sql, ou lancer en démo avec VITE_FIXTURES=1.";
+    p.textContent = "App store unavailable: GET /features/ → 404 server-side. Add app-store/model/app-store.model.json to the app's model.json (applied at boot) + run sql/012_backfill_prefs.sql (admin role) + seed 101_seed_demo.sql, or run the demo with VITE_FIXTURES=1.";
     app.appendChild(p);
     return;
   }
@@ -225,6 +222,63 @@ function render(): void {
       a.dataset.path = back.path;
       app.appendChild(a);
     }
+  }
+  // v2 — AUCUN composant packagé : si la route correspond à une feature distante
+  // (cdn_url + sri au catalogue), on charge d'abord son bundle CDN (SRI vérifié avant
+  // import, CA-A5), puis on monte normalement. Le guard (§1.9.7) a déjà redirigé si la
+  // feature est désactivée.
+  const feat = (window as unknown as { __appStoreOK?: boolean }).__appStoreOK
+    ? appStore.getFeatureByRoute(window.location.pathname)
+    : null;
+  if (feat && isDistant(feat)) {
+    const slug = String(getField(feat, 'slug') ?? '');
+    const tags = componentsFor(name, orbit.routes);
+    if (tags.length === 0 && !route?.sections?.length) {
+      // lot sans composants déclarés dans orbit.json → montée à la volée via <dynamic-feature>
+      const host = document.createElement('dynamic-feature');
+      host.setAttribute('slug', slug);
+      app.appendChild(host);
+      return;
+    }
+    // la route déclare ses tags : précharger le bundle (SRI) puis montage standard
+    const ph = document.createElement('p');
+    ph.className = 'loading';
+    ph.textContent = `Loading ${slug}…`;
+    app.appendChild(ph);
+    try {
+      await loadRemoteModule({
+        cdnUrl: String(getField(feat, 'cdn_url') ?? ''),
+        sri: String(getField(feat, 'sri') ?? ''),
+        tag: String(getField(feat, 'tag') ?? tags[0] ?? ''),
+      });
+    } catch (e) {
+      app.replaceChildren();
+      const p = document.createElement('p');
+      p.className = 'error';
+      p.textContent = `Cannot load feature ${slug}: ${(e as Error).message}`;
+      app.appendChild(p);
+      return;
+    }
+    ph.remove(); // retire le placeholder « Loading… » sans toucher au lien retour
+    // bundle chargé + SRI vérifié → enregistrer l'installation dans les prefs (§2.2.3 :
+    // installed_version / installed_sri) pour que le badge « installed vX » soit vrai
+    if (!isInstalled(feat, appStore.getPrefs())) {
+      appStore.patchPrefs(installPatch(slug, String(getField(feat, 'version') ?? ''), String(getField(feat, 'sri') ?? '')))
+        .catch(() => {}); // 412 → rechargé au prochain refresh, pas bloquant
+    }
+  } else if (!(window as unknown as { __appStoreOK?: boolean }).__appStoreOK) {
+    // mode démo sans back (VITE_FIXTURES=1) : composants chargés à la demande (chunks séparés)
+    await Promise.all([
+      import('../components/building-map/building-map.js'),
+      import('../components/energy-chart/energy-chart.js'),
+      import('../components/anomaly-list/anomaly-list.js'),
+      import('../components/ticket-board/ticket-board.js'),
+      import('../components/ticket-detail/ticket-detail.js'),
+      import('../components/ticket-new/ticket-new.js'),
+      import('../components/user-admin/user-admin.js'),
+      import('../components/kpi-summary/kpi-summary.js'),
+      import('../components/building-header/building-header.js'),
+    ]);
   }
   // Route avec sections titrées (ex. tableau de bord) : <section><h2>…</h2>composants</section>
   if (route?.sections?.length) {
@@ -245,25 +299,11 @@ function render(): void {
     }
     return;
   }
-  // v2 — route d'une feature distante (cdn_url au catalogue, composant NON packagé au
-  // build) : montée à la volée via <dynamic-feature> (§2.2.7). Le guard (§1.9.7) a déjà
-  // redirigé si la feature est désactivée.
-  const feat = (window as unknown as { __appStoreOK?: boolean }).__appStoreOK
-    ? appStore.getFeatureByRoute(window.location.pathname)
-    : null;
-  if (feat && isDistant(feat)) {
-    // toujours via <dynamic-feature> (packagée ou non) : le composant gère le chargement
-    // (loader SRI si pas en cache) et le montage du <tag> — CA-A5/A6.
-    const host = document.createElement('dynamic-feature');
-    host.setAttribute('slug', String(getField(feat, 'slug') ?? ''));
-    app.appendChild(host);
-    return;
-  }
   for (const tag of componentsFor(name, orbit.routes)) mountInto(app, tag);
 }
 
 function renderAll(): void {
-  render();
+  void render();
   renderHeader();
   renderMenu(currentRole());
 }
