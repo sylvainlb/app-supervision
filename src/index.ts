@@ -26,8 +26,10 @@ import '../components/kpi-summary/kpi-summary.js';
 import '../components/building-header/building-header.js';
 // App store (app-store-spec.md v0.4) : helpers window.appStore + blox <app-menu>/<app-store>.
 import { appStore } from '../components/shared/app-store-api.js';
+import { isDistant, get as getField } from '../components/shared/logic.js';
 import '../components/app-menu/app-menu.js';
 import '../components/app-store/app-store.js';
+import '../components/dynamic-feature/dynamic-feature.js';
 
 declare global {
   interface Window {
@@ -61,6 +63,7 @@ function loginRedirect(redirectPath?: string): Promise<never> {
     handleRedirect: (url: string) => {
       // scope=openid : offline_access est refusé par Keycloak 26.4 pour ce client
       // (not_allowed) ; le vrai nom passe par le claim « name » mappé côté client.
+      sessionStorage.setItem('app.loginOut', '1'); // callback attendu au retour
       window.location.assign(url.replace('scope=openid%20offline_access', 'scope=openid'));
     },
   }) as Promise<never>;
@@ -242,6 +245,20 @@ function render(): void {
     }
     return;
   }
+  // v2 — route d'une feature distante (cdn_url au catalogue, composant NON packagé au
+  // build) : montée à la volée via <dynamic-feature> (§2.2.7). Le guard (§1.9.7) a déjà
+  // redirigé si la feature est désactivée.
+  const feat = (window as unknown as { __appStoreOK?: boolean }).__appStoreOK
+    ? appStore.getFeatureByRoute(window.location.pathname)
+    : null;
+  if (feat && isDistant(feat)) {
+    // toujours via <dynamic-feature> (packagée ou non) : le composant gère le chargement
+    // (loader SRI si pas en cache) et le montage du <tag> — CA-A5/A6.
+    const host = document.createElement('dynamic-feature');
+    host.setAttribute('slug', String(getField(feat, 'slug') ?? ''));
+    app.appendChild(host);
+    return;
+  }
   for (const tag of componentsFor(name, orbit.routes)) mountInto(app, tag);
 }
 
@@ -293,19 +310,53 @@ async function main(): Promise<void> {
   // On mémorise l'URL de boot : restorePreviousSession réécrit l'URL vers l'URL de
   // redirect mémorisée (ex. « / ») via replaceState — il faut restaurer le deep link
   // demandé (ex. /store, /tickets/22) quand on n'était PAS sur un callback ?code=….
-  const bootUrl = window.location.pathname + window.location.search;
+  // Deep link après rechargement : la lib OIDC (restorePreviousSession) peut renaviguer
+  // vers l'URL de callback mémorisée (?session_state&iss) au lieu de l'URL demandée.
+  // 1) On mémorise le chemin demandé à chaque boot ; si on boot sur une URL de callback
+  //    sans code, on restaure le chemin mémorisé.
+  const stripAuthParams = (u: string) => {
+    const url = new URL(u, window.location.origin);
+    for (const p of ['code', 'state', 'session_state', 'iss']) url.searchParams.delete(p);
+    return url.pathname + url.search;
+  };
+  const q = new URLSearchParams(window.location.search);
+  // Callback FRAIS (on vient de partir vers Keycloak) : laisser la lib échanger le code.
+  // Sinon, si l'URL contient des résidus d'auth (code consommé / session_state / iss) —
+  // la lib restorePreviousSession renavigue vers l'ancien callback — on restaure le deep link.
+  const loginOut = sessionStorage.getItem('app.loginOut') === '1';
+  if (q.has('code') && loginOut) {
+    sessionStorage.removeItem('app.loginOut');
+  } else if (q.has('code') || q.has('session_state') || q.has('iss')) {
+    const remembered = sessionStorage.getItem('app.bootPath');
+    const target = remembered ? stripAuthParams(remembered) : '/';
+    if (stripAuthParams(window.location.pathname + window.location.search) !== target) {
+      window.history.replaceState({}, '', target);
+    }
+  }
+  const bootUrl = stripAuthParams(window.location.pathname + window.location.search);
+  sessionStorage.setItem('app.bootPath', bootUrl);
   const wasCallback = new URLSearchParams(window.location.search).has('code');
+  // 2) La lib peut aussi récrire l'URL par replaceState (même un tick après sa promesse) :
+  //    on intercepte pour nettoyer les params d'auth et garder le deep link demandé.
+  const origReplaceState = window.history.replaceState.bind(window.history);
+  window.history.replaceState = (data, unused, url) => {
+    if (url == null) return origReplaceState(data, unused, url);
+    const u = new URL(String(url), window.location.origin);
+    for (const p of ['code', 'state', 'session_state', 'iss']) u.searchParams.delete(p);
+    const boot = new URL(bootUrl, window.location.origin);
+    const target = wasCallback ? u.pathname + u.search : boot.pathname + boot.search;
+    return origReplaceState(data, unused, target);
+  };
   try {
     await session.handleIncomingRedirect({ restorePreviousSession: true });
   } catch (err) {
     console.warn('[app-supervision] handleIncomingRedirect en erreur :', err);
   }
-  // La lib peut récrire l'URL (replaceState vers l'URL de callback mémorisée) un tick
-  // APRÈS la résolution de sa promesse : on attend, puis on restaure le deep link demandé.
+  // Filet de sécurité si la lib a récrit l'URL sans passer par replaceState.
   if (!wasCallback) {
     await new Promise((r) => setTimeout(r, 150));
     if (window.location.pathname + window.location.search !== bootUrl) {
-      window.history.replaceState({}, '', bootUrl);
+      origReplaceState({}, '', bootUrl);
     }
   }
   if (!session.info.isLoggedIn) {
