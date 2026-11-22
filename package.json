@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Front-end de l'application de supervision energetique (spec supervision-energetique-front-technique.md)",
+  "description": "Front-end of the energy supervision application (spec supervision-energetique-front-technique.md)",
   "scripts": {
     "dev": "bash scripts/dev.sh",
     "test": "node --test tests/",

@@ -1,10 +1,10 @@
-// Logique PURE de l'app store (sans DOM, testable en node --test) — spec v0.4 §1.4–§1.9.
-// Séparée des composants Lit (pattern logic.js des composants métier).
+// PURE app store logic (no DOM, testable with node --test) — spec v0.4 §1.4–§1.9.
+// Separate from the Lit components (the logic.js pattern of the business components).
 
 // ---------------------------------------------------------------------------
-// §1.9.12 — <me> : pk extrait du claim webid (https://<pod>/users/<pk>).
-// Un webid HORS du pod est interdit en v1 → null.
-// Retourne { pk, host } ou null.
+// §1.9.12 — <me>: pk extracted from the webid claim (https://<pod>/users/<pk>).
+// A webid OUTSIDE the pod is forbidden in v1 → null.
+// Returns { pk, host } or null.
 export function parseWebidPk(webid, podUrl) {
   if (!webid || typeof webid !== 'string') return null;
   let u;
@@ -12,22 +12,22 @@ export function parseWebidPk(webid, podUrl) {
   if (podUrl) {
     let pod;
     try { pod = new URL(podUrl); } catch { return null; }
-    if (u.origin !== pod.origin) return null; // webid hors pod → interdit en v1 (403)
+    if (u.origin !== pod.origin) return null; // webid outside the pod → forbidden in v1 (403)
   }
   const m = u.pathname.match(/^\/users\/(\d+)\/?$/);
   if (!m) return null;
   return { pk: m[1], host: u.host };
 }
 
-// IRI (path relatif, résolu vers POD_URL par fetchAuthn) des prefs de <me>.
+// IRI (relative path, resolved against POD_URL by fetchAuthn) of <me>'s prefs.
 export function prefsPath(webid, podUrl) {
   const p = parseWebidPk(webid, podUrl);
   return p ? `/prefs/${p.pk}` : null;
 }
 
 // ---------------------------------------------------------------------------
-// §1.9.4a — règle « clé absente dans les prefs = default_enabled ».
-// prefsObj = contenu de la colonne jsonb prefs : {"<slug>": {"enabled":…, "config":…}}
+// §1.9.4a — rule "key absent from prefs = default_enabled".
+// prefsObj = content of the jsonb prefs column: {"<slug>": {"enabled":…, "config":…}}
 export function featureEnabled(prefsObj, feature) {
   if (!feature) return false;
   const slug = get(feature, 'slug');
@@ -37,25 +37,25 @@ export function featureEnabled(prefsObj, feature) {
 }
 
 // ---------------------------------------------------------------------------
-// Titre localisé §1.9.2 : title_i18n[locale] → fallback en → fallback fr → fallback slug.
+// Localized title §1.9.2: title_i18n[locale] → fallback en → fallback fr → fallback slug.
 export function titleOf(feature, locale = 'en') {
   const t = get(feature, 'title_i18n') ?? {};
   return t[locale] ?? t.en ?? t.fr ?? get(feature, 'slug') ?? '';
 }
 
 // ---------------------------------------------------------------------------
-// §1.6.1 / CA-A1 — entrées du menu : join catalogue × prefs, tri
-// (menu_order ASC, slug ASC) (§1.9.1), slugs des prefs inconnus du catalogue
-// ignorés (§1.9.4d). routeExists(slug/route) filtre les features dont la route
-// n'existe pas dans orbit.json (§1.9.8).
+// §1.6.1 / CA-A1 — menu entries: catalogue × prefs join, sort
+// (menu_order ASC, slug ASC) (§1.9.1), prefs slugs unknown to the catalogue
+// ignored (§1.9.4d). routeExists(slug/route) filters out features whose route
+// does not exist in orbit.json (§1.9.8).
 export function menuEntries(catalogue, prefsObj, { locale = 'en', routeExists, role } = {}) {
   const knownSlugs = new Set((prefsObj ? Object.keys(prefsObj) : []));
   return (catalogue ?? [])
     .filter((f) => !routeExists || routeExists(f))
-    // route paramétrée (ex. /buildings/:id) = page de DÉTAIL : atteinte par clic
-    // sur un élément, jamais affichée telle quelle dans le menu (sans id → 404).
+    // parameterized route (e.g. /buildings/:id) = DETAIL page: reached by clicking
+    // an item, never shown as-is in the menu (no id → 404).
     .filter((f) => !String(get(f, 'route') ?? '').includes(':'))
-    .filter((f) => (get(f, 'in_menu') ?? true) !== false) // in_menu=false → hors menu (outil ex. /store), route toujours gardée
+    .filter((f) => (get(f, 'in_menu') ?? true) !== false) // in_menu=false → outside the menu (tool e.g. /store), route still kept
     .filter((f) => roleAllowed(get(f, 'role_min') ?? 'all', role))
     .map((f) => ({
       slug: get(f, 'slug'),
@@ -63,9 +63,9 @@ export function menuEntries(catalogue, prefsObj, { locale = 'en', routeExists, r
       icon: get(f, 'icon') || 'extension',
       route: get(f, 'route'),
       enabled: featureEnabled(prefsObj, f),
-      // §1.9.4d : une entrée de prefs sans feature au catalogue est ignorée —
-      // on ne rend que les features du catalogue (knownSlugs sert aux tests de
-      // non-régression : menuEntries ne produit jamais un slug hors catalogue).
+      // §1.9.4d: a prefs entry without a catalogue feature is ignored —
+      // we only render catalogue features (knownSlugs is used by the
+      // non-regression tests: menuEntries never produces a slug outside the catalogue).
       _known: knownSlugs.has(f.slug) || Object.keys(prefsObj ?? {}).length === 0,
     }))
     .filter((e) => e.enabled)
@@ -76,7 +76,7 @@ export function menuEntries(catalogue, prefsObj, { locale = 'en', routeExists, r
     });
 }
 
-// Lecture d'un champ JSON-LD quel que soit le préfixe (features:role_min, role_min…).
+// Reads a JSON-LD field whatever the prefix (features:role_min, role_min…).
 export function get(obj, name) {
   if (!obj || typeof obj !== 'object') return undefined;
   if (obj[name] !== undefined) return obj[name];
@@ -85,10 +85,10 @@ export function get(obj, name) {
 }
 
 // ---------------------------------------------------------------------------
-// §1.4.1 — role_min : 'all' | 'technicien' | 'gestionnaire' | 'admin'.
-// Correspondance EXACTE (comme les "roles" des routes d'orbit.json) :
-// visible si role_min == 'all', ou role_min == rôle de l'utilisateur, ou admin.
-// (Filtrage menu + guard uniquement — la sécurité reste côté ACL/PDP.)
+// §1.4.1 — role_min: 'all' | 'technician' | 'manager' | 'admin'.
+// EXACT match (like the "roles" of orbit.json routes):
+// visible if role_min == 'all', or role_min == the user's role, or admin.
+// (Menu + guard filtering only — security stays server-side ACL/PDP.)
 export function roleAllowed(roleMin, role) {
   if (!roleMin || roleMin === 'all') return true;
   if (role === 'admin') return true;
@@ -96,7 +96,7 @@ export function roleAllowed(roleMin, role) {
 }
 
 // ---------------------------------------------------------------------------
-// §1.9.6 — méta-schéma config_schema :
+// §1.9.6 — config_schema meta-schema:
 // {"fields": [{"key","label","type":"string"|"number"|"boolean"|"enum"|"object"|"array",
 //              "default"?,"options"? (enum),"items"? (array),"required"?}]}
 export function configDefaults(schema) {
@@ -107,15 +107,15 @@ export function configDefaults(schema) {
   return out;
 }
 
-// §1.9.11 — badge « configuré » : config non vide ET différent des defaults
-// (comparaison JSON).
+// §1.9.11 — "configured" badge: config non-empty AND different from the defaults
+// (JSON comparison).
 export function isConfigured(config, schema) {
   if (!config || typeof config !== 'object' || Object.keys(config).length === 0) return false;
   return JSON.stringify(config) !== JSON.stringify(configDefaults(schema));
 }
 
 // ---------------------------------------------------------------------------
-// Forme R1 des PATCH (§1.5) : le jsonb prefs n'est PAS aplati à la racine —
+// R1 form of PATCHes (§1.5): the prefs jsonb is NOT flattened at the root —
 // body = {"prefs": {…}}.
 export function togglePatch(slug, enabled) {
   return { [slug]: { enabled: !!enabled } };
@@ -125,8 +125,8 @@ export function configPatch(slug, config) {
 }
 
 /**
- * Extrait la colonne jsonb `prefs` d'une ressource JSON-LD, quel que soit le
- * préfixe de sérialisation du serveur (`prefs`, `prefs:prefs`, `app_prefs:prefs`…).
+ * Extracts the `prefs` jsonb column from a JSON-LD resource, whatever the
+ * server's serialization prefix (`prefs`, `prefs:prefs`, `app_prefs:prefs`…).
  */
 export function prefsColumn(data) {
   if (!data || typeof data !== 'object') return {};
@@ -139,11 +139,11 @@ export function prefsColumn(data) {
 }
 
 /**
- * Body PATCH forme R1 : {"prefs": {…}}. Constat sur le serveur live (21/11) : le PEP
- * REMPLACE la colonne jsonb `prefs` entière (pas de merge profond serveur) →
- * read-modify-write : on fusionne le patch avec l'état courant (merge par slug, pour
- * préserver `config` quand on ne touche qu'à `enabled`) et on envoie l'objet complet,
- * protégé par If-Match → 412 en cas de conflit (§1.9.9).
+ * R1-form PATCH body: {"prefs": {…}}. Finding on the live server (21/11): the PEP
+ * REPLACES the whole `prefs` jsonb column (no deep server-side merge) →
+ * read-modify-write: we merge the patch with the current state (merge by slug, to
+ * preserve `config` when only touching `enabled`) and send the complete object,
+ * protected by If-Match → 412 on conflict (§1.9.9).
  */
 export function prefsPatchBody(patch, current = {}) {
   const merged = { ...current };
@@ -154,9 +154,9 @@ export function prefsPatchBody(patch, current = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// Guard de route (§1.9.7 / CA-A4) : retrouve la feature dont la route Orbit
-// correspond au path demandé. match exact, ou prefix si la route a un :param
-// (ex. route "/buildings/:id", path "/buildings/42").
+// Route guard (§1.9.7 / CA-A4): finds the feature whose Orbit route
+// matches the requested path. Exact match, or prefix if the route has a :param
+// (e.g. route "/buildings/:id", path "/buildings/42").
 export function featureForPath(catalogue, pathname) {
   if (!pathname) return null;
   const path = pathname.split('?')[0].replace(/\/+$/, '') || '/';
@@ -172,7 +172,7 @@ export function featureForPath(catalogue, pathname) {
     const base = route.split(':')[0].replace(/\/+$/, '');
     if (base && (path === base || path.startsWith(base + '/'))) return f;
   }
-  // 3e passe : préfixe simple (sous-route d'une feature, ex. /tickets/new → feature tickets)
+  // 3rd pass: simple prefix (sub-route of a feature, e.g. /tickets/new → tickets feature)
   for (const f of catalogue ?? []) {
     const route = get(f, 'route');
     if (!route || route.includes(':')) continue;
@@ -183,9 +183,9 @@ export function featureForPath(catalogue, pathname) {
 }
 
 // ---------------------------------------------------------------------------
-// Formulaire de config (validation front v1, §1.9.6 / CA-A3).
+// Config form (front v1 validation, §1.9.6 / CA-A3).
 
-// Normalise une valeur saisie selon le type du champ.
+// Normalizes an entered value according to the field type.
 export function normalizeFieldValue(fieldDef, raw) {
   switch (fieldDef.type) {
     case 'number': {
@@ -198,7 +198,7 @@ export function normalizeFieldValue(fieldDef, raw) {
     case 'enum':
       return fieldDef.options?.includes(raw) ? raw : undefined;
     case 'array':
-      // saisie texte : une valeur par ligne (ou JSON array)
+      // text input: one value per line (or JSON array)
       if (Array.isArray(raw)) return raw.map(String);
       if (typeof raw === 'string') {
         const s = raw.trim();
@@ -220,7 +220,7 @@ export function normalizeFieldValue(fieldDef, raw) {
   }
 }
 
-// Valide un objet config contre le schéma → { ok, errors: {key: message} }.
+// Validates a config object against the schema → { ok, errors: {key: message} }.
 export function validateConfig(schema, values) {
   const errors = {};
   const fields = schema?.fields ?? [];
@@ -241,28 +241,28 @@ export function validateConfig(schema, values) {
 }
 
 // ---------------------------------------------------------------------------
-// Partie 2 (v2) — features distantes : helpers purs.
+// Part 2 (v2) — distant features: pure helpers.
 
-// Une feature est « distante » si le catalogue v2 porte cdn_url + tag
-// (colonnes 020_features_v2.sql) ; sinon elle est packagée au build (v1).
+// A feature is "distant" if the v2 catalogue carries cdn_url + tag
+// (columns 020_features_v2.sql); otherwise it is packaged at build time (v1).
 export function isDistant(feature) {
   return !!(get(feature, 'cdn_url') && get(feature, 'tag'));
 }
 
-// Entrée prefs d'une feature (jsonb prefs.<slug>) : {enabled, config, installed_version?, installed_sri?}.
+// Prefs entry of a feature (jsonb prefs.<slug>): {enabled, config, installed_version?, installed_sri?}.
 export function installedEntry(prefsObj, slug) {
   return prefsObj?.[slug] ?? {};
 }
 
-// CA-A5 : une feature packagée est toujours « installée » (présente au build) ;
-// une feature distante ne l'est que si installed_version + installed_sri sont posés.
+// CA-A5: a packaged feature is always "installed" (present at build time);
+// a distant feature is only if installed_version + installed_sri are set.
 export function isInstalled(feature, prefsObj) {
   if (!isDistant(feature)) return true;
   const e = installedEntry(prefsObj, get(feature, 'slug'));
   return !!(e.installed_version && e.installed_sri);
 }
 
-// Comparaison de versions "x.y.z" (entiers pointés) : -1 / 0 / 1.
+// "x.y.z" version comparison (dot-separated integers): -1 / 0 / 1.
 export function compareVersions(a, b) {
   const pa = String(a ?? '0').split('.').map((x) => parseInt(x, 10) || 0);
   const pb = String(b ?? '0').split('.').map((x) => parseInt(x, 10) || 0);
@@ -273,8 +273,8 @@ export function compareVersions(a, b) {
   return 0;
 }
 
-// CA-A6 : le catalogue annonce une version > installed_version → upgrade proposé
-// (re-vérification du nouveau sri à l'upgrade, §2.2.5).
+// CA-A6: the catalogue announces a version > installed_version → upgrade offered
+// (re-verification of the new sri at upgrade time, §2.2.5).
 export function upgradeAvailable(feature, prefsObj) {
   if (!isDistant(feature)) return false;
   const e = installedEntry(prefsObj, get(feature, 'slug'));
@@ -282,23 +282,23 @@ export function upgradeAvailable(feature, prefsObj) {
   return !!(v && e.installed_version && compareVersions(v, e.installed_version) > 0);
 }
 
-// Patch d'installation (forme R1 §1.5) : active la feature ET enregistre la
-// version réellement chargée (audit front ; l'audit serveur est dans dsp.audit via E11).
+// Install patch (R1 form §1.5): enables the feature AND records the
+// actually loaded version (front audit; the server audit is in dsp.audit via E11).
 export function installPatch(slug, version, sri) {
   return { [slug]: { enabled: true, installed_version: version, installed_sri: sri } };
 }
 
-// Patch de désinstallation (§2.2.4) : désactive + nullifie installed_* (les clés
-// null sont supprimées par le merge-patch RFC 7386 / l'objet complet envoyé).
+// Uninstall patch (§2.2.4): disables + nullifies installed_* (null keys are
+// removed by the RFC 7386 merge-patch / the complete object sent).
 export function uninstallPatch(slug) {
   return { [slug]: { enabled: false, installed_version: null, installed_sri: null } };
 }
 
 // ---------------------------------------------------------------------------
-// Organisation du store (spec §1.6.2 révisée) : catégories (rayons) + recherche.
-// La colonne app.features.category (migration 021) vaut 'supervision',
-// 'operations', 'energy', 'compliance', 'tools'… ou NULL (→ rayon « autres »).
-// Le menu (<app-menu>) reste plat : la catégorisation ne vit que dans /store.
+// Store layout (revised spec §1.6.2): categories (shelves) + search.
+// The app.features.category column (migration 021) is 'supervision',
+// 'operations', 'energy', 'compliance', 'tools'… or NULL (→ "other" shelf).
+// The menu (<app-menu>) stays flat: categorization only lives in /store.
 export const CATEGORY_ORDER = ['supervision', 'operations', 'energy', 'compliance', 'tools'];
 
 export const CATEGORY_LABELS = {
@@ -312,8 +312,8 @@ export function categoryLabel(cat, locale = 'en') {
   return labels[cat] ?? cat;
 }
 
-// Regroupe les features par catégorie : ordre fixe CATEGORY_ORDER, inconnues par
-// ordre alphabétique, sans catégorie ('') toujours en dernier.
+// Groups features by category: fixed CATEGORY_ORDER order, unknown ones
+// alphabetically, no category ('') always last.
 export function groupByCategory(features, locale = 'en') {
   const byCat = new Map();
   for (const f of features ?? []) {
@@ -332,7 +332,7 @@ export function groupByCategory(features, locale = 'en') {
   return cats.map((c) => ({ category: c, label: categoryLabel(c, locale), features: byCat.get(c) }));
 }
 
-// Recherche texte sur slug + titre + description (insensible à la casse).
+// Text search on slug + title + description (case-insensitive).
 export function featureMatchesQuery(f, query, locale = 'en') {
   const q = String(query ?? '').trim().toLowerCase();
   if (!q) return true;

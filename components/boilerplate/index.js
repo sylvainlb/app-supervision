@@ -1,31 +1,31 @@
-// Boilerplate vendored — hiérarchie spec front §6.2 / doc SIB §6.1 :
-// LitElement → ComponentObjectHandler (ressource seule, isType())
-//   → ComponentObjectsHandler (liste, hasType()) → OrbitComponent (intégration Orbit).
-// Conventions : attendre `orbit-ready` avant init ; data via window.sibStore.getData ;
-// cache invalidé à l'écoute de `save` sur document ; navigation via CustomEvent
-// 'requestNavigation' ; états async via Task (@lit/task : pending/error/complete).
+// Vendored boilerplate — hierarchy front spec §6.2 / SIB doc §6.1:
+// LitElement → ComponentObjectHandler (single resource, isType())
+//   → ComponentObjectsHandler (list, hasType()) → OrbitComponent (Orbit integration).
+// Conventions: wait for `orbit-ready` before init; data via window.sibStore.getData;
+// cache invalidated by listening to `save` on document; navigation via CustomEvent
+// 'requestNavigation'; async states via Task (@lit/task: pending/error/complete).
 import { LitElement, html, css } from 'lit';
 import { Task } from '@lit/task';
 
-// Lecture JSON-LD BRUTE via le fetch authentifié injecté dans sibStore (§13.7 :
-// point d'injection unique window.sibStore.fetchAuthn — DPoP/Bearer + réécriture
-// absolue vers POD_URL + repli fixtures faits dans index.ts).
-// On n'utilise PAS sibStore.getData() ici : il renvoie des proxies CustomGetter dont
-// les champs ne sont lisibles qu'en async via get(path) — illisible pour nos blox custom.
+// RAW JSON-LD read via the authenticated fetch injected into sibStore (§13.7:
+// single injection point window.sibStore.fetchAuthn — DPoP/Bearer + absolute
+// rewrite to POD_URL + fixtures fallback done in index.ts).
+// We do NOT use sibStore.getData() here: it returns CustomGetter proxies whose
+// fields are only readable asynchronously via get(path) — unusable for our custom blox.
 export async function getJson(url) {
   const fetchFn = window.sibStore?.fetchAuthn ?? fetch;
   const res = await fetchFn(url, { headers: { accept: 'application/ld+json' } });
   if (!res.ok) {
     const err = new Error(`GET ${url} → ${res.status}`);
     err.status = res.status;
-    try { err.body = await res.json(); } catch { /* body pas JSON */ }
+    try { err.body = await res.json(); } catch { /* body not JSON */ }
     throw err;
   }
   return res.json();
 }
 
-// Résout les membres d'un conteneur LDP (qui ne liste que des @id) en ressources
-// complètes via getJson(@id). Membres déjà complets (fixtures) inchangés.
+// Resolves the members of an LDP container (which only lists @id) into full
+// resources via getJson(@id). Members already complete (fixtures) unchanged.
 export async function resolveMembers(data) {
   const members = data?.['ldp:contains'] ?? (Array.isArray(data) ? data : []);
   return Promise.all(members.map(async (m) => {
@@ -42,11 +42,11 @@ export const sharedStyles = css`    :host {
     --shadow: 0 1px 2px rgba(15,23,42,.05), 0 6px 18px rgba(15,23,42,.06);
     --shadow-lg: 0 4px 10px rgba(15,23,42,.07), 0 18px 44px rgba(15,23,42,.13);
     display: block; font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #111827; }
-    /* Reset box-sizing dans le shadow root aussi : sinon les champs width:100%
-       débordent de leur conteneur (padding + borderure en content-box). */
+    /* Reset box-sizing in the shadow root too: otherwise width:100% fields
+       overflow their container (padding + border in content-box). */
     *, *::before, *::after { box-sizing: border-box; }
-    /* Curseur « main » sur tout ce qui est cliquable (y compris <a> sans href :
-       le navigateur ne met le pointer que sur les liens avec href). */
+    /* "pointer" cursor on everything clickable (including <a> without href:
+       the browser only sets the pointer on links with href). */
     a, button, summary, [role="button"], [data-route], .clickable { cursor: pointer; }
     button {
       background: linear-gradient(135deg, var(--brand-light, #34d399), var(--brand, #10b981)); color: #064e3b; border: 0; border-radius: 10px;
@@ -74,7 +74,7 @@ export const sharedStyles = css`    :host {
     tbody tr { transition: background .12s ease; }
     tbody tr:hover { background: #ecfdf5; }
     .card { background: #fff; border: 1px solid var(--border, #e5eaf0); border-radius: 12px; box-shadow: var(--shadow); padding: 12px; transition: box-shadow .15s ease, transform .15s ease; }
-    /* Badges « soft » : fond teinté + texte coloré (plus lisibles que le plein uni) */
+    /* "soft" badges: tinted background + colored text (more readable than solid fill) */
     .badge { display: inline-block; border-radius: 999px; padding: 3px 11px; font-size: 0.74rem; font-weight: 700; letter-spacing: .02em; color: #475569; background: #f1f5f9; }
     .sev-LOW, .st-OPEN { background: #e2e8f0; color: #475569; }
     .sev-MEDIUM, .pri-MEDIUM, .st-anomaly { background: #fef3c7; color: #b45309; }
@@ -99,7 +99,7 @@ export class ComponentObjectHandler extends LitElement {
     this.object = null;
   }
 
-  // À surcharger : prédicat sur la ressource chargée.
+  // To override: predicate on the loaded resource.
   isType(_obj) {
     return true;
   }
@@ -116,7 +116,7 @@ export class ComponentObjectsHandler extends ComponentObjectHandler {
     this.objects = [];
   }
 
-  // À surcharger : prédicat sur chaque membre du conteneur.
+  // To override: predicate on each container member.
   hasType(_obj) {
     return true;
   }
@@ -141,7 +141,7 @@ export class OrbitComponent extends ComponentObjectsHandler {
 
   connectedCallback() {
     super.connectedCallback();
-    this._onSave = () => this.refresh(); // invalidation cache sur mutation (§5)
+    this._onSave = () => this.refresh(); // cache invalidation on mutation (§5)
     document.addEventListener('save', this._onSave);
     const ready = window.orbit?.ready
       ?? new Promise((resolve) => document.addEventListener('orbit-ready', resolve, { once: true }));
@@ -153,7 +153,7 @@ export class OrbitComponent extends ComponentObjectsHandler {
     super.disconnectedCallback();
   }
 
-  // Hook de chargement — à surcharger. Alimenter this.object / this.objects.
+  // Loading hook — to override. Fill this.object / this.objects.
   async load() {
     const data = await getJson(this.dataSrc);
     const resolved = await resolveMembers(data);
@@ -170,7 +170,7 @@ export class OrbitComponent extends ComponentObjectsHandler {
     document.dispatchEvent(new CustomEvent('requestNavigation', { detail: { route, resource, query } }));
   }
 
-  // État vide explicite (§7.1) — à surcharger si le composant alimente autre chose que objects/object.
+  // Explicit empty state (§7.1) — to override if the component feeds something other than objects/object.
   isEmpty() {
     return this.objects.length === 0 && !this.object;
   }
@@ -186,7 +186,7 @@ export class OrbitComponent extends ComponentObjectsHandler {
     });
   }
 
-  // À surcharger : rendu du contenu une fois les données chargées.
+  // To override: content rendering once the data is loaded.
   renderContent() {
     return html``;
   }

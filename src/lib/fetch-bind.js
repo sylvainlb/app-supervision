@@ -1,15 +1,15 @@
-// Pré-chargement à importer EN PREMIER dans src/index.ts.
+// Preload to import FIRST in src/index.ts.
 //
-// 1. cross-fetch (bundlé dans @inrupt/solid-client-authn-browser) récupère fetch via
-//    le prototype d'un objet ponyfill (exports.fetch = ctx.fetch) → fetch NON bindé →
-//    « TypeError: Illegal invocation » dans Chromium. On bind globalThis.fetch AVANT
-//    l'initialisation de la librairie.
+// 1. cross-fetch (bundled in @inrupt/solid-client-authn-browser) grabs fetch via
+//    the prototype of a ponyfill object (exports.fetch = ctx.fetch) → fetch NOT bound →
+//    "TypeError: Illegal invocation" in Chromium. We bind globalThis.fetch BEFORE
+//    the library initializes.
 //
-// 2. La lib lit le JWKS OIDC avec `keys[0]` sans filtrer (fetchJwks2 de
-//    solid-client-authn-core). Or Keycloak liste la clé de CHIFFREMENT (use:enc,
-//    RSA-OAEP) en premier → vérification de signature de l'id_token échoue
-//    (JWSSignatureVerificationFailed). On réécrit la réponse /certs pour ne garder
-//    que les clés de signature (use:sig), pour que keys[0] soit la bonne.
+// 2. The lib reads the OIDC JWKS with `keys[0]` without filtering (fetchJwks2 from
+//    solid-client-authn-core). But Keycloak lists the ENCRYPTION key (use:enc,
+//    RSA-OAEP) first → id_token signature verification fails
+//    (JWSSignatureVerificationFailed). We rewrite the /certs response to keep only
+//    the signature keys (use:sig), so that keys[0] is the right one.
 if (typeof globalThis.fetch === 'function' && !globalThis.fetch.__sibBound) {
   const nativeFetch = globalThis.fetch.bind(globalThis);
   const wrapped = async (input, init) => {
@@ -26,7 +26,7 @@ if (typeof globalThis.fetch === 'function' && !globalThis.fetch.__sibBound) {
           });
         }
       }
-    } catch { /* pas un JWKS → on laisse passer */ }
+    } catch { /* not a JWKS → let it through */ }
     return res;
   };
   try { Object.defineProperty(wrapped, '__sibBound', { value: true }); } catch { /* noop */ }

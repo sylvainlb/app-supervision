@@ -835,13 +835,13 @@ function actionForStatus(status) {
 // src/lib/transitions.js
 var STATUSES = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
 var MATRIX = {
-  OPEN: { IN_PROGRESS: ["technicien", "gestionnaire"] },
-  IN_PROGRESS: { RESOLVED: ["technicien", "gestionnaire"] },
-  RESOLVED: { CLOSED: ["gestionnaire"], IN_PROGRESS: ["gestionnaire"] },
-  CLOSED: { OPEN: ["gestionnaire"] }
+  OPEN: { IN_PROGRESS: ["technician", "manager"] },
+  IN_PROGRESS: { RESOLVED: ["technician", "manager"] },
+  RESOLVED: { CLOSED: ["manager"], IN_PROGRESS: ["manager"] },
+  CLOSED: { OPEN: ["manager"] }
 };
 function canCreate(role) {
-  return role === "gestionnaire";
+  return role === "manager";
 }
 function canTransition(from, to, role, { assigned = false } = {}) {
   if (!STATUSES.includes(to)) return false;
@@ -849,7 +849,7 @@ function canTransition(from, to, role, { assigned = false } = {}) {
   if (!STATUSES.includes(from)) return false;
   const allowed = MATRIX[from]?.[to];
   if (!allowed) return false;
-  if (role === "technicien") return allowed.includes("technicien") && assigned;
+  if (role === "technician") return allowed.includes("technician") && assigned;
   return allowed.includes(role);
 }
 function validNextStatuses(from, role, opts) {
@@ -905,7 +905,7 @@ var TicketDetail = class extends OrbitComponent {
   constructor() {
     super();
     this.comments = [];
-    this.role = "gestionnaire";
+    this.role = "manager";
     this.webid = "";
     this.toast = "";
     this.commentText = "";

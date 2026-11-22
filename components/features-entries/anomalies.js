@@ -1,2 +1,2 @@
-// Entrée bundle CDN (v2) de la feature `anomalies` — enregistre tous les tags de la route.
+// CDN bundle entry (v2) of the feature `anomalies` — registers all the route tags.
 import '../anomaly-list/anomaly-list.js';

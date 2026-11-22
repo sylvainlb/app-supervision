@@ -1,4 +1,4 @@
-// building-header — fiche d'identité du bâtiment en haut de la page /buildings/:id.
+// building-header — building identity card at the top of the /buildings/:id page.
 import { html, css } from 'lit';
 import { OrbitComponent, getJson } from '../boilerplate/index.js';
 import { field } from '../../src/lib/context.js';

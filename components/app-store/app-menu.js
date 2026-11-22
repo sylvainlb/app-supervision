@@ -1,15 +1,15 @@
-// <app-menu> — menu de l'app généré dynamiquement depuis les préférences
-// (spec app-store-spec.md v0.4 §1.6.1, CA-A1).
+// <app-menu> — app menu generated dynamically from the preferences
+// (app-store-spec.md v0.4 §1.6.1, CA-A1).
 //
-// - Lit /features/ (catalogue) + /prefs/<me> via window.appStore (§1.6.1).
-// - Rend un lien par feature enabled=true, triées (menu_order, slug) (§1.9.1),
-//   en joignant au catalogue — les slugs des prefs inconnus du catalogue sont
-//   ignorés (§1.9.4d).
-// - N'affiche que les features dont la route existe dans orbit.json (§1.9.8).
-// - Installe le guard de route du shell : route d'une feature désactivée →
+// - Reads /features/ (catalogue) + /prefs/<me> via window.appStore (§1.6.1).
+// - Renders one link per feature enabled=true, sorted (menu_order, slug) (§1.9.1),
+//   joined against the catalogue — prefs slugs unknown to the catalogue are
+//   ignored (§1.9.4d).
+// - Only shows features whose route exists in orbit.json (§1.9.8).
+// - Installs the shell route guard: route of a disabled feature →
 //   redirect '/' (§1.9.7, CA-A4).
-// - Se met à jour à chaud : abonnement appStore.onChange + événement `save`
-//   (contrat §1.9.9) — le boilerplate OrbitComponent écoute déjà `save`.
+// - Updates live: appStore.onChange subscription + `save` event
+//   (§1.9.9 contract) — the boilerplate OrbitComponent already listens to `save`.
 import { html, css } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { unsafeStatic, html as staticHtml } from 'lit/static-html.js';
@@ -18,8 +18,8 @@ import appStore from '../shared/app-store-api.js';
 import { menuEntries, titleOf, get } from '../shared/logic.js';
 import { iconSvg } from '../shared/icons.js';
 
-// solid-link si le Store SIB est chargé (Orbit prod), sinon <a> — même contrat
-// : les deux dispatchent `requestNavigation`.
+// solid-link if the SIB Store is loaded (Orbit prod), otherwise <a> — same contract:
+// both dispatch `requestNavigation`.
 const LINK_TAG = typeof customElements !== 'undefined' && customElements.get('solid-link')
   ? unsafeStatic('solid-link')
   : unsafeStatic('a');
@@ -45,7 +45,7 @@ export class AppMenu extends OrbitComponent {
     .menu-link .icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--muted); }
     .menu-link.active .icon { color: var(--brand-dark); }
     h1 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px 12px; }
-    /* thème sombre (shell à menu latéral foncé) : <app-menu theme="dark"> */
+    /* dark theme (shell with dark side menu): <app-menu theme="dark"> */
     :host([theme="dark"]) { --ink: #e2e8f0; --muted: #94a3b8; --border: rgba(148,163,184,.18); }
     :host([theme="dark"]) .menu-link { color: #94a3b8; }
     :host([theme="dark"]) .menu-link:hover { background: rgba(30,41,59,.8); color: #f1f5f9; }
@@ -68,17 +68,17 @@ export class AppMenu extends OrbitComponent {
   async load() {
     const data = await getJson(this.dataSrc);
     this.objects = (await resolveMembers(data)).filter((f) => f && get(f, "slug"));
-    await appStore.whenReady();           // prefs chargées (read-after-write)
+    await appStore.whenReady();           // prefs loaded (read-after-write)
     this.prefsObj = appStore.getPrefs();
     return data;
   }
 
   connectedCallback() {
     super.connectedCallback();
-    // Mise à jour à chaud sur PATCH des prefs (CA-A1 : sans rechargement) :
-    // appStore émet onChange après chaque patchPrefs + événement `save` (§1.9.9).
+    // Live update on prefs PATCH (CA-A1: without reload):
+    // appStore emits onChange after each patchPrefs + `save` event (§1.9.9).
     this._unsub = appStore.onChange(() => { this.prefsObj = appStore.getPrefs(); });
-    // Guard de route du shell (§1.9.7) — installé une seule fois.
+    // Shell route guard (§1.9.7) — installed once.
     if (!AppMenu._guardInstalled) {
       AppMenu._guardInstalled = true;
       appStore.installRouteGuard({ defaultPath: '/' });
@@ -90,11 +90,11 @@ export class AppMenu extends OrbitComponent {
     super.disconnectedCallback();
   }
 
-  // §1.9.8 — le menu n'affiche que les features dont la route existe dans
-  // orbit.json (check au runtime ; un check CI au build avertit aussi).
+  // §1.9.8 — the menu only shows features whose route exists in
+  // orbit.json (runtime check; a build-time CI check also warns).
   routeExists(feature) {
     const routes = window.orbit?.routes;
-    if (!Array.isArray(routes)) return true; // hors shell Orbit (tests) : pas de filtre
+    if (!Array.isArray(routes)) return true; // outside the Orbit shell (tests): no filter
     return routes.some((r) => r.path === feature.route || r.name === feature.route);
   }
 
@@ -108,7 +108,7 @@ export class AppMenu extends OrbitComponent {
     const entries = menuEntries(this.objects, this.prefsObj, {
       locale: this.locale,
       routeExists: (f) => this.routeExists(f),
-      role: appStore.getRole(), // §1.4.1 role_min : filtrage menu (UX)
+      role: appStore.getRole(), // §1.4.1 role_min: menu filtering (UX)
     });
     const current = window.location.pathname;
     return html`

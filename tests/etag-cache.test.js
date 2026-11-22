@@ -1,9 +1,9 @@
-// Conformité §2 (concurrence ETag weak) + §5 (invalidation sur save).
+// §2 conformance (weak ETag concurrency) + §5 (invalidation on save).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EtagCache } from '../src/lib/etag-cache.js';
 
-test('§2 : GET avec entrée en cache envoie If-None-Match ; 304 → serve-cache', () => {
+test('§2: cached GET sends If-None-Match; 304 → serve-cache', () => {
   const cache = new EtagCache();
   cache.store('/tickets/482', 'W/"v1"', { title: 't' });
   const headers = cache.requestHeaders('/tickets/482', 'GET');
@@ -13,7 +13,7 @@ test('§2 : GET avec entrée en cache envoie If-None-Match ; 304 → serve-cache
   assert.deepEqual(res.body, { title: 't' });
 });
 
-test('§2 : PUT/PATCH envoie If-Match ; 412 → conflict-reload (recharger + reproposer)', () => {
+test('§2: PUT/PATCH sends If-Match; 412 → conflict-reload (reload + re-prompt)', () => {
   const cache = new EtagCache();
   cache.store('/tickets/482', 'W/"v1"', { title: 't' });
   const headers = cache.requestHeaders('/tickets/482', 'PATCH');
@@ -22,14 +22,14 @@ test('§2 : PUT/PATCH envoie If-Match ; 412 → conflict-reload (recharger + rep
   assert.equal(res.action, 'conflict-reload');
 });
 
-test('§2 : 200 met à jour le cache et retourne le body', () => {
+test('§2: 200 updates the cache and returns the body', () => {
   const cache = new EtagCache();
   const res = cache.handleResponse('/tickets/482', 200, 'W/"v2"', { title: 't2' });
   assert.equal(res.action, 'ok');
   assert.equal(cache.get('/tickets/482').etag, 'W/"v2"');
 });
 
-test('§5 : purge après save retire la ressource et son conteneur', () => {
+test('§5: purge after save removes the resource and its container', () => {
   const cache = new EtagCache();
   cache.store('/tickets/482', 'W/"v1"', {});
   cache.store('/tickets/', 'W/"c1"', {});
@@ -38,7 +38,7 @@ test('§5 : purge après save retire la ressource et son conteneur', () => {
   assert.equal(cache.get('/tickets/'), undefined);
 });
 
-test('sans entrée en cache : aucun header conditionnel', () => {
+test('no cache entry: no conditional header', () => {
   const cache = new EtagCache();
   assert.deepEqual(cache.requestHeaders('/tickets/999', 'GET'), {});
 });

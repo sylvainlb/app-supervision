@@ -1,5 +1,5 @@
-// Concurrence ETag weak + cache — spec front §2 : If-Match (PUT/PATCH) obsolète → 412 ;
-// If-None-Match (GET) → 304, servir le cache. Invalidation sur événement `save` (§5).
+// Weak ETag concurrency + cache — front spec §2: stale If-Match (PUT/PATCH) → 412;
+// If-None-Match (GET) → 304, serve the cache. Invalidation on the `save` event (§5).
 
 export class EtagCache {
   #entries = new Map(); // url -> { etag, body }
@@ -12,7 +12,7 @@ export class EtagCache {
     return this.#entries.get(url);
   }
 
-  // Purge la ressource et son conteneur (mutation via solid-form → événement save, §5).
+  // Purge the resource and its container (mutation via solid-form → save event, §5).
   purge(url) {
     this.#entries.delete(url);
     const container = url.replace(/[^/]+\/?$/, '');

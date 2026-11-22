@@ -1,29 +1,29 @@
-// Logique pure energy-chart — spec front §7.3 + §13.3 (mapping) + RG-4 (fraîcheur).
+// Pure energy-chart logic — front spec §7.3 + §13.3 (mapping) + RG-4 (freshness).
 import { GOLD_ASSETS, buildProxyRequest } from '../../src/lib/gold-access.js';
 
 export const WINDOWS = { '24h': 24 * 3600e3, '7d': 7 * 24 * 3600e3, '30d': 30 * 24 * 3600e3 };
 
-// Sélecteur de fenêtre 24 h / 7 j / 30 j → {from, to} ISO 8601 (contrat DSP/proxy).
+// Window selector 24 h / 7 d / 30 d → {from, to} ISO 8601 (DSP/proxy contract).
 export function selectWindow(range, now = new Date()) {
   const ms = WINDOWS[range];
   if (!ms) throw new Error(`unknown range: ${range} (expected: ${Object.keys(WINDOWS).join(' | ')})`);
   return { from: new Date(now.getTime() - ms).toISOString(), to: now.toISOString() };
 }
 
-// Voie d'accès selon le metric : hourly volumineux → proxy, agrégats → conteneur LDP publié.
+// Access path by metric: voluminous hourly → proxy, aggregates → published LDP container.
 export function metricAccess(metric) {
   const asset = GOLD_ASSETS[metric];
-  if (!asset) throw new Error(`metric inconnu: ${metric}`);
+  if (!asset) throw new Error(`unknown metric: ${metric}`);
   return asset.published ? { via: 'ldp', container: asset.container } : { via: 'proxy' };
 }
 
-// Appel proxy (C1.9) pour un metric horaire.
+// Proxy call (C1.9) for an hourly metric.
 export function metricQuery(metric, range, now) {
   const { from, to } = selectWindow(range, now);
   return buildProxyRequest({ assetId: metric, from, to });
 }
 
-// Série graphique : net_grid signée (conso positive / injection négative, deux couleurs).
+// Chart series: signed net_grid (positive consumption / negative injection, two colors).
 export function buildSeries(rows, metric) {
   const labels = rows.map((r) => r.hour ?? r.ts_hour ?? r.ts ?? '');
   if (metric === 'net_grid_hourly') {
@@ -41,7 +41,7 @@ export function buildSeries(rows, metric) {
   return { labels, datasets: [{ label: metric, data: rows.map((r) => r.value ?? r.cost ?? 0) }] };
 }
 
-// Badge de fraîcheur RG-4 (« données à HH:MM — refresh ~10 min »).
+// RG-4 freshness badge ("data as of HH:MM — refresh ~10 min").
 export function formatFreshness(ts) {
   if (!ts) return 'freshness unknown';
   const d = new Date(ts);

@@ -1,22 +1,22 @@
-// window.appStore — helpers livrés par le package (spec v0.4 §1.3 shared/, §1.9.7/§1.9.9/§1.9.12).
+// window.appStore — helpers delivered by the package (spec v0.4 §1.3 shared/, §1.9.7/§1.9.9/§1.9.12).
 //
-//   window.appStore.configure({ getWebid, getRole, podUrl })  // au boot du shell
-//   window.appStore.mePrefsIri()            // "/prefs/<pk>" extrait du claim webid (§1.9.12)
-//   window.appStore.refresh()               // charge catalogue + prefs (read-after-write)
-//   window.appStore.isEnabled(slug)         // synchrone, lit le cache (§1.9.7)
-//   window.appStore.patchPrefs(patch)       // PATCH merge-patch forme R1 + événement save (§1.9.9)
-//   window.appStore.installRouteGuard()     // guard de route du shell (CA-A4)
-//   window.appStore.AppStoreGuardMixin(Base) // mixin pour les composants de route (CA-A4)
+//   window.appStore.configure({ getWebid, getRole, podUrl })  // at shell boot
+//   window.appStore.mePrefsIri()            // "/prefs/<pk>" extracted from the webid claim (§1.9.12)
+//   window.appStore.refresh()               // loads catalogue + prefs (read-after-write)
+//   window.appStore.isEnabled(slug)         // synchronous, reads the cache (§1.9.7)
+//   window.appStore.patchPrefs(patch)       // R1-form merge-patch PATCH + save event (§1.9.9)
+//   window.appStore.installRouteGuard()     // shell route guard (CA-A4)
+//   window.appStore.AppStoreGuardMixin(Base) // mixin for route components (CA-A4)
 //
-// Contrat LDP (§1.5) : GET /features/ + /prefs/<pk> ; PATCH /prefs/<pk> en
-// merge-patch RFC 7386 avec body {"prefs": {…}} (forme R1 — le jsonb n'est PAS
-// aplati à la racine). Erreurs dspace:Error ; ETag/If-Match ; 412 → recharger.
+// LDP contract (§1.5): GET /features/ + /prefs/<pk>; PATCH /prefs/<pk> as
+// RFC 7386 merge-patch with body {"prefs": {…}} (R1 form — the jsonb is NOT
+// flattened at the root). dspace:Error errors; ETag/If-Match; 412 → reload.
 import {
   parseWebidPk, prefsPath, featureEnabled, featureForPath, prefsPatchBody, prefsColumn, roleAllowed, get as getField,
 } from './logic.js';
 
 export class AppStoreConflictError extends Error {
-  constructor(message = '412 — prefs modifiées entre-temps, rechargées') {
+  constructor(message = '412 — prefs modified in the meantime, reloaded') {
     super(message);
     this.name = 'AppStoreConflictError';
     this.status = 412;
@@ -27,11 +27,11 @@ const state = {
   podUrl: '',
   getWebid: () => window.appSession?.info?.webId ?? window.sibAuth?.info?.webId ?? '',
   getRole: () => window.appRole ?? '',
-  catalogue: [],      // membres résolus de /features/
-  catalogueMissing: false, // GET /features/ → 404 : modèle non déployé côté serveur
-  prefs: null,        // ressource /prefs/<pk> (objet JSON-LD complet)
-  prefsObj: {},       // colonne jsonb aplatie prefs.prefs
-  prefsIri: null,     // path relatif "/prefs/<pk>"
+  catalogue: [],      // resolved members of /features/
+  catalogueMissing: false, // GET /features/ → 404: model not deployed server-side
+  prefs: null,        // /prefs/<pk> resource (complete JSON-LD object)
+  prefsObj: {},       // flattened prefs.prefs jsonb column
+  prefsIri: null,     // relative path "/prefs/<pk>"
   etag: null,
   ready: null,        // promesse du 1er refresh
   listeners: new Set(),
@@ -46,7 +46,7 @@ async function getJsonMeta(path) {
   if (!res.ok) {
     const err = new Error(`GET ${path} → ${res.status}`);
     err.status = res.status;
-    try { err.body = await res.json(); } catch { /* body pas JSON */ }
+    try { err.body = await res.json(); } catch { /* body not JSON */ }
     throw err;
   }
   const data = await res.json();
@@ -67,12 +67,12 @@ async function resolveMembers(data) {
 
 function emit() {
   for (const cb of state.listeners) {
-    try { cb({ catalogue: state.catalogue, prefs: state.prefsObj }); } catch { /* listener isolé */ }
+    try { cb({ catalogue: state.catalogue, prefs: state.prefsObj }); } catch { /* isolated listener */ }
   }
 }
 
 export const appStore = {
-  /** À appeler au boot du shell : webid/rôle viennent de la session OIDC de l'app hôte. */
+  /** To call at shell boot: webid/role come from the host app's OIDC session. */
   configure({ getWebid, getRole, podUrl } = {}) {
     if (getWebid) state.getWebid = getWebid;
     if (getRole) state.getRole = getRole;
@@ -81,7 +81,7 @@ export const appStore = {
     return state.prefsIri;
   },
 
-  /** §1.9.12 — "/prefs/<pk>" extrait du claim webid ; webid hors pod → null (interdit en v1). */
+  /** §1.9.12 — "/prefs/<pk>" extracted from the webid claim; webid outside pod → null (forbidden in v1). */
   mePrefsIri() {
     if (!state.prefsIri) state.prefsIri = prefsPath(state.getWebid(), state.podUrl);
     return state.prefsIri;
@@ -91,38 +91,38 @@ export const appStore = {
     return state.getRole() === 'admin';
   },
 
-  /** Rôle courant (claim OIDC), passé à menuEntries pour le filtrage role_min (§1.4.1). */
+  /** Current role (OIDC claim), passed to menuEntries for role_min filtering (§1.4.1). */
   getRole() {
     return state.getRole?.() ?? null;
   },
 
-  /** GET /features/ → 404 : modèle app-store non déployé côté serveur. */
+  /** GET /features/ → 404: app-store model not deployed server-side. */
   isCatalogueMissing() {
     return state.catalogueMissing;
   },
 
-  /** URL du pod configurée au boot (configure({podUrl})) — appels proxy absolus (CORS géré back). */
+  /** Pod URL configured at boot (configure({podUrl})) — absolute proxy calls (CORS handled by the back). */
   getPodUrl() {
     return state.podUrl;
   },
 
-  /** Charge (ou recharge) catalogue + prefs. Read-after-write : après chaque PATCH. */
+  /** Loads (or reloads) catalogue + prefs. Read-after-write: after each PATCH. */
   async refresh() {
     const iri = this.mePrefsIri();
     const jobs = [getJsonMeta('/features/')
       .then(async (r) => { state.catalogue = await resolveMembers(r.data); state.catalogueMissing = false; })
       .catch((e) => {
-        // Catalogue absent (sql/010–012 ou model.json non appliqué) : état explicite,
-        // pas un crash — <app-store> rend un panneau de procédure (voir tck).
+        // Catalogue absent (sql/010–012 or model.json not applied): explicit state,
+        // not a crash — <app-store> renders a procedure panel (see tck).
         if (e.status === 404) { state.catalogueMissing = true; state.catalogue = []; return; }
         throw e;
       })];
     if (iri) {
       jobs.push(getJsonMeta(iri).then((r) => {
         state.prefs = r.data;
-        // copie défensive : nouvelle référence à chaque refresh → re-render lit garanti
-        // même si la source renvoie le même objet muté en place (mock de test, cache…)
-        state.prefsObj = { ...prefsColumn(r.data) }; // clé sérialisée : prefs / prefs:prefs / app_prefs:prefs…
+        // defensive copy: new reference on each refresh → guaranteed lit re-render
+        // even if the source returns the same in-place mutated object (test mock, cache…)
+        state.prefsObj = { ...prefsColumn(r.data) }; // serialized key: prefs / prefs:prefs / app_prefs:prefs…
         state.etag = r.etag;
       }));
     }
@@ -130,7 +130,7 @@ export const appStore = {
     emit();
   },
 
-  /** Promesse du premier chargement (pour les composants montés avant le boot). */
+  /** Promise of the first load (for components mounted before boot). */
   whenReady() {
     if (!state.ready) state.ready = this.refresh().catch(() => {});
     return state.ready;
@@ -149,7 +149,7 @@ export const appStore = {
     return state.catalogue;
   },
 
-  /** v2 — feature (catalogue) dont la route Orbit correspond au path demandé (§2.2.7). */
+  /** v2 — catalogue feature whose Orbit route matches the requested path (§2.2.7). */
   getFeatureByRoute(pathname) {
     return featureForPath(state.catalogue, pathname);
   },
@@ -158,22 +158,22 @@ export const appStore = {
     return state.prefsObj;
   },
 
-  /** §1.9.7 — synchrone, lit le cache. Clé absente = default_enabled (§1.9.4a). */
+  /** §1.9.7 — synchronous, reads the cache. Absent key = default_enabled (§1.9.4a). */
   isEnabled(slug) {
     const f = this.getFeature(slug);
-    if (!f) return false; // feature inconnue → désactivée (guard §1.9.7)
+    if (!f) return false; // unknown feature → disabled (guard §1.9.7)
     return featureEnabled(state.prefsObj, f);
   },
 
   /**
-   * §1.5 + §1.9.9 — PATCH merge-patch sur /prefs/<pk>, body forme R1 :
-   * {"prefs": {"<slug>": {"enabled": false}}} (merge RFC 7386 récursif).
-   * Succès → read-after-write (refresh) + événement `save` avec l'@id des prefs.
-   * 412 → prefs rechargées + AppStoreConflictError.
+   * §1.5 + §1.9.9 — merge-patch PATCH on /prefs/<pk>, R1-form body:
+   * {"prefs": {"<slug>": {"enabled": false}}} (recursive RFC 7386 merge).
+   * Success → read-after-write (refresh) + `save` event with the prefs' @id.
+   * 412 → prefs reloaded + AppStoreConflictError.
    */
   async patchPrefs(patch) {
     const iri = this.mePrefsIri();
-    if (!iri) throw new Error('appStore: webid non résolu (configure({getWebid}) au boot)');
+    if (!iri) throw new Error('appStore: webid unresolved (configure({getWebid}) at boot)');
     const headers = {
       'content-type': 'application/merge-patch+json',
       accept: 'application/ld+json',
@@ -182,25 +182,25 @@ export const appStore = {
     const res = await fetchAuthn()(iri, {
       method: 'PATCH',
       headers,
-      body: JSON.stringify(prefsPatchBody(patch, state.prefsObj)), // read-modify-write : objet complet (§1.5)
+      body: JSON.stringify(prefsPatchBody(patch, state.prefsObj)), // read-modify-write: complete object (§1.5)
     });
     if (res.status === 412) {
-      await this.refresh(); // §1.9.9 : recharger les prefs
+      await this.refresh(); // §1.9.9: reload the prefs
       throw new AppStoreConflictError();
     }
     if (!res.ok) {
       const err = new Error(`PATCH ${iri} → ${res.status}`);
       err.status = res.status;
-      try { err.body = await res.json(); } catch { /* body pas JSON */ }
+      try { err.body = await res.json(); } catch { /* body not JSON */ }
       throw err;
     }
     const data = await res.json().catch(() => null);
-    if (data) state.prefsObj = { ...prefsColumn(data) };     // read-after-write immédiat (CA-A2) — copie défensive (re-render lit)
+    if (data) state.prefsObj = { ...prefsColumn(data) };     // immediate read-after-write (CA-A2) — defensive copy (lit re-render)
     if (data?.['@id']) state.prefs = data;
     state.etag = res.headers?.get?.('etag') ?? state.etag;
     emit();
-    // §1.9.9 — sibStore.patch() n'émet pas save : dispatch manuel pour <app-menu>
-    // (abonnement PubSub sur l'IRI + écoute save du boilerplate).
+    // §1.9.9 — sibStore.patch() does not emit save: manual dispatch for <app-menu>
+    // (PubSub subscription on the IRI + boilerplate's save listener).
     document.dispatchEvent(new CustomEvent('save', {
       detail: { resource: { '@id': state.prefs?.['@id'] ?? iri } },
     }));
@@ -208,17 +208,17 @@ export const appStore = {
   },
 
   /**
-   * §1.9.7 / CA-A4 — guard de route du shell : intercepte requestNavigation
-   * (capture) + navigate, retrouve la feature par route, et redirige vers
-   * defaultPath si la feature est désactivée ou inconnue.
+   * §1.9.7 / CA-A4 — shell route guard: intercepts requestNavigation
+   * (capture) + navigate, finds the feature by route, and redirects to
+   * defaultPath if the feature is disabled or unknown.
    */
   installRouteGuard({ defaultPath = '/' } = {}) {
     const check = (pathname, ev) => {
-      // Anti-boucle : ne jamais bloquer la cible de redirect elle-même.
+      // Anti-loop: never block the redirect target itself.
       if (!pathname || pathname.split('?')[0] === defaultPath) return true;
       const f = featureForPath(state.catalogue, pathname);
       const slug = f ? (f.slug ?? getField(f, 'slug')) : null;
-      // §1.4.1 : role_min filtre menu + guard (UX) ; la sécurité reste ACL/PDP côté serveur.
+      // §1.4.1: role_min filters menu + guard (UX); security stays server-side ACL/PDP.
       const roleOk = f ? roleAllowed(getField(f, 'role_min') ?? 'all', state.getRole()) : true;
       if (f && slug && (!roleOk || !this.isEnabled(slug))) {
         if (ev) { ev.preventDefault(); ev.stopPropagation(); }
@@ -237,16 +237,16 @@ export const appStore = {
       }
       if (path) check(path, e);
     };
-    document.addEventListener('requestNavigation', onNav, true); // capture : avant le routeur
+    document.addEventListener('requestNavigation', onNav, true); // capture: before the router
     document.addEventListener('navigate', () => check(window.location.pathname), true);
-    // Route courante au chargement :
+    // Current route at load time:
     this.whenReady().then(() => check(window.location.pathname));
     return () => document.removeEventListener('requestNavigation', onNav, true);
   },
 
   /**
-   * §1.9.7 — mixin pour les composants de route : l'attribut `feature-slug` dit
-   * quelle feature gère la route ; si elle est désactivée → redirect `/`.
+   * §1.9.7 — mixin for route components: the `feature-slug` attribute says
+   * which feature owns the route; if it is disabled → redirect `/`.
    */
   AppStoreGuardMixin(Base) {
     return class extends Base {
@@ -263,7 +263,7 @@ export const appStore = {
   },
 };
 
-// Pose window.appStore (idempotent).
+// Sets window.appStore (idempotent).
 if (typeof window !== 'undefined') {
   window.appStore = window.appStore ?? appStore;
 }

@@ -1,4 +1,4 @@
-// kpi-summary — cartes KPI du tableau de bord (vue d'ensemble du parc).
+// kpi-summary — dashboard KPI cards (portfolio overview).
 import { html, css } from 'lit';
 import { OrbitComponent, resolveMembers, getJson } from '../boilerplate/index.js';
 import { computeKpis } from './logic.js';
@@ -43,7 +43,7 @@ export class KpiSummary extends OrbitComponent {
     this.buildings = [];
   }
 
-  isEmpty() { return false; } // le contenu vient de this.kpis, pas de objects
+  isEmpty() { return false; } // content comes from this.kpis, not objects
 
   async load() {
     const [buildings, anomalies, tickets] = await Promise.all([

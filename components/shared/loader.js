@@ -1,20 +1,20 @@
-// Loader v2 — chargement à chaud des features distantes (spec app-store-spec.md
-// Partie 2 §2.2). Décision O-A1 retenue : fetch + vérification SHA-384 MANUELLE avant
-// import() (l'attribut integrity ne s'applique pas à import() — un CDN compromis
-// signerait sinon son propre XSS).
+// Loader v2 — hot loading of distant features (app-store-spec.md
+// Part 2 §2.2). Decision O-A1 adopted: fetch + MANUAL SHA-384 check before
+// import() (the integrity attribute does not apply to import() — a compromised CDN
+// would otherwise sign its own XSS).
 //
 //   const mod = await loadRemoteModule({ cdnUrl, sri, tag });
-//   → fetch(cdnUrl) → crypto.subtle.digest('SHA-384') → compare à `sri` →
+//   → fetch(cdnUrl) → crypto.subtle.digest('SHA-384') → compare with `sri` →
 //     import via URL.createObjectURL(new Blob([src], {type:'text/javascript'}))
-//   → CA-A5 : sri absent/invalide → SriMismatchError, AUCUN import.
+//   → CA-A5: sri missing/invalid → SriMismatchError, NO import.
 //
-// Cache : moduleCache[cdnUrl] = { src, module, blobUrl } ; evictModule(cdnUrl)
-// révoque (révocation §2.2.4 : retire du cache + révoque le blob URL).
+// Cache: moduleCache[cdnUrl] = { src, module, blobUrl } ; evictModule(cdnUrl)
+// revokes (revocation §2.2.4: remove from cache + revoke the blob URL).
 //
-// En test, injecter { fetchFn, importFn } (node --test, sans navigateur).
+// In tests, inject { fetchFn, importFn } (node --test, no browser).
 
 export class SriMismatchError extends Error {
-  constructor(message = 'SRI invalide — import refusé (CA-A5)') {
+  constructor(message = 'Invalid SRI — import refused (CA-A5)') {
     super(message);
     this.name = 'SriMismatchError';
     this.code = 'sri_mismatch';
@@ -22,29 +22,29 @@ export class SriMismatchError extends Error {
 }
 
 export class MissingSriError extends SriMismatchError {
-  constructor(message = 'Pas de sri dans le catalogue — import refusé (CA-A5)') {
+  constructor(message = 'No sri in the catalogue — import refused (CA-A5)') {
     super(message);
     this.name = 'MissingSriError';
     this.code = 'sri_missing';
   }
 }
 
-// sha384 d'un ArrayBuffer → base64 (format de l'attribut integrity : "sha384-<b64>").
+// sha384 of an ArrayBuffer → base64 (integrity attribute format: "sha384-<b64>").
 export async function sha384Base64(buffer) {
   const digest = await crypto.subtle.digest('SHA-384', buffer);
   return btoa(String.fromCharCode(...new Uint8Array(digest)));
 }
 
-// Vérifie un binaire contre une empreinte "sha384-<base64>". Lève MissingSriError
-// si sri est absent, SriMismatchError si le hash diffère.
+// Checks a binary against a "sha384-<base64>" fingerprint. Throws MissingSriError
+// if sri is absent, SriMismatchError if the hash differs.
 export async function checkSri(buffer, sri) {
   if (!sri || typeof sri !== 'string') throw new MissingSriError();
   const m = sri.match(/^sha384-([A-Za-z0-9+/]+={0,2})$/);
-  if (!m) throw new SriMismatchError(`format sri invalide (attendu sha384-<base64>) : ${sri}`);
+  if (!m) throw new SriMismatchError(`invalid sri format (expected sha384-<base64>): ${sri}`);
   const actual = await sha384Base64(buffer);
-  // comparaison en temps constant
+  // constant-time comparison
   if (actual.length !== m[1].length || !timingSafeEqual(actual, m[1])) {
-    throw new SriMismatchError(`sha384 attendu ${m[1]}, obtenu ${actual}`);
+    throw new SriMismatchError(`expected sha384 ${m[1]}, got ${actual}`);
   }
   return true;
 }
@@ -55,19 +55,19 @@ function timingSafeEqual(a, b) {
   return d === 0;
 }
 
-// Cache des modules déjà importés (par cdnUrl) : { src, sri, module, blobUrl }.
-// Le sri est conservé : un hit de cache ne dispense PAS de la vérification —
-// si le catalogue annonce un sri différent du module caché → SriMismatchError
-// (l'upgrade passe par evictModule + re-fetch explicite, upgradeFeature).
+// Cache of already imported modules (by cdnUrl): { src, sri, module, blobUrl }.
+// The sri is kept: a cache hit does NOT skip the check —
+// if the catalogue announces an sri different from the cached module → SriMismatchError
+// (the upgrade goes through evictModule + explicit re-fetch, upgradeFeature).
 const moduleCache = new Map();
 
 export function cachedModule(cdnUrl) {
   return moduleCache.get(cdnUrl) ?? null;
 }
 
-// Révocation (§2.2.4) : retire le module du cache et révoque le blob URL.
-// (Un custom element ne peut pas être « désenregistré » en JS — on retire les
-// instances du DOM via <dynamic-feature> et on bloque le re-montage via le cache.)
+// Revocation (§2.2.4): removes the module from the cache and revokes the blob URL.
+// (A custom element cannot be "unregistered" in JS — we remove the DOM
+// instances via <dynamic-feature> and block re-mounting via the cache.)
 export function evictModule(cdnUrl) {
   const entry = moduleCache.get(cdnUrl);
   if (entry?.blobUrl) { try { URL.revokeObjectURL(entry.blobUrl); } catch { /* noop */ } }
@@ -76,25 +76,25 @@ export function evictModule(cdnUrl) {
 }
 
 /**
- * Charge un module distant avec vérification SRI (O-A1).
- * @param {{cdnUrl:string, sri:string, tag?:string}} feature — cdn_url + sri du catalogue v2
- * @param {{fetchFn?:Function, importFn?:Function}} [deps] — injectables pour les tests
- * @returns {Promise<{module:object, src:string, blobUrl:string}>} module importé
- * @throws {MissingSriError|SriMismatchError} CA-A5 — aucun import si sri invalide
+ * Loads a distant module with SRI verification (O-A1).
+ * @param {{cdnUrl:string, sri:string, tag?:string}} feature — cdn_url + sri from the v2 catalogue
+ * @param {{fetchFn?:Function, importFn?:Function}} [deps] — injectable for tests
+ * @returns {Promise<{module:object, src:string, blobUrl:string}>} imported module
+ * @throws {MissingSriError|SriMismatchError} CA-A5 — no import if sri invalid
  */
 export async function loadRemoteModule(feature, deps = {}) {
   const { cdnUrl, sri, tag } = feature ?? {};
-  if (!cdnUrl) throw new Error('loadRemoteModule: cdnUrl manquant (feature distante sans cdn_url)');
+  if (!cdnUrl) throw new Error('loadRemoteModule: missing cdnUrl (distant feature without cdn_url)');
   const hit = moduleCache.get(cdnUrl);
   if (hit) {
     if (sri && hit.sri && sri !== hit.sri) {
-      throw new SriMismatchError(`sri du catalogue (${sri}) ≠ sri du module en cache (${hit.sri}) — evictModule + re-fetch requis`);
+      throw new SriMismatchError(`catalogue sri (${sri}) ≠ cached module sri (${hit.sri}) — evictModule + re-fetch required`);
     }
     return { module: hit.module, src: hit.src, blobUrl: hit.blobUrl };
   }
 
-  // Le tag est déjà enregistré (ex. le bundle dashboard embarque aussi <anomaly-list>) :
-  // ne PAS réimporter — CustomElementRegistry.define lèverait « already defined ».
+  // The tag is already registered (e.g. the dashboard bundle also embeds <anomaly-list>):
+  // do NOT re-import — CustomElementRegistry.define would throw "already defined".
   if (tag && typeof customElements !== 'undefined' && customElements.get(tag)) {
     moduleCache.set(cdnUrl, { src: null, sri, module: null, blobUrl: null, alreadyRegistered: tag });
     return { module: null, src: null, blobUrl: null, alreadyRegistered: true };
@@ -105,9 +105,9 @@ export async function loadRemoteModule(feature, deps = {}) {
   if (!res || !res.ok) throw new Error(`fetch ${cdnUrl} → ${res?.status ?? 'ERR'}`);
   const src = await res.text();
   const buf = new TextEncoder().encode(src).buffer;
-  await checkSri(buf, sri); // CA-A5 : lève avant tout import
+  await checkSri(buf, sri); // CA-A5: throws before any import
 
-  // import() dynamique via blob URL (l'attribut integrity ne joue pas sur import())
+  // dynamic import() via blob URL (the integrity attribute does not apply to import())
   const blobUrl = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
   const importFn = deps.importFn ?? ((u) => import(/* @vite-ignore */ u));
   let module;
@@ -119,7 +119,7 @@ export async function loadRemoteModule(feature, deps = {}) {
   }
   if (tag && typeof customElements !== 'undefined' && !customElements.get(tag)) {
     try { URL.revokeObjectURL(blobUrl); } catch { /* noop */ }
-    throw new Error(`le module ${cdnUrl} n'a pas enregistré <${tag}>`);
+    throw new Error(`module ${cdnUrl} did not register <${tag}>`);
   }
   moduleCache.set(cdnUrl, { src, sri, module, blobUrl });
   return { module, src, blobUrl };

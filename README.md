@@ -1,247 +1,247 @@
-# app-supervision — Application de supervision énergétique
+# app-supervision — Energy supervision application
 
-Ce dépôt est le **front-end** de l'application de supervision énergétique — la couche la
-plus haute et le **point d'entrée utilisateur**. Ce README explique comment installer et
-lancer **toutes les couches** de la pile.
+This repository is the **front-end** of the energy supervision application — the highest
+layer and the **user entry point**. This README explains how to install and run **all
+layers** of the stack.
 
-Implémentation de `spec/supervision-energetique-front-technique.md` (stack Startin'blox :
-shell Orbit, sibStore, blox du Store en ES modules CDN, composants custom Lit, sib-auth/OIDC).
+Implementation of `spec/supervision-energetique-front-technique.md` (Startin'blox stack:
+Orbit shell, sibStore, Store blox as CDN ES modules, custom Lit components, sib-auth/OIDC).
 
-## Pile (du haut vers le bas)
+## Stack (top to bottom)
 
 ```
-app-supervision (ce dépôt)      ← front — point d'entrée UTILISATEUR
-   │ consomme : LDP racine, POST /app/query, OIDC (/auth/*)
+app-supervision (this repo)     ← front — USER entry point
+   │ consumes: root LDP, POST /app/query, OIDC (/auth/*)
    ▼
-app-supervision-backend         ← assemblage déployable — point d'entrée DÉPLOIEMENT
-   │   (scripts/start.sh lance toute l'infra docker)
-   ├── fap-ldp                  ← extension LDP : domaine app.*, endpoint JSON-LD, ACL/PDP
-   └── fap-light-serveur        ← cœur : PostgreSQL bronze/silver/gold + ORCE + caddy + IdP (1 VM)
-app-store + app-features        ← features activables, branchées sur le front
-spec/                           ← spécifications (documentation, à lire en premier)
+app-supervision-backend         ← deployable assembly — DEPLOYMENT entry point
+   │   (scripts/start.sh starts the whole docker infra)
+   ├── fap-ldp                  ← LDP extension: app.* domain, JSON-LD endpoint, ACL/PDP
+   └── fap-light-serveur        ← core: bronze/silver/gold PostgreSQL + ORCE + caddy + IdP (1 VM)
+app-store + app-features        ← activatable features, plugged into the front
+spec/                           ← specifications (documentation, read first)
 ```
 
-**Règle de dépendance : front → back → fap.** Aucun fichier du front n'est servi par le
-back : en dev, `http://app.localhost/` est un proxy caddy vers le serveur Vite de l'hôte ;
-en prod, `dist/` est déployé sur une origine séparée (déclarée dans `FRONT_ORIGINS` du back).
+**Dependency rule: front → back → fap.** No front file is served by the back: in dev,
+`http://app.localhost/` is a caddy proxy to the host's Vite server; in prod, `dist/` is
+deployed on a separate origin (declared in the back's `FRONT_ORIGINS`).
 
-## Prérequis
+## Prerequisites
 
-- **Docker + plugin docker compose** (pour le back)
-- **Node.js ≥ 20 + npm** (pour le front ; testé avec Node v20)
+- **Docker + docker compose plugin** (for the back)
+- **Node.js ≥ 20 + npm** (for the front; tested with Node v20)
 
-## Installation et lancement de toutes les couches
+## Install and run all layers
 
-### 1. Cloner les dépôts
+### 1. Clone the repositories
 
 ```sh
-git clone git@github.com:sylvainlb/app-supervision.git          # ce dépôt (front)
-git clone git@github.com:sylvainlb/app-supervision-backend.git  # assemblage déployable
-git clone git@github.com:sylvainlb/fap-light-serveur.git        # cœur FAP-light
-git clone git@github.com:sylvainlb/fap-ldp.git                   # extension LDP
-# Optionnels (features v2) :
-git clone git@github.com:sylvainlb/app-store.git                 # mécanisme de features
-git clone git@github.com:sylvainlb/app-features.git              # composants métier
-# + le répertoire spec/ (spécifications) fourni avec les sources, à côté des dépôts
+git clone git@github.com:sylvainlb/app-supervision.git          # this repo (front)
+git clone git@github.com:sylvainlb/app-supervision-backend.git  # deployable assembly
+git clone git@github.com:sylvainlb/fap-light-serveur.git        # FAP-light core
+git clone git@github.com:sylvainlb/fap-ldp.git                   # LDP extension
+# Optional (v2 features):
+git clone git@github.com:sylvainlb/app-store.git                 # feature mechanism
+git clone git@github.com:sylvainlb/app-features.git              # business components
+# + the spec/ directory (specifications) provided with the sources, next to the repos
 ```
 
-> Les 4 premiers dépôts suffisent pour faire tourner l'application. `app-store` /
-> `app-features` ne servent que pour les features chargeables en v2 (le front embarque
-> déjà le mécanisme `<app-store>` / `<app-menu>` en vendored).
+> The first 4 repositories are enough to run the application. `app-store` /
+> `app-features` are only used for loadable v2 features (the front already embeds
+> the `<app-store>` / `<app-menu>` mechanism as vendored).
 
-### 2. Lire la spec
+### 2. Read the spec
 
-`../spec/facis-fap-architecture-synthese.md` (architecture globale), puis
-`../spec/supervision-energetique-spec-fonctionnelle.md` (cas d'usage métier).
+`../spec/facis-fap-architecture-synthese.md` (global architecture), then
+`../spec/supervision-energetique-spec-fonctionnelle.md` (business use cases).
 
-### 3. Builder les images Docker custom du cœur (une seule fois)
+### 3. Build the custom Docker images of the core (once)
 
-La stack du back référence deux images **locales** (absentes des registries) ; leurs
-Dockerfiles sont dans `fap-light-serveur` :
+The back stack references two **local** images (absent from registries); their
+Dockerfiles are in `fap-light-serveur`:
 
 ```sh
 cd fap-light-serveur
 docker build -t fap-light-postgres:latest ./deploy/postgres   # PostgreSQL 16 + pg_cron
-docker build -t fap-light-orce:latest     ./deploy/orce       # ORCE (Node-RED) + modules runtime
+docker build -t fap-light-orce:latest     ./deploy/orce       # ORCE (Node-RED) + runtime modules
 ```
 
-### 4. Démarrer le back (toute l'infra)
+### 4. Start the back (all infra)
 
 ```sh
 cd app-supervision-backend
-cp .env.example .env     # les secrets sont auto-générés au 1er lancement ; éditer si besoin
-./scripts/start.sh       # idempotent ; --reset pour repartir à zéro
-# → LDP/JSON-LD : http://localhost/  ·  IdP Keycloak : http://localhost/auth/realms/fap-light
-# → éditeur ORCE : http://localhost/editor/  ·  comptes dev : alice / bob / admin (mdp "dev")
+cp .env.example .env     # secrets are auto-generated on first launch; edit if needed
+./scripts/start.sh       # idempotent; --reset to start from scratch
+# → LDP/JSON-LD: http://localhost/  ·  Keycloak IdP: http://localhost/auth/realms/fap-light
+# → ORCE editor: http://localhost/editor/  ·  dev accounts: alice / bob / admin (password "dev")
 ```
 
-### 5. Lancer le front
+### 5. Run the front
 
 ```sh
 cd app-supervision
 npm ci
-npm run dev              # 1er lancement : configure auto vers http://localhost (POD_URL)
+npm run dev              # first launch: auto-configures to http://localhost (POD_URL)
 ```
 
-→ ouvrir **http://app.localhost/** (caddy du back proxifie vers ce serveur Vite).
+→ open **http://app.localhost/** (the back's caddy proxies to this Vite server).
 
-### 6. (Optionnel) Activer des features
+### 6. (Optional) Enable features
 
-`app-store` (mécanisme `<app-store>` / `<app-menu>` + modèle SQL côté FAP-LDP) et
-`app-features` (12 composants métier) s'intègrent dans ce front — voir leurs README.
+`app-store` (`<app-store>` / `<app-menu>` mechanism + SQL model on the FAP-LDP side) and
+`app-features` (12 business components) integrate into this front — see their READMEs.
 
-**Bonne nouvelle : aucun build nécessaire pour faire tourner les features.** Les bundles
-sont déjà versionnés dans ce dépôt (`public/features-dist/`, 22 fichiers + `manifest.json`
-avec SRI), le catalogue `app.features` est seedé au boot du back
-(`app-supervision-backend/sql/130_app_store_catalogue_v2.sql`, `cdn_url` en
-`/features-dist/<slug>.js` same-origin en dev), et `<dynamic-feature>` charge chaque
-feature à la volée (vérif SRI avant import). Le dépôt `app-features` ne sert que si l'on
-**modifie** une feature : `app-features/scripts/build.mjs` puis
-`app-supervision/scripts/build-features.mjs` régénèrent les bundles.
+**Good news: no build needed to run the features.** The bundles are already versioned in
+this repo (`public/features-dist/`, 22 files + `manifest.json` with SRI), the
+`app.features` catalogue is seeded at back boot
+(`app-supervision-backend/sql/130_app_store_catalogue_v2.sql`, `cdn_url` set to
+`/features-dist/<slug>.js` same-origin in dev), and `<dynamic-feature>` loads each
+feature on the fly (SRI check before import). The `app-features` repo is only useful if you
+**modify** a feature: `app-features/scripts/build.mjs` then
+`app-supervision/scripts/build-features.mjs` regenerate the bundles.
 
-**Mode de livraison actuel : 100 % same-origin, aucun CDN externe.** Deux familles :
+**Current delivery mode: 100% same-origin, no external CDN.** Two families:
 
-- **Features de base** (dashboard, anomalies, tickets, interventions, building-detail,
-  store, admin) : composants **packagés dans l'app** (`components/`, déclarés dans
-  `orbit.json`, import statique dans le bundle Vite).
-- **12 features métier v2** (`alert-rules`, `sla-dashboard`, …) : bundles
-  `public/features-dist/<slug>.js` servis par **ce front lui-même** — le seed met des
-  `cdn_url` **relatifs** (`/features-dist/<slug>.js`, générés par
-  `scripts/build-features.mjs`), chargés à la volée via `import()` avec vérif SRI
+- **Base features** (dashboard, anomalies, tickets, interventions, building-detail,
+  store, admin): components **packaged in the app** (`components/`, declared in
+  `orbit.json`, static import in the Vite bundle).
+- **12 v2 business features** (`alert-rules`, `sla-dashboard`, …): bundles
+  `public/features-dist/<slug>.js` served by **this front itself** — the seed sets
+  **relative** `cdn_url` values (`/features-dist/<slug>.js`, generated by
+  `scripts/build-features.mjs`), loaded on the fly via `import()` with SRI check
   (`components/shared/loader.js`).
 
-Le **CDN jsDelivr n'est prévu qu'en prod** (package `@facis/app-features` publié sur npm :
-`cdn_url` = `https://cdn.jsdelivr.net/npm/@facis/app-features@<version>/dist/<slug>.js`).
-Tant que le catalogue seedé contient des URLs relatives, aucun appel externe n'est fait —
-même en prod.
+**The jsDelivr CDN is only planned for prod** (package `@facis/app-features` published on
+npm: `cdn_url` = `https://cdn.jsdelivr.net/npm/@facis/app-features@<version>/dist/<slug>.js`).
+As long as the seeded catalogue contains relative URLs, no external call is made —
+even in prod.
 
 ---
 
 ## Structure (spec §4)
 
 ```
-├── orbit.json          ← config Orbit : routes §8, composants §6, oidc §13.6, npm épinglé
+├── orbit.json          ← Orbit config: routes §8, components §6, oidc §13.6, pinned npm
 ├── src/
-│   ├── index.ts        ← bootstrap Orbit + injection fetchAuthn (sib-auth) dans sibStore §13.7
-│   ├── config.js       ← env : POD_URL, OIDC_ISSUER, OIDC_CLIENT_ID (fallback Node pour tests)
-│   └── lib/            ← logique pure testée (contrat HTTP, transitions, gold, ETag, context)
+│   ├── index.ts        ← Orbit bootstrap + fetchAuthn injection (sib-auth) into sibStore §13.7
+│   ├── config.js       ← env: POD_URL, OIDC_ISSUER, OIDC_CLIENT_ID (Node fallback for tests)
+│   └── lib/            ← pure tested logic (HTTP contract, transitions, gold, ETag, context)
 ├── components/
-│   ├── boilerplate/    ← hiérarchie vendored §6.2 : LitElement → ComponentObjectHandler
+│   ├── boilerplate/    ← vendored hierarchy §6.2: LitElement → ComponentObjectHandler
 │   │                     → ComponentObjectsHandler → OrbitComponent (Task, save, requestNavigation)
-│   └── <nom>/          ← 6 blox custom Lit §7 (building-map, energy-chart, anomaly-list,
-│                         ticket-board, ticket-detail, user-admin) + logic.js pur par composant
-├── tests/              ← conformité spec + composants (node --test + happy-dom, sibStore mocké)
-└── dist/               ← build Vite (prod : déployé sur l'origine front FRONT_ORIGINS du back)
+│   └── <name>/          ← 6 custom Lit blox §7 (building-map, energy-chart, anomaly-list,
+│                         ticket-board, ticket-detail, user-admin) + pure logic.js per component
+├── tests/              ← spec conformance + components (node --test + happy-dom, mocked sibStore)
+└── dist/               ← Vite build (prod: deployed on the front origin FRONT_ORIGINS of the back)
 ```
 
-## Lancer en local avec le back FAP-light
+## Run locally with the FAP-light back
 
-**1. Back** (stack 1 VM : postgres + ORCE + caddy + Keycloak) — voir `../app-supervision-backend` :
+**1. Back** (1 VM stack: postgres + ORCE + caddy + Keycloak) — see `../app-supervision-backend`:
 
 ```sh
 cd ../app-supervision-backend
-./scripts/start.sh          # démarre le back (idempotent)
-# → LDP/JSON-LD : http://localhost/ (dev = HTTP pur) ; Keycloak (IdP) :
-#   http://localhost/auth/realms/fap-light ; ORCE/éditeur : http://localhost/editor/
+./scripts/start.sh          # starts the back (idempotent)
+# → LDP/JSON-LD: http://localhost/ (dev = plain HTTP); Keycloak (IdP):
+#   http://localhost/auth/realms/fap-light; ORCE/editor: http://localhost/editor/
 ```
 
-**2. Front** (AUTONOME du back : aucun fichier du client n'est servi par le backend) :
+**2. Front** (SELF-CONTAINED from the back: no client file is served by the backend):
 
 ```sh
 cd ../app-supervision
 npm ci
-npm run dev                 # → http://app.localhost/  (port 80 : caddy du back proxifie app.localhost → ce serveur vite)
-#   configure auto au 1er lancement : ./scripts/configure.sh http://localhost
-#   (POD_URL = le BACK ; OIDC_ISSUER = http://localhost/auth/realms/fap-light)
+npm run dev                 # → http://app.localhost/  (port 80: the back's caddy proxies app.localhost → this vite server)
+#   auto-configure on first launch: ./scripts/configure.sh http://localhost
+#   (POD_URL = the BACK; OIDC_ISSUER = http://localhost/auth/realms/fap-light)
 ```
 
-Le client n'a **aucun proxy vite** vers le back : tous les appels partent en absolu vers
-`POD_URL` (cross-origin depuis `http://app.localhost/`) — le CORS est géré par le back
-(origine déclarée dans `FRONT_ORIGINS` du backend) et `/auth` par Keycloak (`webOrigins`).
-Un proxy vite casserait le DPoP (`DPoP HTTP URL mismatch`).
-En production : `./scripts/configure.sh https://fap.example.com && npm run build`,
-puis déployer `dist/` sur l'origine prévue dans `FRONT_ORIGINS` (ex. `https://app.fap.example.com`).
+The client has **no vite proxy** to the back: all calls go absolute to
+`POD_URL` (cross-origin from `http://app.localhost/`) — CORS is handled by the back
+(origin declared in the backend's `FRONT_ORIGINS`) and `/auth` by Keycloak (`webOrigins`).
+A vite proxy would break DPoP (`DPoP HTTP URL mismatch`).
+In production: `./scripts/configure.sh https://fap.example.com && npm run build`,
+then deploy `dist/` on the origin declared in `FRONT_ORIGINS` (e.g. `https://app.fap.example.com`).
 
-## Authentification OIDC
+## OIDC authentication
 
-Une seule `Session` `@inrupt/solid-client-authn-browser` (login direct avec `clientId`
-statique `fap-light-ui` — Keycloak ne fait pas de dynamic registration, D-7 ; `<sib-auth>`
-n'est pas utilisé car il embarque la même lib en double et les deux se disputent le code) :
+A single `Session` from `@inrupt/solid-client-authn-browser` (direct login with static
+`clientId` `fap-light-ui` — Keycloak does no dynamic registration, D-7; `<sib-auth>`
+is not used because it embeds the same lib twice and both fight over the code):
 
-- pas de session au chargement → redirect automatique vers
-  `${OIDC_ISSUER}/protocol/openid-connect/auth` (`http://localhost/auth/realms/fap-light/...` en dev) ;
-- le scope `offline_access` (en dur dans oidc-client-ext) est retiré de l'URL d'autorisation
-  via `handleRedirect` — Keycloak 26.4 le refuse pour ce client (`not_allowed`) ;
-- `tokenType: 'Bearer'` : le FAP-LDP valide les tokens via userinfo en Bearer
-  (`fap-ldp/core/nodes/nodes/ldp-container.js`) → un token DPoP-bound (cnf) serait refusé ;
-- 401 du LDP → purge du cache + re-login ;
-- `session.fetch` injecté dans `window.sibStore.fetchAuthn` (§13.7, point d'injection unique),
-  avec réécriture des URL relatives en absolues vers `POD_URL` et repli fixtures (`VITE_FIXTURES`).
+- no session on load → automatic redirect to
+  `${OIDC_ISSUER}/protocol/openid-connect/auth` (`http://localhost/auth/realms/fap-light/...` in dev);
+- the `offline_access` scope (hard-coded in oidc-client-ext) is removed from the
+  authorization URL via `handleRedirect` — Keycloak 26.4 rejects it for this client (`not_allowed`);
+- `tokenType: 'Bearer'`: FAP-LDP validates tokens via userinfo in Bearer
+  (`fap-ldp/core/nodes/nodes/ldp-container.js`) → a DPoP-bound token (cnf) would be rejected;
+- 401 from the LDP → cache purge + re-login;
+- `session.fetch` injected into `window.sibStore.fetchAuthn` (§13.7, single injection point),
+  with relative URLs rewritten to absolute against `POD_URL` and fixtures fallback (`VITE_FIXTURES`).
 
-Lecture des données : `getJson(url)` (components/boilerplate) = `fetchAuthn` + JSON brut.
-`sibStore.getData()` renvoie des proxies `CustomGetter` (champs lisibles seulement via
-`await proxy.get(path)`) — illisible pour nos blox custom, d'où le JSON brut.
-Les conteneurs LDP ne listant que des `@id`, `resolveMembers()` résout chaque membre.
-Champs lus par nom local via `field(obj, 'lat')` (le back préfixe par table :
+Data reads: `getJson(url)` (components/boilerplate) = `fetchAuthn` + raw JSON.
+`sibStore.getData()` returns `CustomGetter` proxies (fields readable only via
+`await proxy.get(path)`) — unusable for our custom blox, hence raw JSON.
+LDP containers only list `@id`s, so `resolveMembers()` resolves each member.
+Fields are read by local name via `field(obj, 'lat')` (the back prefixes by table:
 `app_buildings:lat`, `app_tickets:status`, `gold_anomaly_candidates:severity`…).
-Écritures (POST/PATCH) en clés non préfixées — le serveur mappe par nom local (@vocab).
+Writes (POST/PATCH) use non-prefixed keys — the server maps by local name (@vocab).
 
-## Données gold
+## Gold data
 
-- Publiées en conteneurs LDP (`/gold/anomaly_candidates/`, …) → lecture LDP directe.
-- Volumineuses (horaires) → proxy signé côté serveur `POST /app/query`, body
-  `{agreement, assetId, from, to}` avec `assetId` = id catalogue DSP
-  (`dataset:facis:net-grid-hourly`) et `agreement:interne:contrat-cadre`.
-  Jamais de HMAC côté navigateur (§13.1). Réponse `{columns, rows[]}` avec rows positionnels.
+- Published in LDP containers (`/gold/anomaly_candidates/`, …) → direct LDP read.
+- Voluminous (hourly) → server-side signed proxy `POST /app/query`, body
+  `{agreement, assetId, from, to}` with `assetId` = DSP catalogue id
+  (`dataset:facis:net-grid-hourly`) and `agreement:internal:framework-contract`.
+  Never any HMAC in the browser (§13.1). Response `{columns, rows[]}` with positional rows.
 
-## Dev local (HTTP pur)
+## Local dev (plain HTTP)
 
-Back sur `http://localhost` (:80, ENV=dev) — Keycloak sert sous `/auth`
-(`--http-relative-path /auth`, caddy ne strippe pas, `KC_PROXY_HEADERS=xforwarded`
-pour la validation DPoP htu). Front : `npm run dev` → `http://localhost:5173/`,
-`.env` : `POD_URL=http://localhost`, `OIDC_ISSUER=http://localhost/auth/realms/fap-light`.
-Comptes Keycloak : alice / bob / admin (mdp `dev`).
-Note : `overrides` npm épinglent `@inrupt/oidc-client-ext`/`solid-client-authn-core`
-à 1.11.2 (aligné sur `@inrupt/solid-client-authn-browser@1.11.2`, sinon
+Back on `http://localhost` (:80, ENV=dev) — Keycloak served under `/auth`
+(`--http-relative-path /auth`, caddy does not strip it, `KC_PROXY_HEADERS=xforwarded`
+for DPoP htu validation). Front: `npm run dev` → `http://localhost:5173/`,
+`.env`: `POD_URL=http://localhost`, `OIDC_ISSUER=http://localhost/auth/realms/fap-light`.
+Keycloak accounts: alice / bob / admin (password `dev`).
+Note: npm `overrides` pin `@inrupt/oidc-client-ext`/`solid-client-authn-core`
+to 1.11.2 (aligned with `@inrupt/solid-client-authn-browser@1.11.2`, otherwise
 `removeOidcQueryParam is not a function`).
 
-## Données de démo au déploiement
+## Demo data on deployment
 
-Un déploiement from-scratch **a déjà des données** — trois sources :
+A from-scratch deployment **already has data** — three sources:
 
-1. **Seed SQL du back** (chargé automatiquement au boot par
-   `app-supervision-backend/scripts/deploy-local.sh`) :
-   `app-supervision-backend/sql/101_seed_demo.sql` insère les comptes applicatifs
-   (webid = claims Keycloak : alice / bob / admin), un **parc de bâtiments de démo**
-   (avec `meter_id`, géolocalisés), des **tickets** et des **commentaires**.
-   → visibles dès le 1er login dans l'UI.
-2. **Simulation capteurs** (cœur FAP-light, tick toutes les 60 s) : alimente
-   bronze → silver → gold (dont `gold.anomaly_candidates` et les agrégats horaires
-   consommés via `POST /app/query`). Les **séries horaires se remplissent progressivement**
-   après le boot (pas instantanément).
-3. **Fixtures du front** (repli uniquement) : si le back ne répond pas (LDP 404/500,
-   réseau coupé), le front retombe sur des **données exemple** (`src/lib/fixtures.js`) :
-   4 bâtiments géolocalisés (Lyon), 4 tickets tous statuts, 4 anomalies, commentaires,
-   utilisateurs, et séries horaires synthétiques pour le proxy `/app/query`.
-   Dès que le back répond, les vraies données repassent devant.
-   Désactivable : `VITE_FIXTURES=0` dans `.env`. Les mutations (POST/PATCH/DELETE)
-   restent en mémoire de session.
+1. **Back seed SQL** (loaded automatically at boot by
+   `app-supervision-backend/scripts/deploy-local.sh`):
+   `app-supervision-backend/sql/101_seed_demo.sql` inserts the application accounts
+   (webid = Keycloak claims: alice / bob / admin), a **demo building portfolio**
+   (with `meter_id`, geolocated), **tickets** and **comments**.
+   → visible from the first login in the UI.
+2. **Sensor simulation** (FAP-light core, tick every 60 s): feeds
+   bronze → silver → gold (including `gold.anomaly_candidates` and the hourly aggregates
+   consumed via `POST /app/query`). The **hourly series fill up progressively**
+   after boot (not instantly).
+3. **Front fixtures** (fallback only): if the back does not answer (LDP 404/500,
+   network down), the front falls back to **sample data** (`src/lib/fixtures.js`):
+   4 geolocated buildings (Lyon), 4 tickets in all statuses, 4 anomalies, comments,
+   users, and synthetic hourly series for the `/app/query` proxy.
+   As soon as the back answers, real data takes over again.
+   Can be disabled: `VITE_FIXTURES=0` in `.env`. Mutations (POST/PATCH/DELETE)
+   remain in session memory.
 
-## Tests de conformité
+## Conformance tests
 
 ```sh
 npm test          # = node --test tests/
 ```
 
-La suite valide la conformité à la spec : structure §4, routes/Orbit §8+§13.6, contrat
-HTTP FAP-LDP §2/§10 (401/403/404/412/304/429, dspace:Error), matrice de transitions §13.5,
-mapping gold LDP/proxy §13.3 + contrat proxy C1.9, ETag §2/§5, @context §13.2, la règle
-absolue §13.1 (aucun secret HMAC ni appel /dsp/data côté navigateur), la logique pure de
-chaque composant (états carte, filtres, groupage, fenêtres, validation) et les composants
-Lit eux-mêmes sous happy-dom (rendu, requestNavigation, PATCH merge-patch, 412, save→refresh).
+The suite validates spec conformance: structure §4, routes/Orbit §8+§13.6, FAP-LDP
+HTTP contract §2/§10 (401/403/404/412/304/429, dspace:Error), transition matrix §13.5,
+gold LDP/proxy mapping §13.3 + proxy contract C1.9, ETag §2/§5, @context §13.2, the
+absolute rule §13.1 (no HMAC secret nor /dsp/data call in the browser), the pure logic of
+each component (map states, filters, grouping, windows, validation) and the Lit components
+themselves under happy-dom (rendering, requestNavigation, PATCH merge-patch, 412, save→refresh).
 
 ## Note
 
-Point O-3 de la spec : à confirmer en conditions réelles que `fetchAuthn` est bien le point
-d'injection unique de `@startinblox/oidc@0.16.6` dans sibStore (`@startinblox/core@2.0.6`).
-Les tests Cypress composant/e2e CA-1..CA-5 de la spec §11 restent à écrire côté TCK FAP-LDP.
+Spec point O-3: to be confirmed under real conditions that `fetchAuthn` is indeed the single
+injection point of `@startinblox/oidc@0.16.6` into sibStore (`@startinblox/core@2.0.6`).
+The Cypress component/e2e tests CA-1..CA-5 of spec §11 remain to be written on the FAP-LDP TCK side.

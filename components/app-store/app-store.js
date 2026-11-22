@@ -1,16 +1,16 @@
-// <app-store> — route /store : liste du catalogue + toggles + configuration par
-// feature + édition admin des métadonnées (spec app-store-spec.md v0.4 §1.6.2,
+// <app-store> — /store route: catalogue list + toggles + per-feature
+// configuration + admin editing of metadata (app-store-spec.md v0.4 §1.6.2,
 // CA-A2, CA-A3).
 //
-// - Liste : ComponentObjectsHandler sur /features/ + prefs courante.
-// - Toggle : PATCH merge-patch /prefs/<pk> body {"prefs": {"<slug>": {"enabled":…}}}
-//   (forme R1 §1.5) via window.appStore.patchPrefs → événement `save` (§1.9.9) :
-//   <app-menu> et la route courante se mettent à jour à chaud. 412 → toast.
-// - Configurer : modale dans /store (§1.9.11), formulaire piloté par le
-//   config_schema de la feature (méta-schéma §1.9.6), écrit la sous-clé
-//   `config` des prefs (validation front v1, CA-A3).
-// - Admin (v1) : édition des métadonnées UNIQUEMENT des features déjà
-//   packagées (§1.9.8) → PATCH /features/<slug> (IRI par slug, CA-A7).
+// - List: ComponentObjectsHandler on /features/ + current prefs.
+// - Toggle: merge-patch PATCH /prefs/<pk> body {"prefs": {"<slug>": {"enabled":…}}}
+//   (R1 form §1.5) via window.appStore.patchPrefs → `save` event (§1.9.9):
+//   <app-menu> and the current route update live. 412 → toast.
+// - Configure: modal in /store (§1.9.11), form driven by the feature's
+//   config_schema (meta-schema §1.9.6), writes the `config` sub-key
+//   of the prefs (front v1 validation, CA-A3).
+// - Admin (v1): metadata editing ONLY for already packaged features
+//   (§1.9.8) → PATCH /features/<slug> (IRI by slug, CA-A7).
 import { html, css } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { iconSvg } from '../shared/icons.js';
@@ -37,18 +37,18 @@ export class AppStore extends OrbitComponent {
     ...OrbitComponent.properties,
     prefsObj: { type: Object, attribute: false },
     locale: { type: String },
-    editingSlug: { type: String, attribute: false },   // modale config ouverte
+    editingSlug: { type: String, attribute: false },   // config modal open
     editingValues: { type: Object, attribute: false },
     editingErrors: { type: Object, attribute: false },
-    adminSlug: { type: String, attribute: false },     // modale admin ouverte
+    adminSlug: { type: String, attribute: false },     // admin modal open
     adminValues: { type: Object, attribute: false },
     adminError: { type: String, attribute: false },
     toast: { type: String, attribute: false },
-    catalogueMissing: { type: Boolean, attribute: false }, // GET /features/ → 404 (SQL non appliqué)
-    installSlug: { type: String, attribute: false },   // modale d'installation ouverte (v2)
-    installing: { type: Boolean, attribute: false },    // install en cours (fetch + vérif SRI)
-    query: { type: String },                            // recherche texte du store
-    activeCat: { type: String, attribute: false },      // filtre catégorie ('all' = toutes)
+    catalogueMissing: { type: Boolean, attribute: false }, // GET /features/ → 404 (SQL not applied)
+    installSlug: { type: String, attribute: false },   // install modal open (v2)
+    installing: { type: Boolean, attribute: false },    // install in progress (fetch + SRI check)
+    query: { type: String },                            // store text search
+    activeCat: { type: String, attribute: false },      // category filter ('all' = all)
   };
 
   static styles = css`
@@ -76,10 +76,10 @@ export class AppStore extends OrbitComponent {
     .modal .foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
     .field-error { color: #dc2626; font-size: 0.78rem; margin-top: 3px; }
     .badge { margin-left: 8px; font-size: .72rem; padding: 2px 8px; border-radius: 999px; background: #e0e7ff; color: #3730a3; }
-    .badge.configured { background: #ccfbf1; color: #0f766e; }   /* teal : user-configured */
-    .badge.installed { background: #dcfce7; color: #15803d; }    /* green : remote feature installed */
-    .badge.remote { background: #e0e7ff; color: #3730a3; }       /* indigo : remote, not installed yet */
-    .badge.upgrade { background: #fef3c7; color: #b45309; }      /* amber : update available */
+    .badge.configured { background: #ccfbf1; color: #0f766e; }   /* teal: user-configured */
+    .badge.installed { background: #dcfce7; color: #15803d; }    /* green: remote feature installed */
+    .badge.remote { background: #e0e7ff; color: #3730a3; }       /* indigo: remote, not installed yet */
+    .badge.upgrade { background: #fef3c7; color: #b45309; }      /* amber: update available */
     .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
     .toolbar .search { flex: 1 1 240px; }
     .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -119,8 +119,8 @@ export class AppStore extends OrbitComponent {
     try {
       data = await getJson(this.dataSrc);
     } catch (e) {
-      // Catalogue absent côté serveur (sql/010–012 non appliqués) : état explicite,
-      // pas un crash — le déploiement back est la cause (voir sql/README.md).
+      // Catalogue absent server-side (sql/010–012 not applied): explicit state,
+      // not a crash — the back deployment is the cause (see sql/README.md).
       if (e.status === 404) {
         this.catalogueMissing = true;
         this.objects = [];
@@ -135,9 +135,9 @@ export class AppStore extends OrbitComponent {
     const role = appStore.getRole();
     this.objects = (await resolveMembers(data))
       .filter((f) => f && field(f, 'slug'))
-      // §1.4.1 role_min : la liste /store ne montre que les features accessibles à ce rôle (UX)
+      // §1.4.1 role_min: the /store list only shows features accessible to this role (UX)
       .filter((f) => roleAllowed(field(f, 'role_min') ?? 'all', role))
-      .sort((a, b) => ((field(a, 'menu_order') ?? 0) - (field(b, 'menu_order') ?? 0)) || field(a, 'slug').localeCompare(field(b, 'slug'))); // même tri que le menu (§1.9.1)
+      .sort((a, b) => ((field(a, 'menu_order') ?? 0) - (field(b, 'menu_order') ?? 0)) || field(a, 'slug').localeCompare(field(b, 'slug'))); // same sort as the menu (§1.9.1)
     await appStore.whenReady();
     this.prefsObj = appStore.getPrefs();
     return data;
@@ -163,15 +163,15 @@ export class AppStore extends OrbitComponent {
     const slug = field(feature, "slug");
     try {
       if (enabled && isDistant(feature)) {
-        // v2 §2.2.3 — modale de confirmation explicite (pas de window.confirm) :
-        // on n'installe qu'après clic sur « Installer » (voir confirmInstall).
-        ev.target.checked = false; // la case ne passe que si l'installation réussit
+        // v2 §2.2.3 — explicit confirmation modal (no window.confirm):
+        // we only install after clicking "Install" (see confirmInstall).
+        ev.target.checked = false; // the checkbox only switches if the install succeeds
         this.installSlug = slug;
         return;
       } else if (!enabled && isDistant(feature)) {
-        await uninstallFeature(appStore, feature); // §2.2.4 : révocation
+        await uninstallFeature(appStore, feature); // §2.2.4: revocation
       } else {
-        // CA-A2 : PATCH merge-patch forme R1 + save (§1.9.9) → menu à jour à chaud.
+        // CA-A2: R1-form merge-patch PATCH + save (§1.9.9) → menu updated live.
         await appStore.patchPrefs(togglePatch(slug, enabled));
       }
       this.prefsObj = appStore.getPrefs();
@@ -185,19 +185,19 @@ export class AppStore extends OrbitComponent {
       } else {
         this.toast = `Error ${e.status ?? ''}: ${e.message}`;
       }
-      ev.target.checked = !enabled; // rollback visuel
+      ev.target.checked = !enabled; // visual rollback
     }
   }
 
-  // ------------------------------------------- modale d'installation (v2 §2.2.3)
+  // ------------------------------------------- install modal (v2 §2.2.3)
   async confirmInstall(feature) {
     this.installing = true;
     try {
-      // CA-A5 : SRI vérifié avant import (O-A1) ; SriMismatchError → refusé
-      // (window.__appStoreLoaderDeps = hook de test pour injecter fetchFn/importFn)
+      // CA-A5: SRI checked before import (O-A1); SriMismatchError → refused
+      // (window.__appStoreLoaderDeps = test hook to inject fetchFn/importFn)
       const r = await installFeature(appStore, feature, window.__appStoreLoaderDeps ?? {});
       this.toast = r.installed
-        ? `« ${titleOf(feature, this.locale)} ” installed (v${r.version ?? field(feature, 'version')}) — SHA-384 fingerprint verified.`
+        ? `"${titleOf(feature, this.locale)}" installed (v${r.version ?? field(feature, 'version')}) — SHA-384 fingerprint verified.`
         : '';
       this.prefsObj = appStore.getPrefs();
     } catch (e) {
@@ -215,7 +215,7 @@ export class AppStore extends OrbitComponent {
     }
   }
 
-  // v2 CA-A6 — upgrade proposé si le catalogue annonce version > installed_version
+  // v2 CA-A6 — upgrade offered if the catalogue announces version > installed_version
   async onUpgrade(feature, ev) {
     ev?.preventDefault();
     try {
@@ -229,7 +229,7 @@ export class AppStore extends OrbitComponent {
     }
   }
 
-  // ------------------------------------------------------- modale config
+  // ------------------------------------------------------- config modal
   openConfig(feature) {
     const entry = this.prefsObj?.[field(feature, "slug")] ?? {};
     const schema = field(feature, 'config_schema') ?? { fields: [] };
@@ -252,7 +252,7 @@ export class AppStore extends OrbitComponent {
 
   async saveConfig(feature) {
     const schema = field(feature, 'config_schema') ?? { fields: [] };
-    // CA-A3 : validation front v1 contre le méta-schéma §1.9.6
+    // CA-A3: front v1 validation against the meta-schema §1.9.6
     const cleaned = {};
     for (const f of schema.fields ?? []) {
       if (this.editingValues[f.key] !== undefined) cleaned[f.key] = this.editingValues[f.key];
@@ -260,7 +260,7 @@ export class AppStore extends OrbitComponent {
     const { ok, errors } = validateConfig(schema, cleaned);
     if (!ok) { this.editingErrors = errors; return; }
     try {
-      await appStore.patchPrefs(configPatch(field(feature, "slug"), cleaned)); // sous-clé config
+      await appStore.patchPrefs(configPatch(field(feature, "slug"), cleaned)); // config sub-key
       this.prefsObj = appStore.getPrefs();
       this.closeConfig();
     } catch (e) {
@@ -306,7 +306,7 @@ export class AppStore extends OrbitComponent {
       </div>`;
   }
 
-  // ------------------------------------------------------- admin (métadonnées)
+  // ------------------------------------------------------- admin (metadata)
   openAdmin(feature) {
     this.adminError = '';
     this.adminValues = {
@@ -328,8 +328,9 @@ export class AppStore extends OrbitComponent {
     try { configSchema = JSON.parse(this.adminValues.config_schema); }
     catch { this.adminError = 'config_schema: invalid JSON'; return; }
     const patch = {
-      title_i18n: { en: this.adminValues.title_en },
-      description_i18n: { en: this.adminValues.desc_en },
+      // keep the existing fr locale, update en (i18n fields carry both locales)
+      title_i18n: { ...(field(feature, 'title_i18n') ?? {}), en: this.adminValues.title_en },
+      description_i18n: { ...(field(feature, 'description_i18n') ?? {}), en: this.adminValues.desc_en },
       icon: this.adminValues.icon || 'extension',
       category: this.adminValues.category || null, // 021_features_category.sql
       menu_order: Number(this.adminValues.menu_order) || 0,
@@ -337,7 +338,7 @@ export class AppStore extends OrbitComponent {
       config_schema: configSchema,
     };
     try {
-      // Admin v1 : métadonnées uniquement (§1.9.8) → PATCH /features/<slug> (CA-A7).
+      // Admin v1: metadata only (§1.9.8) → PATCH /features/<slug> (CA-A7).
       const res = await (window.sibStore?.fetchAuthn ?? fetch)(`/features/${field(feature, 'slug')}`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/merge-patch+json', accept: 'application/ld+json' },
@@ -377,7 +378,7 @@ export class AppStore extends OrbitComponent {
       </div>`;
   }
 
-  // ------------------------------------ modale d'installation (v2 §2.2.3, CA-A5)
+  // ------------------------------------ install modal (v2 §2.2.3, CA-A5)
   renderInstallModal(feature) {
     const slug = field(feature, 'slug');
     const pkg = field(feature, 'npm_package') ?? slug;
@@ -406,10 +407,10 @@ export class AppStore extends OrbitComponent {
       </div>`;
   }
 
-  // ------------------------------------------------- organisation du store
-  // Spec §1.6.2 révisée : le store est organisé par catégorie (rayons, colonne
-  // app.features.category — migration 021) avec recherche texte ; le menu
-  // (<app-menu>) reste plat.
+  // ------------------------------------------------- store layout
+  // Revised spec §1.6.2: the store is organized by category (shelves, column
+  // app.features.category — migration 021) with text search; the menu
+  // (<app-menu>) stays flat.
   renderToolbar() {
     const cats = ['all', ...new Set(this.objects.map((f) => String(field(f, 'category') ?? '')))];
     return html`
@@ -434,7 +435,7 @@ export class AppStore extends OrbitComponent {
     const slug = field(f, "slug");
     const entry = installedEntry(this.prefsObj, slug);
     const configured = isConfigured(entry.config, schema); // §1.9.11
-    const distant = isDistant(f);                    // v2 : cdn_url + tag au catalogue
+    const distant = isDistant(f);                    // v2: cdn_url + tag in the catalogue
     const installed = isInstalled(f, this.prefsObj);  // CA-A5
     const upgrade = upgradeAvailable(f, this.prefsObj); // CA-A6
     return html`

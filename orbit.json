@@ -18,7 +18,7 @@
    "name": "dashboard",
    "path": "/",
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [
     "building-map",
@@ -58,7 +58,7 @@
    "name": "building-detail",
    "path": "/buildings/:id",
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [
     "building-header",
@@ -91,7 +91,7 @@
    "name": "anomalies",
    "path": "/anomalies",
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "sections": [
     {
@@ -110,7 +110,7 @@
    "name": "tickets",
    "path": "/tickets",
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "sections": [
     {
@@ -129,7 +129,7 @@
    "name": "ticket-new",
    "path": "/tickets/new",
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [
     "ticket-new"
@@ -139,8 +139,8 @@
    "name": "ticket-detail",
    "path": "/tickets/:id",
    "roles": [
-    "gestionnaire",
-    "technicien"
+    "manager",
+    "technician"
    ],
    "components": [
     "ticket-detail"
@@ -150,7 +150,7 @@
    "name": "interventions",
    "path": "/interventions",
    "roles": [
-    "technicien"
+    "technician"
    ],
    "components": [
     "ticket-board",
@@ -172,8 +172,8 @@
    "path": "/store",
    "menu": false,
    "roles": [
-    "gestionnaire",
-    "technicien",
+    "manager",
+    "technician",
     "admin"
    ],
    "components": [
@@ -185,7 +185,7 @@
    "path": "/alerts",
    "menu": false,
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [],
    "dynamic": true
@@ -195,7 +195,7 @@
    "path": "/sla",
    "menu": false,
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [],
    "dynamic": true
@@ -205,7 +205,7 @@
    "path": "/reports",
    "menu": false,
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [],
    "dynamic": true
@@ -215,7 +215,7 @@
    "path": "/budget",
    "menu": false,
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [],
    "dynamic": true
@@ -225,7 +225,7 @@
    "path": "/optimize",
    "menu": false,
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [],
    "dynamic": true
@@ -235,7 +235,7 @@
    "path": "/pv",
    "menu": false,
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [],
    "dynamic": true
@@ -245,7 +245,7 @@
    "path": "/benchmark",
    "menu": false,
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [],
    "dynamic": true
@@ -255,7 +255,7 @@
    "path": "/regulatory",
    "menu": false,
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [],
    "dynamic": true
@@ -265,7 +265,7 @@
    "path": "/weather",
    "menu": false,
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [],
    "dynamic": true
@@ -275,7 +275,7 @@
    "path": "/city",
    "menu": false,
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [],
    "dynamic": true
@@ -285,7 +285,7 @@
    "path": "/assistant",
    "menu": false,
    "roles": [
-    "gestionnaire"
+    "manager"
    ],
    "components": [],
    "dynamic": true

@@ -1,13 +1,13 @@
-// <dynamic-feature> — hôte de montage à la volée d'une feature (spec Partie 2 §2.2.7).
+// <dynamic-feature> — host for on-the-fly mounting of a feature (spec Part 2 §2.2.7).
 //
-//   <dynamic-feature slug="demo-meteo"></dynamic-feature>
+//   <dynamic-feature slug="demo-weather"></dynamic-feature>
 //
-// - feature packagée (v1, component dans orbit.json) : attend customElements.whenDefined(tag)
-//   puis monte <tag>.
-// - feature distante (v2, cdn_url + sri au catalogue) : charge via loader.js (SRI vérifié
-//   avant import, CA-A5), puis monte <tag>. La route d'une feature distante est montée
-//   à la volée dans le shell via ce composant.
-// - Erreur SRI / réseau → panneau d'erreur explicite (pas de crash), CA-A5.
+// - packaged feature (v1, component in orbit.json): waits for customElements.whenDefined(tag)
+//   then mounts <tag>.
+// - distant feature (v2, cdn_url + sri in the catalogue): loads via loader.js (SRI checked
+//   before import, CA-A5), then mounts <tag>. The route of a distant feature is mounted
+//   on the fly in the shell via this component.
+// - SRI / network error → explicit error panel (no crash), CA-A5.
 import { LitElement, html, css } from 'lit';
 import appStore from '../shared/app-store-api.js';
 import { get as getField, isDistant, isInstalled } from '../shared/logic.js';
@@ -53,7 +53,7 @@ export class DynamicFeature extends LitElement {
         if (!isInstalled(feature, prefs)) {
           throw new Error(`remote feature not installed (fingerprint not verified): ${this.slug} — go to /store`);
         }
-        // re-vérifie le sri à chaque montage (le cache loader peut être évincé à la révocation)
+        // re-checks the sri on each mount (the loader cache may have been evicted at revocation)
         await loadRemoteModule({
           cdnUrl: getField(feature, 'cdn_url'),
           sri: getField(feature, 'sri'),
@@ -77,7 +77,7 @@ export class DynamicFeature extends LitElement {
   }
 
   updated() {
-    // montage impératif du custom element (Lit ne bind pas les noms de tag)
+    // imperative mounting of the custom element (Lit does not bind tag names)
     if (this.state === 'mounted' && this._tag) {
       const host = this.renderRoot.querySelector('.host');
       if (host && !host.firstChild) host.appendChild(document.createElement(this._tag));

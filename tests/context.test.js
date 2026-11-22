@@ -1,9 +1,9 @@
-// Conformité §13.2 — @context JSON-LD v1 servi par FAP-LDP.
+// §13.2 conformance — JSON-LD v1 @context served by FAP-LDP.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildContext } from '../src/lib/context.js';
 
-test('§13.2 : préfixes exacts du contexte embarqué', () => {
+test('§13.2: exact prefixes of the embedded context', () => {
   const ctx = buildContext('https://pod.example');
   assert.equal(ctx['@vocab'], 'https://pod.example/');
   assert.equal(ctx.ldp, 'http://www.w3.org/ns/ldp#');
@@ -15,7 +15,7 @@ test('§13.2 : préfixes exacts du contexte embarqué', () => {
   assert.equal(ctx.comments, 'https://pod.example/ns/app/comments#');
 });
 
-test('§13.2 : slash final du pod normalisé', () => {
+test('§13.2: pod trailing slash normalized', () => {
   const ctx = buildContext('https://pod.example/');
   assert.equal(ctx.tickets, 'https://pod.example/ns/app/tickets#');
 });

@@ -1,7 +1,7 @@
-// Logique pure building-map — spec front §7.2.
-// État par bâtiment : vert = OK, orange = anomalie ouverte, rouge = sévérité haute.
-// Une anomalie liée à un ticket CLOSED (via anomaly_ref) n'est plus active.
-// Champs lus par nom local (field) : le back préfixe par table (app_buildings:lat…).
+// Pure building-map logic — front spec §7.2.
+// State per building: green = OK, orange = open anomaly, red = high severity.
+// An anomaly linked to a CLOSED ticket (via anomaly_ref) is no longer active.
+// Fields read by local name (field): the back prefixes by table (app_buildings:lat…).
 import { field } from '../../src/lib/context.js';
 
 export const STATE = { OK: 'ok', ANOMALY: 'anomaly', HIGH: 'high' };

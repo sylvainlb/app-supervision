@@ -1,10 +1,10 @@
-// Build Vite (spec front §4) : POD_URL / OIDC_ISSUER / OIDC_CLIENT_ID injectés au build
-// par env (.env via loadEnv, ou process.env), lus via import.meta.env dans src/config.ts (§13.6).
-// Le client est AUTONOME du serveur : AUCUN proxy vite vers le back. En dev (npm run dev,
-// port 5173) comme en prod, tous les appels partent en ABSOLU vers POD_URL (cross-origin) —
-// le CORS est géré par le back (Access-Control-Allow-Origin) et /auth par Keycloak (webOrigins).
-// Un proxy vite casserait le DPoP (l'URL signée du token endpoint ne correspondrait plus
-// à l'URL reçue par Keycloak → « DPoP HTTP URL mismatch »).
+// Vite build (front spec §4): POD_URL / OIDC_ISSUER / OIDC_CLIENT_ID injected at build
+// time from env (.env via loadEnv, or process.env), read via import.meta.env in src/config.ts (§13.6).
+// The client is SELF-CONTAINED from the server: NO vite proxy to the back. In dev (npm run dev,
+// port 5173) as in prod, all calls go ABSOLUTE to POD_URL (cross-origin) —
+// CORS is handled by the back (Access-Control-Allow-Origin) and /auth by Keycloak (webOrigins).
+// A vite proxy would break DPoP (the URL signed in the token endpoint would no longer match
+// the URL received by Keycloak → "DPoP HTTP URL mismatch").
 import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(({ mode }) => {

@@ -1,5 +1,5 @@
-// user-admin — CRUD users/rôles, réservé admin (spec front §7.7). Base : ComponentObjectsHandler → OrbitComponent.
-// Data : /users/ (ACL/RLS). CRUD via store.post/put/delete ; webid = IRI déréférençable.
+// user-admin — user/role CRUD, admin only (front spec §7.7). Base: ComponentObjectsHandler → OrbitComponent.
+// Data: /users/ (ACL/RLS). CRUD via store.post/put/delete; webid = dereferenceable IRI.
 import { html, css } from 'lit';
 import { OrbitComponent } from '../boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
@@ -27,7 +27,7 @@ export class UserAdmin extends OrbitComponent {
   constructor() {
     super();
     this.dataSrc = '/users/';
-    this.form = { webid: '', name: '', email: '', role: 'technicien' };
+    this.form = { webid: '', name: '', email: '', role: 'technician' };
     this.errors = [];
   }
 
@@ -35,7 +35,7 @@ export class UserAdmin extends OrbitComponent {
     this.errors = validateUser(this.form);
     if (this.errors.length > 0) return;
     await window.sibStore.post(this.dataSrc, userPayload(this.form));
-    this.form = { webid: '', name: '', email: '', role: 'technicien' };
+    this.form = { webid: '', name: '', email: '', role: 'technician' };
     document.dispatchEvent(new CustomEvent('save', { detail: { resource: { '@id': this.dataSrc } } }));
     this.refresh();
   }

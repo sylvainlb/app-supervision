@@ -1,6 +1,6 @@
-// ticket-detail — détail ticket (spec front §7.6). Base : ComponentObjectHandler → OrbitComponent.
-// Data : /tickets/<pk> + /tickets/<pk>/comments/. Transitions RG-2 via PATCH merge-patch ;
-// 412 → recharger + toast « modifié entre-temps » (§10). Commentaires en append.
+// ticket-detail — ticket detail (front spec §7.6). Base: ComponentObjectHandler → OrbitComponent.
+// Data: /tickets/<pk> + /tickets/<pk>/comments/. RG-2 transitions via PATCH merge-patch;
+// 412 → reload + toast "modified in the meantime" (§10). Comments appended.
 import { html, css } from 'lit';
 import { OrbitComponent, resolveMembers, getJson } from '../boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
@@ -36,7 +36,7 @@ export class TicketDetail extends OrbitComponent {
   constructor() {
     super();
     this.comments = [];
-    this.role = 'gestionnaire';
+    this.role = 'manager';
     this.webid = '';
     this.toast = '';
     this.commentText = '';

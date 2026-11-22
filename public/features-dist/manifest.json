@@ -5,8 +5,8 @@
     "dashboard": {
       "tag": "building-map",
       "cdn_url": "/features-dist/dashboard.js",
-      "sri": "sha384-Bv/d+wKDHtxoPhRpem37vVllGWWDHaumjoc59tXGlQ3IC3mCgi/5MyPMDFrxXSGs",
-      "bytes": 500761,
+      "sri": "sha384-b0lWQ24rDl8y6pYkvhS+1FhJgr2zNK3+sSbg06eW6Z5OmaU2Qxzqrck3wMxeYGG/",
+      "bytes": 500659,
       "components": [
         "building-map",
         "energy-chart",
@@ -17,8 +17,8 @@
     "building-detail": {
       "tag": "building-header",
       "cdn_url": "/features-dist/building-detail.js",
-      "sri": "sha384-4PCraNt2sRU0IceILiEPORd4SLsC1PftFWBYlPnCfgN73nhyMdEWSWZoe9n+P7jj",
-      "bytes": 486600,
+      "sri": "sha384-yjzbyjA5kAqz7LcDo+VzRXcf1AdTKyvl4sbz7imG6zh7y4gHyEBWpwZvafLGXmQu",
+      "bytes": 486512,
       "components": [
         "building-header",
         "energy-chart",
@@ -28,8 +28,8 @@
     "anomalies": {
       "tag": "anomaly-list",
       "cdn_url": "/features-dist/anomalies.js",
-      "sri": "sha384-o0ZPWaWq9E2PaB3KxYq5fUUoHaLewLjVYPmHp8QiAdNPltCr7hKqJVsdFvJfGGSQ",
-      "bytes": 38090,
+      "sri": "sha384-5WvP0VmwSxS4wageHfLxFcGx+ZbENT75aBtDxJtN9vIhyzn0AjKD86m09IzO85hP",
+      "bytes": 38009,
       "components": [
         "anomaly-list"
       ]
@@ -37,8 +37,8 @@
     "tickets": {
       "tag": "ticket-board",
       "cdn_url": "/features-dist/tickets.js",
-      "sri": "sha384-l8GCY1IlG9ytncHAIEjwoYuCJk53oA0I5o4OVw2s67HNE15oxV6sYT4p0/NGPHBw",
-      "bytes": 42064,
+      "sri": "sha384-lb1P5z8HxwKRXu9D09jH08B1T7jeQIfmBRxvzZ40P5g3zZCd2AtoswEzorkvg8+6",
+      "bytes": 41983,
       "components": [
         "ticket-board"
       ]
@@ -46,8 +46,8 @@
     "interventions": {
       "tag": "ticket-board",
       "cdn_url": "/features-dist/interventions.js",
-      "sri": "sha384-oUEA9EyZWvluqrMebBRfiLjgd8lW8V0M0X6D61+XukdaQ7kMn6jot3fkmQGFIhJ4",
-      "bytes": 43940,
+      "sri": "sha384-vtOQZavQDdWCJ/qVudEUCAeD/7oOrlFS6bV3SMX9fv8OZIWSfIDxTuaBxMjgc810",
+      "bytes": 43830,
       "components": [
         "ticket-board",
         "ticket-detail"
@@ -56,455 +56,11 @@
     "admin": {
       "tag": "user-admin",
       "cdn_url": "/features-dist/admin.js",
-      "sri": "sha384-I1vxjsbMF23Ecgx4/tlcJMosqpFbd5om7iSBdO+tcCaRsKoPf0IulmGWUHssA1HF",
-      "bytes": 37053,
+      "sri": "sha384-Oo7xDb/vgSogvCVEuSMRb7rRbHgRgbpr1vLXGRSo4ZlcHEpOPCQXSviJw/J9UHZ+",
+      "bytes": 36986,
       "components": [
         "user-admin"
       ]
-    },
-    "alert-rules": {
-      "tag": "alert-list",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/alert-rules.js",
-      "cdn_url": "/features-dist/alert-rules.js",
-      "sri": "sha384-8m8wYLdwVtlbFSR+dJeLN4UcCmBff7Lo4sBOJN4EGw9JdBTxT+qRAGIj0gCrW9Cx",
-      "bytes": 49931,
-      "title_i18n": {
-        "en": "Alert rules"
-      },
-      "description_i18n": {
-        "en": "Per-building anomaly thresholds (client-side evaluation, UI badge)."
-      },
-      "icon": "notifications_active",
-      "menu_order": 10,
-      "role_min": "gestionnaire",
-      "route": "/alerts",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "thresholds",
-            "label": "Thresholds (building \u2192 {kW, eur_day})",
-            "type": "object"
-          }
-        ]
-      }
-    },
-    "sla-dashboard": {
-      "tag": "sla-view",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/sla-dashboard.js",
-      "cdn_url": "/features-dist/sla-dashboard.js",
-      "sri": "sha384-tboccAyD/GOC7oBSwWNhiLcF5ljGa0WHz/8AqDBJ4N9j4BN6p4T4KDP8cFqtqnjM",
-      "bytes": 49163,
-      "title_i18n": {
-        "en": "SLA dashboard"
-      },
-      "description_i18n": {
-        "en": "Ticket creation \u2192 RESOLVED delay vs SLA threshold."
-      },
-      "icon": "timer",
-      "menu_order": 11,
-      "role_min": "gestionnaire",
-      "route": "/sla",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "sla_hours",
-            "label": "SLA threshold (h)",
-            "type": "number",
-            "default": 24
-          }
-        ]
-      }
-    },
-    "report-builder": {
-      "tag": "report-form",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/report-builder.js",
-      "cdn_url": "/features-dist/report-builder.js",
-      "sri": "sha384-uPusXkGG/z0y6Usnk1owu26jJ2F9fL9o5CTWL78uN0hyN6p/nLUnB3c2lbBsJKpS",
-      "bytes": 52120,
-      "title_i18n": {
-        "en": "Report builder"
-      },
-      "description_i18n": {
-        "en": "Client-side PDF/CSV report from already-fetched data."
-      },
-      "icon": "description",
-      "menu_order": 12,
-      "role_min": "gestionnaire",
-      "route": "/reports",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "period",
-            "label": "Period",
-            "type": "enum",
-            "options": [
-              "day",
-              "week",
-              "month",
-              "year"
-            ],
-            "default": "month"
-          },
-          {
-            "key": "building",
-            "label": "Building",
-            "type": "string"
-          },
-          {
-            "key": "format",
-            "label": "Format",
-            "type": "enum",
-            "options": [
-              "pdf",
-              "csv"
-            ],
-            "default": "pdf"
-          }
-        ]
-      }
-    },
-    "budget-tracker": {
-      "tag": "budget-gauge",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/budget-tracker.js",
-      "cdn_url": "/features-dist/budget-tracker.js",
-      "sri": "sha384-7ClWhDuY/fpDYkati3ziyDWJOfvRoZgEvU90MiYqkezxDQJZyD3Erhqloj+G4f/3",
-      "bytes": 50108,
-      "title_i18n": {
-        "en": "Budget tracker"
-      },
-      "description_i18n": {
-        "en": "Consumption vs kWh/\u20ac budget with % alert (default 80)."
-      },
-      "icon": "savings",
-      "menu_order": 20,
-      "role_min": "gestionnaire",
-      "route": "/budget",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "budget_kwh",
-            "label": "Budget (kWh)",
-            "type": "number",
-            "required": true
-          },
-          {
-            "key": "budget_eur",
-            "label": "Budget (\u20ac)",
-            "type": "number"
-          },
-          {
-            "key": "alert_pct",
-            "label": "Alert threshold (%)",
-            "type": "number",
-            "default": 80
-          }
-        ]
-      }
-    },
-    "price-optimizer": {
-      "tag": "shift-advisor",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/price-optimizer.js",
-      "cdn_url": "/features-dist/price-optimizer.js",
-      "sri": "sha384-HlBdAoeiZCFPJpODAknQJktyoJHDMb5WUeyWpo++aMEc5uVMxp7twTtqZNHCf92g",
-      "bytes": 49259,
-      "title_i18n": {
-        "en": "Price optimizer"
-      },
-      "description_i18n": {
-        "en": "Load-shifting advice based on hourly prices."
-      },
-      "icon": "trending_down",
-      "menu_order": 21,
-      "role_min": "gestionnaire",
-      "route": "/optimize",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "shiftable_kwh",
-            "label": "Shiftable kWh",
-            "type": "number"
-          },
-          {
-            "key": "window",
-            "label": "Window (HH:MM-HH:MM)",
-            "type": "string",
-            "default": "08:00-20:00"
-          }
-        ]
-      }
-    },
-    "pv-selfconsumption": {
-      "tag": "pv-gauge",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/pv-selfconsumption.js",
-      "cdn_url": "/features-dist/pv-selfconsumption.js",
-      "sri": "sha384-2uwkZagelHBscCB3zGaaaFC9+RbKNjYdc3O+cXCScdqkbLDOOFnV3jV4L6DdhbPE",
-      "bytes": 48827,
-      "title_i18n": {
-        "en": "PV self-consumption"
-      },
-      "description_i18n": {
-        "en": "PV self-consumption rate, optional battery."
-      },
-      "icon": "solar_power",
-      "menu_order": 22,
-      "role_min": "gestionnaire",
-      "route": "/pv",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "battery_kwh",
-            "label": "Battery (kWh, 0 = none)",
-            "type": "number",
-            "default": 0
-          }
-        ]
-      }
-    },
-    "benchmark": {
-      "tag": "benchmark-view",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/benchmark.js",
-      "cdn_url": "/features-dist/benchmark.js",
-      "sri": "sha384-rYYt4hM1BiS0RrYatZqYQjfRhgXLy+J08lEqRTbl4q9OpyXH3JvQv/Oo8/ac11mM",
-      "bytes": 50222,
-      "title_i18n": {
-        "en": "Building benchmark"
-      },
-      "description_i18n": {
-        "en": "kWh/m\u00b2 or \u20ac/m\u00b2 comparison across buildings."
-      },
-      "icon": "bar_chart",
-      "menu_order": 23,
-      "role_min": "gestionnaire",
-      "route": "/benchmark",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "metric",
-            "label": "Metric",
-            "type": "enum",
-            "options": [
-              "kwh_m2",
-              "eur_m2"
-            ],
-            "default": "kwh_m2"
-          },
-          {
-            "key": "period",
-            "label": "Period",
-            "type": "enum",
-            "options": [
-              "month",
-              "year"
-            ],
-            "default": "year"
-          },
-          {
-            "key": "ref_building",
-            "label": "Reference building",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    "regulatory-export": {
-      "tag": "regulatory-export",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/regulatory-export.js",
-      "cdn_url": "/features-dist/regulatory-export.js",
-      "sri": "sha384-g3BnZteHrfiWFzvEld2+1Ij/FffULNrDTcYpLSDOS7or3Sue19S1yVRqNDrPOyuf",
-      "bytes": 49625,
-      "title_i18n": {
-        "en": "Regulatory export"
-      },
-      "description_i18n": {
-        "en": "Annual per-site CSV export (kWh/year, server-side)."
-      },
-      "icon": "gavel",
-      "menu_order": 24,
-      "role_min": "gestionnaire",
-      "route": "/regulatory",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "year",
-            "label": "Year",
-            "type": "number"
-          },
-          {
-            "key": "format",
-            "label": "Format",
-            "type": "enum",
-            "options": [
-              "csv",
-              "json"
-            ],
-            "default": "csv"
-          }
-        ]
-      }
-    },
-    "weather-correlation": {
-      "tag": "weather-chart",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/weather-correlation.js",
-      "cdn_url": "/features-dist/weather-correlation.js",
-      "sri": "sha384-6FL6oc3issJOM/+SEVLrgq7R4AzvNWYthM88dwZ5UiEMIkfOe3H+DjMzu4EvKvGy",
-      "bytes": 48638,
-      "title_i18n": {
-        "en": "Weather correlation"
-      },
-      "description_i18n": {
-        "en": "Consumption vs hourly weather (gold weather_hourly)."
-      },
-      "icon": "partly_cloudy_day",
-      "menu_order": 30,
-      "role_min": "gestionnaire",
-      "route": "/weather",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "station",
-            "label": "Weather station",
-            "type": "string"
-          },
-          {
-            "key": "period",
-            "label": "Period",
-            "type": "enum",
-            "options": [
-              "7d",
-              "30d",
-              "90d"
-            ],
-            "default": "30d"
-          }
-        ]
-      }
-    },
-    "city-events": {
-      "tag": "city-feed",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/city-events.js",
-      "cdn_url": "/features-dist/city-events.js",
-      "sri": "sha384-Se0kS9ERM8PsvNF61cs5dKTXqRDY1xDYRwa3xGvOwrbuv3fZ+JwrxLbTflRSUrsY",
-      "bytes": 47633,
-      "title_i18n": {
-        "en": "City events"
-      },
-      "description_i18n": {
-        "en": "Impact of urban events on consumption."
-      },
-      "icon": "location_city",
-      "menu_order": 31,
-      "role_min": "gestionnaire",
-      "route": "/city",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "zone",
-            "label": "Zone",
-            "type": "string"
-          },
-          {
-            "key": "radius_km",
-            "label": "Radius (km)",
-            "type": "number",
-            "default": 5
-          }
-        ]
-      }
-    },
-    "ai-assistant": {
-      "tag": "ai-chat",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/ai-assistant.js",
-      "cdn_url": "/features-dist/ai-assistant.js",
-      "sri": "sha384-ojrA4DcROS1UnIPRr5pLzWvWrH8w3NwrMtpu56GX126EHTpz94uI2RTy26vxStJ4",
-      "bytes": 47778,
-      "title_i18n": {
-        "en": "AI assistant"
-      },
-      "description_i18n": {
-        "en": "Chat over pod data via POST /app/llm (allowlist)."
-      },
-      "icon": "smart_toy",
-      "menu_order": 32,
-      "role_min": "gestionnaire",
-      "route": "/assistant",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "assets",
-            "label": "Queryable assets",
-            "type": "array",
-            "items": "string"
-          },
-          {
-            "key": "model",
-            "label": "Model",
-            "type": "string",
-            "default": "default"
-          }
-        ]
-      }
-    },
-    "data-sharing": {
-      "tag": "share-manager",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/data-sharing.js",
-      "cdn_url": "/features-dist/data-sharing.js",
-      "sri": "sha384-f+dUk3jGRCLTX0v9C4snoX1dLSguVgZ0LeD8LCXr7YsXelQH2v1eyrpmdk+C+V1E",
-      "bytes": 47791,
-      "title_i18n": {
-        "en": "Data sharing"
-      },
-      "description_i18n": {
-        "en": "Asset sharing offers (DSP control plane, admin)."
-      },
-      "icon": "share",
-      "menu_order": 33,
-      "role_min": "admin",
-      "route": "/sharing",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "asset",
-            "label": "Asset",
-            "type": "string",
-            "required": true
-          },
-          {
-            "key": "consumer_did",
-            "label": "Consumer DID",
-            "type": "string"
-          },
-          {
-            "key": "duration_days",
-            "label": "Duration (days)",
-            "type": "number",
-            "default": 30
-          }
-        ]
-      }
     }
   }
 }

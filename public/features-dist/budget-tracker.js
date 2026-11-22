@@ -1,7 +1,7 @@
-// ../atlas/app-store/node_modules/@lit/reactive-element/css-tag.js
+// ../app-store/node_modules/@lit/reactive-element/css-tag.js
 var t = globalThis;
 var e = t.ShadowRoot && (void 0 === t.ShadyCSS || t.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
-var s = Symbol();
+var s = /* @__PURE__ */ Symbol();
 var o = /* @__PURE__ */ new WeakMap();
 var n = class {
   constructor(t3, e4, o5) {
@@ -43,7 +43,7 @@ var c = e ? (t3) => t3 : (t3) => t3 instanceof CSSStyleSheet ? ((t4) => {
   return r(e4);
 })(t3) : t3;
 
-// ../atlas/app-store/node_modules/@lit/reactive-element/reactive-element.js
+// ../app-store/node_modules/@lit/reactive-element/reactive-element.js
 var { is: i2, defineProperty: e2, getOwnPropertyDescriptor: h, getOwnPropertyNames: r2, getOwnPropertySymbols: o2, getPrototypeOf: n2 } = Object;
 var a = globalThis;
 var c2 = a.trustedTypes;
@@ -81,7 +81,7 @@ var u = { toAttribute(t3, s5) {
 } };
 var f = (t3, s5) => !i2(t3, s5);
 var b = { attribute: true, type: String, converter: u, reflect: false, useDefault: false, hasChanged: f };
-Symbol.metadata ??= Symbol("metadata"), a.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
+Symbol.metadata ??= /* @__PURE__ */ Symbol("metadata"), a.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 var y = class extends HTMLElement {
   static addInitializer(t3) {
     this._$Ei(), (this.l ??= []).push(t3);
@@ -91,7 +91,7 @@ var y = class extends HTMLElement {
   }
   static createProperty(t3, s5 = b) {
     if (s5.state && (s5.attribute = false), this._$Ei(), this.prototype.hasOwnProperty(t3) && ((s5 = Object.create(s5)).wrapped = true), this.elementProperties.set(t3, s5), !s5.noAccessor) {
-      const i6 = Symbol(), h4 = this.getPropertyDescriptor(t3, i6, s5);
+      const i6 = /* @__PURE__ */ Symbol(), h4 = this.getPropertyDescriptor(t3, i6, s5);
       void 0 !== h4 && e2(this.prototype, t3, h4);
     }
   }
@@ -265,7 +265,7 @@ var y = class extends HTMLElement {
 };
 y.elementStyles = [], y.shadowRootOptions = { mode: "open" }, y[d("elementProperties")] = /* @__PURE__ */ new Map(), y[d("finalized")] = /* @__PURE__ */ new Map(), p?.({ ReactiveElement: y }), (a.reactiveElementVersions ??= []).push("2.1.2");
 
-// ../atlas/app-store/node_modules/lit-html/lit-html.js
+// ../app-store/node_modules/lit-html/lit-html.js
 var t2 = globalThis;
 var i3 = (t3) => t3;
 var s2 = t2.trustedTypes;
@@ -292,8 +292,8 @@ var x = (t3) => (i6, ...s5) => ({ _$litType$: t3, strings: i6, values: s5 });
 var b2 = x(1);
 var w = x(2);
 var T = x(3);
-var E = Symbol.for("lit-noChange");
-var A = Symbol.for("lit-nothing");
+var E = /* @__PURE__ */ Symbol.for("lit-noChange");
+var A = /* @__PURE__ */ Symbol.for("lit-nothing");
 var C = /* @__PURE__ */ new WeakMap();
 var P = l2.createTreeWalker(l2, 129);
 function V(t3, i6) {
@@ -519,7 +519,7 @@ var D = (t3, i6, s5) => {
   return h4._$AI(t3), h4;
 };
 
-// ../atlas/app-store/node_modules/lit-element/lit-element.js
+// ../app-store/node_modules/lit-element/lit-element.js
 var s3 = globalThis;
 var i4 = class extends y {
   constructor() {
@@ -548,13 +548,13 @@ var o4 = s3.litElementPolyfillSupport;
 o4?.({ LitElement: i4 });
 (s3.litElementVersions ??= []).push("4.2.2");
 
-// ../atlas/app-store/node_modules/@lit/task/task.js
-var i5 = Symbol();
+// ../app-store/node_modules/@lit/task/task.js
+var i5 = /* @__PURE__ */ Symbol();
 var h3 = class {
   get taskComplete() {
-    return this.t || (1 === this.i ? this.t = new Promise((t3, s5) => {
+    return this.t || (1 === this.i ? this.t = new Promise(((t3, s5) => {
       this.o = t3, this.h = s5;
-    }) : 3 === this.i ? this.t = Promise.reject(this.l) : this.t = Promise.resolve(this.u)), this.t;
+    })) : 3 === this.i ? this.t = Promise.reject(this.l) : this.t = Promise.resolve(this.u)), this.t;
   }
   constructor(t3, s5, i6) {
     this.p = 0, this.i = 0, (this._ = t3).addController(this);
@@ -579,7 +579,7 @@ var h3 = class {
   }
   async run(t3) {
     let s5, h4;
-    t3 ??= this.T(), this.O = t3, 1 === this.i ? this.q?.abort() : (this.t = void 0, this.o = void 0, this.h = void 0), this.i = 1, "afterUpdate" === this.autoRun ? queueMicrotask(() => this._.requestUpdate()) : this._.requestUpdate();
+    t3 ??= this.T(), this.O = t3, 1 === this.i ? this.q?.abort() : (this.t = void 0, this.o = void 0, this.h = void 0), this.i = 1, "afterUpdate" === this.autoRun ? queueMicrotask((() => this._.requestUpdate())) : this._.requestUpdate();
     const r5 = ++this.p;
     this.q = new AbortController();
     let e4 = false;
@@ -636,7 +636,7 @@ var h3 = class {
     }
   }
 };
-var r4 = (s5, i6) => s5 === i6 || s5.length === i6.length && s5.every((s6, h4) => !f(s6, i6[h4]));
+var r4 = (s5, i6) => s5 === i6 || s5.length === i6.length && s5.every(((s6, h4) => !f(s6, i6[h4])));
 
 // ../app-store/components/boilerplate/index.js
 async function getJson(url) {
@@ -667,18 +667,24 @@ async function resolveMembers(data) {
   }));
 }
 var sharedStyles = i`    :host {
-    --brand: #0d9488; --brand-light: #14b8a6; --brand-dark: #0f766e; --ink: #0f172a; --muted: #64748b;
+    --brand: #10b981; --brand-light: #34d399; --brand-dark: #059669; --ink: #0f172a; --muted: #64748b;
     --border: #e5eaf0;
     --shadow: 0 1px 2px rgba(15,23,42,.05), 0 6px 18px rgba(15,23,42,.06);
     --shadow-lg: 0 4px 10px rgba(15,23,42,.07), 0 18px 44px rgba(15,23,42,.13);
     display: block; font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #111827; }
+    /* Reset box-sizing in the shadow root too: otherwise width:100% fields
+       overflow their container (padding + border in content-box). */
+    *, *::before, *::after { box-sizing: border-box; }
+    /* Hand cursor on everything clickable (including <a> without href:
+       the browser only sets pointer on links with href). */
+    a, button, summary, [role="button"], [data-route], .clickable { cursor: pointer; }
     button {
-      background: linear-gradient(135deg, var(--brand-light, #14b8a6), var(--brand, #0d9488)); color: #fff; border: 0; border-radius: 10px;
-      padding: 8px 16px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
-      box-shadow: 0 1px 3px rgba(13,148,136,.35);
+      background: linear-gradient(135deg, var(--brand-light, #34d399), var(--brand, #10b981)); color: #064e3b; border: 0; border-radius: 10px;
+      padding: 8px 16px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 1px 3px rgba(16,185,129,.35);
       transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
     }
-    button:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13,148,136,.4); }
+    button:hover { filter: brightness(1.04); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,.45); }
     button:active { transform: translateY(0); }
     button.secondary { background: #fff; color: var(--ink, #0f172a); border: 1px solid var(--border, #e5eaf0); box-shadow: var(--shadow); }
     button.secondary:hover { background: #f3f4f6; box-shadow: var(--shadow-lg); }
@@ -688,17 +694,17 @@ var sharedStyles = i`    :host {
       transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
     }
     input:focus, select:focus, textarea:focus {
-      outline: none; border-color: var(--brand, #0d9488); background: #fff;
-      box-shadow: 0 0 0 3px rgba(20,184,166,.18);
+      outline: none; border-color: var(--brand, #10b981); background: #fff;
+      box-shadow: 0 0 0 3px rgba(52,211,153,.28);
     }
     table { border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border, #e5eaf0); }
     th { background: #f8fafc; text-align: left; font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted, #64748b); }
     th, td { border-bottom: 1px solid var(--border, #e5eaf0); padding: 9px 13px; font-size: 0.9rem; }
     tr:last-child td { border-bottom: 0; }
     tbody tr { transition: background .12s ease; }
-    tbody tr:hover { background: #f0fdfa; }
+    tbody tr:hover { background: #ecfdf5; }
     .card { background: #fff; border: 1px solid var(--border, #e5eaf0); border-radius: 12px; box-shadow: var(--shadow); padding: 12px; transition: box-shadow .15s ease, transform .15s ease; }
-    /* Badges « soft » : fond teinté + texte coloré (plus lisibles que le plein uni) */
+    /* "Soft" badges: tinted background + colored text (more readable than solid fill) */
     .badge { display: inline-block; border-radius: 999px; padding: 3px 11px; font-size: 0.74rem; font-weight: 700; letter-spacing: .02em; color: #475569; background: #f1f5f9; }
     .sev-LOW, .st-OPEN { background: #e2e8f0; color: #475569; }
     .sev-MEDIUM, .pri-MEDIUM, .st-anomaly { background: #fef3c7; color: #b45309; }
@@ -720,7 +726,7 @@ var ComponentObjectHandler = class extends i4 {
     super();
     this.object = null;
   }
-  // À surcharger : prédicat sur la ressource chargée.
+  // To override: predicate on the loaded resource.
   isType(_obj) {
     return true;
   }
@@ -734,7 +740,7 @@ var ComponentObjectsHandler = class extends ComponentObjectHandler {
     super();
     this.objects = [];
   }
-  // À surcharger : prédicat sur chaque membre du conteneur.
+  // To override: predicate on each container member.
   hasType(_obj) {
     return true;
   }
@@ -764,7 +770,7 @@ var OrbitComponent = class extends ComponentObjectsHandler {
     document.removeEventListener("save", this._onSave);
     super.disconnectedCallback();
   }
-  // Hook de chargement — à surcharger. Alimenter this.object / this.objects.
+  // Load hook — to override. Feed this.object / this.objects.
   async load() {
     const data = await getJson(this.dataSrc);
     const resolved = await resolveMembers(data);
@@ -778,7 +784,7 @@ var OrbitComponent = class extends ComponentObjectsHandler {
   navigate(route, resource = null, query = null) {
     document.dispatchEvent(new CustomEvent("requestNavigation", { detail: { route, resource, query } }));
   }
-  // État vide explicite (§7.1) — à surcharger si le composant alimente autre chose que objects/object.
+  // Explicit empty state (§7.1) — to override if the component feeds something other than objects/object.
   isEmpty() {
     return this.objects.length === 0 && !this.object;
   }
@@ -790,7 +796,7 @@ var OrbitComponent = class extends ComponentObjectsHandler {
       complete: () => this.isEmpty() ? b2`<div class="empty">no items</div>` : this.renderContent()
     });
   }
-  // À surcharger : rendu du contenu une fois les données chargées.
+  // To override: content render once the data is loaded.
   renderContent() {
     return b2``;
   }
@@ -847,8 +853,21 @@ function configDefaults(schema) {
   }
   return out;
 }
-function prefsPatchBody(patch) {
-  return { prefs: patch };
+function prefsColumn(data) {
+  if (!data || typeof data !== "object") return {};
+  for (const k2 of Object.keys(data)) {
+    if (k2 === "prefs" || k2.endsWith(":prefs")) {
+      if (data[k2] && typeof data[k2] === "object" && !Array.isArray(data[k2])) return data[k2];
+    }
+  }
+  return {};
+}
+function prefsPatchBody(patch, current = {}) {
+  const merged = { ...current };
+  for (const [slug, val] of Object.entries(patch ?? {})) {
+    merged[slug] = { ...current?.[slug] ?? {}, ...val ?? {} };
+  }
+  return { prefs: merged };
 }
 function featureForPath(catalogue, pathname) {
   if (!pathname) return null;
@@ -865,12 +884,18 @@ function featureForPath(catalogue, pathname) {
     const base = route.split(":")[0].replace(/\/+$/, "");
     if (base && (path === base || path.startsWith(base + "/"))) return f3;
   }
+  for (const f3 of catalogue ?? []) {
+    const route = get(f3, "route");
+    if (!route || route.includes(":")) continue;
+    const base = route.replace(/\/+$/, "") || "/";
+    if (base !== "/" && path.startsWith(base + "/")) return f3;
+  }
   return null;
 }
 
 // ../app-store/components/shared/app-store-api.js
 var AppStoreConflictError = class extends Error {
-  constructor(message = "412 \u2014 prefs modifi\xE9es entre-temps, recharg\xE9es") {
+  constructor(message = "412 \u2014 prefs changed in the meantime, reloaded") {
     super(message);
     this.name = "AppStoreConflictError";
     this.status = 412;
@@ -881,18 +906,18 @@ var state = {
   getWebid: () => window.appSession?.info?.webId ?? window.sibAuth?.info?.webId ?? "",
   getRole: () => window.appRole ?? "",
   catalogue: [],
-  // membres résolus de /features/
+  // resolved members of /features/
   catalogueMissing: false,
-  // GET /features/ → 404 : modèle non déployé côté serveur
+  // GET /features/ → 404: model not deployed server-side
   prefs: null,
-  // ressource /prefs/<pk> (objet JSON-LD complet)
+  // /prefs/<pk> resource (full JSON-LD object)
   prefsObj: {},
-  // colonne jsonb aplatie prefs.prefs
+  // flattened prefs.prefs jsonb column
   prefsIri: null,
-  // path relatif "/prefs/<pk>"
+  // relative path "/prefs/<pk>"
   etag: null,
   ready: null,
-  // promesse du 1er refresh
+  // promise of the first refresh
   listeners: /* @__PURE__ */ new Set()
 };
 function fetchAuthn() {
@@ -936,7 +961,7 @@ function emit() {
   }
 }
 var appStore = {
-  /** À appeler au boot du shell : webid/rôle viennent de la session OIDC de l'app hôte. */
+  /** To call at shell boot: webid/role come from the host app's OIDC session. */
   configure({ getWebid, getRole, podUrl } = {}) {
     if (getWebid) state.getWebid = getWebid;
     if (getRole) state.getRole = getRole;
@@ -944,7 +969,7 @@ var appStore = {
     state.prefsIri = prefsPath(state.getWebid(), state.podUrl);
     return state.prefsIri;
   },
-  /** §1.9.12 — "/prefs/<pk>" extrait du claim webid ; webid hors pod → null (interdit en v1). */
+  /** §1.9.12 — "/prefs/<pk>" extracted from the webid claim; webid outside the pod → null (forbidden in v1). */
   mePrefsIri() {
     if (!state.prefsIri) state.prefsIri = prefsPath(state.getWebid(), state.podUrl);
     return state.prefsIri;
@@ -952,19 +977,19 @@ var appStore = {
   isAdmin() {
     return state.getRole() === "admin";
   },
-  /** Rôle courant (claim OIDC), passé à menuEntries pour le filtrage role_min (§1.4.1). */
+  /** Current role (OIDC claim), passed to menuEntries for role_min filtering (§1.4.1). */
   getRole() {
     return state.getRole?.() ?? null;
   },
-  /** GET /features/ → 404 : modèle app-store non déployé côté serveur. */
+  /** GET /features/ → 404: app-store model not deployed server-side. */
   isCatalogueMissing() {
     return state.catalogueMissing;
   },
-  /** URL du pod configurée au boot (configure({podUrl})) — appels proxy absolus (CORS géré back). */
+  /** Pod URL configured at boot (configure({podUrl})) — absolute proxy calls (CORS handled by the back end). */
   getPodUrl() {
     return state.podUrl;
   },
-  /** Charge (ou recharge) catalogue + prefs. Read-after-write : après chaque PATCH. */
+  /** Loads (or reloads) catalogue + prefs. Read-after-write: after each PATCH. */
   async refresh() {
     const iri = this.mePrefsIri();
     const jobs = [getJsonMeta("/features/").then(async (r5) => {
@@ -981,14 +1006,14 @@ var appStore = {
     if (iri) {
       jobs.push(getJsonMeta(iri).then((r5) => {
         state.prefs = r5.data;
-        state.prefsObj = r5.data?.prefs ?? r5.data?.["prefs:prefs"] ?? {};
+        state.prefsObj = { ...prefsColumn(r5.data) };
         state.etag = r5.etag;
       }));
     }
     await Promise.all(jobs);
     emit();
   },
-  /** Promesse du premier chargement (pour les composants montés avant le boot). */
+  /** Promise of the first load (for components mounted before boot). */
   whenReady() {
     if (!state.ready) state.ready = this.refresh().catch(() => {
     });
@@ -1001,24 +1026,31 @@ var appStore = {
   getFeature(slug) {
     return state.catalogue.find((f3) => get(f3, "slug") === slug) ?? null;
   },
+  getCatalogue() {
+    return state.catalogue;
+  },
+  /** v2 — (catalogue) feature whose Orbit route matches the requested path (§2.2.7). */
+  getFeatureByRoute(pathname) {
+    return featureForPath(state.catalogue, pathname);
+  },
   getPrefs() {
     return state.prefsObj;
   },
-  /** §1.9.7 — synchrone, lit le cache. Clé absente = default_enabled (§1.9.4a). */
+  /** §1.9.7 — synchronous, reads the cache. Key absent = default_enabled (§1.9.4a). */
   isEnabled(slug) {
     const f3 = this.getFeature(slug);
     if (!f3) return false;
     return featureEnabled(state.prefsObj, f3);
   },
   /**
-   * §1.5 + §1.9.9 — PATCH merge-patch sur /prefs/<pk>, body forme R1 :
-   * {"prefs": {"<slug>": {"enabled": false}}} (merge RFC 7386 récursif).
-   * Succès → read-after-write (refresh) + événement `save` avec l'@id des prefs.
-   * 412 → prefs rechargées + AppStoreConflictError.
+   * §1.5 + §1.9.9 — PATCH merge-patch on /prefs/<pk>, body form R1:
+   * {"prefs": {"<slug>": {"enabled": false}}} (recursive RFC 7386 merge).
+   * Success → read-after-write (refresh) + `save` event with the prefs' @id.
+   * 412 → prefs reloaded + AppStoreConflictError.
    */
   async patchPrefs(patch) {
     const iri = this.mePrefsIri();
-    if (!iri) throw new Error("appStore: webid non r\xE9solu (configure({getWebid}) au boot)");
+    if (!iri) throw new Error("appStore: webid not resolved (configure({getWebid}) at boot)");
     const headers = {
       "content-type": "application/merge-patch+json",
       accept: "application/ld+json"
@@ -1027,7 +1059,8 @@ var appStore = {
     const res = await fetchAuthn()(iri, {
       method: "PATCH",
       headers,
-      body: JSON.stringify(prefsPatchBody(patch))
+      body: JSON.stringify(prefsPatchBody(patch, state.prefsObj))
+      // read-modify-write : objet complet (§1.5)
     });
     if (res.status === 412) {
       await this.refresh();
@@ -1043,7 +1076,7 @@ var appStore = {
       throw err;
     }
     const data = await res.json().catch(() => null);
-    if (data?.prefs) state.prefsObj = data.prefs;
+    if (data) state.prefsObj = { ...prefsColumn(data) };
     if (data?.["@id"]) state.prefs = data;
     state.etag = res.headers?.get?.("etag") ?? state.etag;
     emit();
@@ -1053,9 +1086,9 @@ var appStore = {
     return data;
   },
   /**
-   * §1.9.7 / CA-A4 — guard de route du shell : intercepte requestNavigation
-   * (capture) + navigate, retrouve la feature par route, et redirige vers
-   * defaultPath si la feature est désactivée ou inconnue.
+   * §1.9.7 / CA-A4 — shell route guard: intercepts requestNavigation
+   * (capture) + navigate, finds the feature by route, and redirects to
+   * defaultPath if the feature is disabled or unknown.
    */
   installRouteGuard({ defaultPath = "/" } = {}) {
     const check = (pathname, ev) => {
@@ -1089,8 +1122,8 @@ var appStore = {
     return () => document.removeEventListener("requestNavigation", onNav, true);
   },
   /**
-   * §1.9.7 — mixin pour les composants de route : l'attribut `feature-slug` dit
-   * quelle feature gère la route ; si elle est désactivée → redirect `/`.
+   * §1.9.7 — mixin for route components: the `feature-slug` attribute tells
+   * which feature owns the route; if it is disabled → redirect `/`.
    */
   AppStoreGuardMixin(Base) {
     return class extends Base {
@@ -1157,14 +1190,14 @@ function filterWindow(rows, { from, to } = {}) {
 }
 async function loadAsset(assetId, { from, to } = {}) {
   const container = ASSETS[assetId];
-  if (!container) throw new Error(`asset inconnu du mapping LDP: ${assetId}`);
+  if (!container) throw new Error(`asset unknown to the LDP mapping: ${assetId}`);
   let rows;
   try {
     rows = await resolveMembers(await getJson(container));
   } catch (e4) {
     if (e4.status === 404) {
       e4.url = container;
-      e4.hint = `conteneur LDP non publi\xE9 : ${container} \u2014 livrer la matview gold + son asset_mapping (CR, catalogue \xA72)`;
+      e4.hint = `LDP container not published: ${container} \u2014 deliver the gold matview + its asset_mapping (CR, catalogue \xA72)`;
     }
     throw e4;
   }
@@ -1194,9 +1227,9 @@ var FeatureComponent = class extends OrbitComponent {
     const err = this._task?.error;
     if (err && isMissingBackend(err)) {
       return b2`<div class="error" role="alert">
-        <b>Données indisponibles côté serveur.</b><br>
+        <b>Data unavailable on the server side.</b><br>
         <code>${err.message}</code><br>
-        <span class="fresh">${err.hint ?? "Chantier serveur \xE0 livrer \u2014 la feature s\u2019activera d\xE8s que le back est d\xE9ploy\xE9."}</span>
+        <span class="fresh">${err.hint ?? "Server work to be delivered \u2014 the feature will activate once the back end is deployed."}</span>
       </div>`;
     }
     return super.render();
@@ -1248,7 +1281,7 @@ var BudgetGauge = class extends FeatureComponent {
     const { from, to } = monthBounds();
     const [hourly, costs] = await Promise.all([
       loadAsset("net_grid_hourly", { from, to }).catch(() => []),
-      // conteneur non publié → repli coût seul
+      // container not published → cost-only fallback
       loadAsset("energy_cost_daily")
     ]);
     this.consumedKwh = hourly.reduce((s5, r5) => s5 + Math.max(0, Number(pick(r5, "net_grid_kw", "net_kw") ?? 0)), 0);
@@ -1268,11 +1301,11 @@ var BudgetGauge = class extends FeatureComponent {
     const status = budgetStatus(Math.max(pctKwh ?? 0, pctEur ?? 0), this.alertPct);
     const pct = Math.min(100, Math.max(pctKwh ?? 0, pctEur ?? 0));
     return b2`
-      <h2 style="margin:0 0 6px;font-size:1.05rem">Budget énergétique mensuel</h2>
+      <h2 style="margin:0 0 6px;font-size:1.05rem">Monthly energy budget</h2>
       <div class="kpis">
-        <span class="kpi"><b>${fmtKwh(this.consumedKwh)}</b>conso mois en cours (budget ${fmtKwh(this.budgetKwh)})</span>
-        <span class="kpi"><b>${fmtEur(this.costEur)}</b>coût mois en cours (budget ${fmtEur(this.budgetEur)})</span>
-        <span class="badge ${status === "over" ? "sev-CRITICAL" : status === "alert" ? "sev-HIGH" : "st-ok"}">${status === "over" ? "budget d\xE9pass\xE9" : status === "alert" ? `alerte \u2265 ${this.alertPct} %` : "dans le budget"}</span>
+        <span class="kpi"><b>${fmtKwh(this.consumedKwh)}</b>current month consumption (budget ${fmtKwh(this.budgetKwh)})</span>
+        <span class="kpi"><b>${fmtEur(this.costEur)}</b>current month cost (budget ${fmtEur(this.budgetEur)})</span>
+        <span class="badge ${status === "over" ? "sev-CRITICAL" : status === "alert" ? "sev-HIGH" : "st-ok"}">${status === "over" ? "budget exceeded" : status === "alert" ? `alert \u2265 ${this.alertPct} %` : "within budget"}</span>
       </div>
       <div class="gauge" role="progressbar" aria-valuenow=${pct.toFixed(0)}>
         <div class="g-${status === "unknown" ? "ok" : status}" style="width:${pct}%"></div>
@@ -1297,20 +1330,9 @@ export {
    *)
 
 @lit/reactive-element/reactive-element.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-
 lit-html/lit-html.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-
 lit-element/lit-element.js:
+@lit/task/task.js:
   (**
    * @license
    * Copyright 2017 Google LLC
@@ -1321,13 +1343,6 @@ lit-html/is-server.js:
   (**
    * @license
    * Copyright 2022 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-
-@lit/task/task.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
    * SPDX-License-Identifier: BSD-3-Clause
    *)
 */

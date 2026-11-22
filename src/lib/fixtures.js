@@ -1,16 +1,16 @@
-// Fixtures de démonstration — données exemple quand le back ne répond pas
-// (LDP 404/500 ou réseau) ; activées par défaut en dev (VITE_FIXTURES != '0').
-// Le back reste la source de vérité : dès qu'il répond, les vraies données passent.
+// Demo fixtures — sample data when the back does not answer
+// (LDP 404/500 or network) ; enabled by default in dev (VITE_FIXTURES != '0').
+// The back remains the source of truth: as soon as it answers, real data takes over.
 import { config } from '../config.js';
 
-const POD = config.podUrl.replace(/\/+$/, '') || 'http://localhost'; // base absolue requise par new URL() sous Node (tests)
+const POD = config.podUrl.replace(/\/+$/, '') || 'http://localhost'; // absolute base required by new URL() under Node (tests)
 
 export const FIXTURES = {
   '/users/': {
     '@id': `${POD}/users/`,
     'ldp:contains': [
-      { '@id': `${POD}/users/1`, 'users:webid': `${POD}/users/1`, 'users:name': 'Claire Martin', 'users:email': 'claire.martin@fap.local', 'users:role': 'gestionnaire' },
-      { '@id': `${POD}/users/2`, 'users:webid': `${POD}/users/2`, 'users:name': ' Karim Aziz', 'users:email': 'karim.aziz@fap.local', 'users:role': 'technicien' },
+      { '@id': `${POD}/users/1`, 'users:webid': `${POD}/users/1`, 'users:name': 'Claire Martin', 'users:email': 'claire.martin@fap.local', 'users:role': 'manager' },
+      { '@id': `${POD}/users/2`, 'users:webid': `${POD}/users/2`, 'users:name': ' Karim Aziz', 'users:email': 'karim.aziz@fap.local', 'users:role': 'technician' },
       { '@id': `${POD}/users/3`, 'users:webid': `${POD}/users/3`, 'users:name': 'Sophie Bernard', 'users:email': 'sophie.bernard@fap.local', 'users:role': 'admin' },
     ],
   },
@@ -41,9 +41,9 @@ export const FIXTURES = {
       { '@id': `${POD}/tickets/10`, 'tickets:title': 'Outage, East Workshop', 'tickets:description': 'Outage on M-LYO-004, resolved.', 'tickets:status': 'CLOSED', 'tickets:priority': 'MEDIUM', 'tickets:building_id': `${POD}/buildings/4`, 'tickets:anomaly_ref': null, 'tickets:created_by': `${POD}/users/3`, 'tickets:assigned_to': `${POD}/users/2`, 'tickets:created_at': '2026-11-18T08:00:00Z', 'tickets:updated_at': '2026-11-19T07:00:00Z' },
     ],
   },
-  // App store (app-store-spec.md) : catalogue des features + prefs de l'user 1.
-  // Le seed réel est app-specific (fourni via le model.json de l'app) ; ici une
-  // démo couvrant les routes de l'app + l'entrée /store elle-même.
+  // App store (app-store-spec.md): feature catalogue + prefs of user 1.
+  // The real seed is app-specific (provided via the app's model.json); here a
+  // demo covering the app's routes + the /store entry itself.
   '/features/': {
     '@id': `${POD}/features/`,
     'ldp:contains': [
@@ -57,38 +57,38 @@ export const FIXTURES = {
   },
   '/features/building-detail': {
     '@id': `${POD}/features/building-detail`, slug: 'building-detail',
-    title_i18n: { fr: 'Détail bâtiment' }, description_i18n: { fr: 'Fiche et courbes d\'un bâtiment.' },
+    title_i18n: { en: 'Building detail', fr: 'Détail bâtiment' }, description_i18n: { en: 'Record and curves of a building.', fr: 'Fiche et courbes d\'un bâtiment.' },
     icon: 'insights', menu_order: 40, in_menu: true, role_min: 'all', component: 'building-header', route: '/buildings/:id',
     config_schema: { fields: [] }, default_enabled: true,
   },
   '/features/building-map': {
     '@id': `${POD}/features/building-map`, slug: 'building-map',
-    title_i18n: { fr: 'Tableau de bord' }, description_i18n: { fr: 'Carte du parc et état des anomalies.' },
+    title_i18n: { en: 'Dashboard', fr: 'Tableau de bord' }, description_i18n: { en: 'Map of the portfolio and anomaly status.', fr: 'Carte du parc et état des anomalies.' },
     icon: 'dashboard', menu_order: 10, role_min: 'all', component: 'building-map', route: '/',
     config_schema: { fields: [] }, default_enabled: true,
   },
   '/features/anomaly-list': {
     '@id': `${POD}/features/anomaly-list`, slug: 'anomaly-list',
-    title_i18n: { fr: 'Anomalies' }, description_i18n: { fr: 'Détections automatiques (gold, read-only).' },
-    icon: 'warning', menu_order: 20, role_min: 'gestionnaire', component: 'anomaly-list', route: '/anomalies',
-    config_schema: { fields: [{ key: 'severity_min', label: 'Sévérité min', type: 'enum', options: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'], default: 'LOW' }] },
+    title_i18n: { en: 'Anomalies', fr: 'Anomalies' }, description_i18n: { en: 'Automatic detections (gold, read-only).', fr: 'Détections automatiques (gold, read-only).' },
+    icon: 'warning', menu_order: 20, role_min: 'manager', component: 'anomaly-list', route: '/anomalies',
+    config_schema: { fields: [{ key: 'severity_min', label: 'Min severity', type: 'enum', options: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'], default: 'LOW' }] },
     default_enabled: true,
   },
   '/features/ticket-board': {
     '@id': `${POD}/features/ticket-board`, slug: 'ticket-board',
-    title_i18n: { fr: 'Tickets' }, description_i18n: { fr: 'Interventions : assignation et suivi des statuts.' },
-    icon: 'confirmation_number', menu_order: 30, role_min: 'gestionnaire', component: 'ticket-board', route: '/tickets',
+    title_i18n: { en: 'Tickets', fr: 'Tickets' }, description_i18n: { en: 'Interventions: assignment and status tracking.', fr: 'Interventions : assignation et suivi des statuts.' },
+    icon: 'confirmation_number', menu_order: 30, role_min: 'manager', component: 'ticket-board', route: '/tickets',
     config_schema: { fields: [] }, default_enabled: true,
   },
   '/features/user-admin': {
     '@id': `${POD}/features/user-admin`, slug: 'user-admin',
-    title_i18n: { fr: 'Administration' }, description_i18n: { fr: 'Utilisateurs et rôles (admin).' },
+    title_i18n: { en: 'Administration', fr: 'Administration' }, description_i18n: { en: 'Users and roles (admin).', fr: 'Utilisateurs et rôles (admin).' },
     icon: 'admin_panel_settings', menu_order: 90, role_min: 'admin', component: 'user-admin', route: '/admin',
     config_schema: { fields: [] }, default_enabled: true,
   },
   '/features/app-store': {
     '@id': `${POD}/features/app-store`, slug: 'app-store',
-    title_i18n: { fr: 'App store' }, description_i18n: { fr: 'Activer/configurer les fonctionnalités.' },
+    title_i18n: { en: 'App store', fr: 'App store' }, description_i18n: { en: 'Enable/configure features.', fr: 'Activer/configurer les fonctionnalités.' },
     icon: 'storefront', menu_order: 100, in_menu: false, role_min: 'all', component: 'app-store', route: '/store',
     config_schema: { fields: [] }, default_enabled: true,
   },
@@ -112,14 +112,14 @@ export const FIXTURES = {
   },
 };
 
-// Réponse synthétique du proxy /app/query pour les métriques horaires.
+// Synthetic response of the /app/query proxy for hourly metrics.
 export function fixtureProxyResponse(assetId, from, to) {
   const rows = [];
   const start = new Date(from).getTime();
   const end = new Date(to).getTime();
   for (let t = start; t <= end; t += 3600e3) {
     const h = new Date(t).getHours();
-    const base = 8 + 6 * Math.sin((h - 9) / 24 * 2 * Math.PI); // courbe journalière
+    const base = 8 + 6 * Math.sin((h - 9) / 24 * 2 * Math.PI); // daily curve
     if (assetId === 'net_grid_hourly') {
       rows.push({ ts_hour: new Date(t).toISOString(), net_grid_kw: Math.round(base * 10) / 10 });
     } else if (assetId === 'pv_performance_hourly') {
@@ -130,8 +130,8 @@ export function fixtureProxyResponse(assetId, from, to) {
   return { assetId, schema: 'gold', table: assetId, columns: Object.keys(rows[0] ?? {}), rows, rowCount: rows.length };
 }
 
-// Repli fixture sur sibStore : getData retombe sur la fixture si le back ne répond pas
-// (erreur réseau ou statut >= 400) ; post/patch/delete mutent la fixture en mémoire.
+// Fixture fallback on sibStore: getData falls back to the fixture if the back does not answer
+// (network error or status >= 400); post/patch/delete mutate the fixture in memory.
 export function installFixtureFallback(store, { enabled = true } = {}) {
   if (!enabled || !store) return store;
   const data = structuredClone(FIXTURES);
@@ -188,11 +188,11 @@ export function installFixtureFallback(store, { enabled = true } = {}) {
   return store;
 }
 
-// Repli fixture pour fetchAuthn : /app/query → séries horaires synth ; toute autre
-// requête LDP (GET /features/, /prefs/<pk>, ressources des conteneurs…) retombe sur
-// les FIXTURES si le back ne répond pas (réseau coupé ou statut >= 400, sauf 401
-// qu'on laisse passer pour le handler global de refresh/login). PATCH applique un
-// merge-patch RFC 7386 en mémoire sur la ressource fixture.
+// Fixture fallback for fetchAuthn: /app/query → synthetic hourly series; any other
+// LDP request (GET /features/, /prefs/<pk>, container resources…) falls back to
+// the FIXTURES if the back does not answer (network down or status >= 400, except 401
+// which is left to the global refresh/login handler). PATCH applies an
+// RFC 7386 merge-patch in memory on the fixture resource.
 export function installFixtureProxy(fetchFn, { enabled = true } = {}) {
   if (!enabled) return fetchFn;
   const data = structuredClone(FIXTURES);
@@ -211,7 +211,7 @@ export function installFixtureProxy(fetchFn, { enabled = true } = {}) {
     }
     return null;
   };
-  const mergePatch = (target, patch) => { // RFC 7386 récursif
+  const mergePatch = (target, patch) => { // RFC 7386 recursive
     for (const [k, v] of Object.entries(patch ?? {})) {
       if (v === null) delete target[k];
       else if (v && typeof v === 'object' && !Array.isArray(v) &&
@@ -226,16 +226,16 @@ export function installFixtureProxy(fetchFn, { enabled = true } = {}) {
     if (u === '/app/query' || u.endsWith('/app/query')) {
       try {
         const res = await fetchFn(u, init);
-        if (res.ok) return res; // le back répond → source de vérité
-      } catch { /* réseau coupé → fixture */ }
+        if (res.ok) return res; // the back answers → source of truth
+      } catch { /* network down → fixture */ }
       const { assetId, from, to } = JSON.parse(init.body);
       return { ok: true, status: 200, json: async () => fixtureProxyResponse(assetId, from, to) };
     }
     try {
       const res = await fetchFn(u, init);
-      if (res.ok) return res;          // back = source de vérité
-      if (res.status === 401) return res; // laisse passer le handler 401 global (login)
-    } catch { /* réseau coupé → fixture */ }
+      if (res.ok) return res;          // back = source of truth
+      if (res.status === 401) return res; // let the global 401 handler (login) through
+    } catch { /* network down → fixture */ }
     const path = pathOf(u);
     const method = init.method ?? 'GET';
     if (method === 'GET') {
@@ -243,7 +243,7 @@ export function installFixtureProxy(fetchFn, { enabled = true } = {}) {
       if (r) return { ok: true, status: 200, headers: { get: (h) => (h === 'etag' ? `"fx${++seq}"` : null) }, json: async () => structuredClone(r) };
     }
     if (method === 'PATCH' && path.match(/^\/prefs\/\d+$/) && data[path]) {
-      mergePatch(data[path], JSON.parse(init.body ?? '{}')); // forme R1 : {"prefs": {…}}
+      mergePatch(data[path], JSON.parse(init.body ?? '{}')); // form R1: {"prefs": {…}}
       return { ok: true, status: 200, headers: { get: (h) => (h === 'etag' ? `"fx${++seq}"` : null) }, json: async () => structuredClone(data[path]) };
     }
     return { ok: false, status: 404, headers: { get: () => null }, json: async () => ({ error: 'not found (fixture fallback)' }) };

@@ -1,12 +1,12 @@
-// Bootstrap (spec front §4) : sibStore + session OIDC (DPoP) + mini-routeur standalone.
-// Store seul (pose window.sibStore) — PAS le barrel '@startinblox/core' complet :
-// celui-ci embarque TinyMCE/Quill qui s'initialisent au import et plantent en module ES.
-import './lib/fetch-bind.js'; // AVANT toute librairie : bind globalThis.fetch (voir le fichier)
+// Bootstrap (front spec §4): sibStore + OIDC session (DPoP) + standalone mini-router.
+// Store only (sets window.sibStore) — NOT the full '@startinblox/core' barrel:
+// it bundles TinyMCE/Quill which initialize at import time and crash as ES modules.
+import './lib/fetch-bind.js'; // BEFORE any library: bind globalThis.fetch (see the file)
 import '@startinblox/core/dist/store.js';
-// Une SEULE librairie OIDC côté front : @inrupt/solid-client-authn-browser (D-7 :
-// clientId statique — Keycloak ne fait pas de dynamic registration, le login de
-// sib-auth-provider en clientName échoue). <sib-auth> n'est PAS utilisé : il embarque
-// la même lib en double et les deux se disputent le code (invalid_grant en boucle).
+// A SINGLE OIDC library on the front side: @inrupt/solid-client-authn-browser (D-7:
+// static clientId — Keycloak does no dynamic registration, sib-auth-provider's
+// clientName login fails). <sib-auth> is NOT used: it bundles the same lib twice
+// and both fight over the code (invalid_grant loop).
 import { Session } from '@inrupt/solid-client-authn-browser';
 import './styles.css';
 import { config } from './config.js';
@@ -15,11 +15,11 @@ import { matchPath, componentsFor, menuItems, userLabel } from './lib/router.js'
 import { getJson } from '../components/boilerplate/index.js';
 import { field } from './lib/context.js';
 import orbit from '../orbit.json';
-// v2 : AUCUN composant métier importé statiquement — tout passe par le CDN
-// (bundle public/features-dist/<slug>.js, SRI vérifié avant import, voir render()).
-// Seuls restent packagés : le mécanisme app store (<app-menu>/<app-store>/<dynamic-feature>,
-// bootstrap) et le boilerplate. En mode fixtures (VITE_FIXTURES=1, sans back), les
-// composants métier sont chargés à la demande en chunks séparés (voir render()).
+// v2: NO business component imported statically — everything goes through the CDN
+// (bundle public/features-dist/<slug>.js, SRI checked before import, see render()).
+// Only remain packaged: the app store mechanism (<app-menu>/<app-store>/<dynamic-feature>,
+// bootstrap) and the boilerplate. In fixtures mode (VITE_FIXTURES=1, no back), the
+// business components are loaded on demand in separate chunks (see render()).
 import { loadRemoteModule } from '../components/shared/loader.js';
 // App store (app-store-spec.md v0.4) : helpers window.appStore + blox <app-menu>/<app-store>.
 import { appStore } from '../components/shared/app-store-api.js';
@@ -30,37 +30,37 @@ import '../components/dynamic-feature/dynamic-feature.js';
 
 declare global {
   interface Window {
-    // `any` : demo.ts déclare aussi ces globales (any) — TS2717 sinon.
+    // `any`: demo.ts also declares these globals (any) — TS2717 otherwise.
     orbit?: any;
     sibStore?: any;
     appRole?: string;
   }
 }
 
-// Session OIDC unique (DPoP). Le login demande « openid offline_access » en dur dans
-// oidc-client-ext ; Keycloak 26.4 refuse offline_access pour ce client (not_allowed) →
-// on réécrit l'URL d'autorisation pour ne garder que « openid » (un refresh_token est
-// de toute façon émis). Via handleRedirect, sans patcher la librairie.
+// Single OIDC session (DPoP). The login requests "openid offline_access" hard-coded in
+// oidc-client-ext; Keycloak 26.4 rejects offline_access for this client (not_allowed) →
+// we rewrite the authorization URL to keep only "openid" (a refresh_token is
+// issued anyway). Via handleRedirect, without patching the library.
 const session = new Session();
 
 function loginRedirect(redirectPath?: string): Promise<never> {
   return session.login({
     oidcIssuer: config.oidcIssuer,
     clientId: config.oidcClientId,
-    // URL de retour PROPRE (sans query) : repartir de location.href réinjecterait
-    // ?code=…&session_state=… dans redirect_uri → l'URL grossit à chaque boucle et
-    // Keycloak finit par la rejeter (> 4000 car. → invalid_redirect_uri).
-    // redirectPath (boot) = deep link demandé : la lib ayant pu réécrire l'URL vers
-    // l'ancien callback '/', on ne se fie pas à location.pathname ici.
+    // CLEAN return URL (no query): restarting from location.href would re-inject
+    // ?code=…&session_state=… into redirect_uri → the URL grows on each loop and
+    // Keycloak ends up rejecting it (> 4000 chars → invalid_redirect_uri).
+    // redirectPath (boot) = requested deep link: the lib may have rewritten the URL to
+    // the old callback '/', so we do not rely on location.pathname here.
     redirectUrl: window.location.origin + (redirectPath ?? window.location.pathname),
-    // Le FAP-LDP valide les tokens via userinfo en « Bearer » (fap-ldp ldp-container.js) :
-    // un token DPoP-bound (cnf) est refusé par userinfo → 401. On demande donc un token
-    // Bearer (déviation DPoP notée ; le challenge WWW-Authenticate: DPoP reste côté serveur).
+    // FAP-LDP validates tokens via userinfo in "Bearer" (fap-ldp ldp-container.js):
+    // a DPoP-bound token (cnf) is rejected by userinfo → 401. So we request a
+    // Bearer token (DPoP deviation noted; the WWW-Authenticate: DPoP challenge stays server-side).
     tokenType: 'Bearer',
     handleRedirect: (url: string) => {
-      // scope=openid : offline_access est refusé par Keycloak 26.4 pour ce client
-      // (not_allowed) ; le vrai nom passe par le claim « name » mappé côté client.
-      sessionStorage.setItem('app.loginOut', '1'); // callback attendu au retour
+      // scope=openid: offline_access is rejected by Keycloak 26.4 for this client
+      // (not_allowed); the real name comes from the "name" claim mapped client-side.
+      sessionStorage.setItem('app.loginOut', '1'); // callback expected on return
       window.location.assign(url.replace('scope=openid%20offline_access', 'scope=openid'));
     },
   }) as Promise<never>;
@@ -68,15 +68,15 @@ function loginRedirect(redirectPath?: string): Promise<never> {
 
 let lastNav: { route?: string; resource?: string; query?: Record<string, unknown> } = {};
 
-// Rôle courant pour le menu (§8 : le rôle pilote l'assemblage des écrans, jamais la
-// décision d'accès — l'ACL/RLS reste côté serveur). Overridable via window.appRole.
+// Current role for the menu (§8: the role drives screen assembly, never the
+// access decision — ACL/RLS stays server-side). Overridable via window.appRole.
 function currentRole(): string {
-  return window.appRole ?? 'gestionnaire';
+  return window.appRole ?? 'manager';
 }
 
-// Vrai nom de l'utilisateur, mis en cache : d'abord via l'endpoint userinfo OIDC de
-// Keycloak (claims name/given_name — /users/<id> est protégé par ACL, lisible admin
-// seulement), repli sur la ressource LDP si userinfo échoue.
+// Real user name, cached: first via Keycloak's OIDC userinfo endpoint
+// (name/given_name claims — /users/<id> is ACL-protected, readable by admin
+// only), fallback to the LDP resource if userinfo fails.
 const userNameCache = new Map<string, string>();
 async function resolveUserName(webid: string): Promise<string> {
   if (userNameCache.has(webid)) return userNameCache.get(webid) ?? '';
@@ -91,18 +91,18 @@ async function resolveUserName(webid: string): Promise<string> {
         info.preferred_username ?? ''
       );
     }
-  } catch { /* repli LDP ci-dessous */ }
+  } catch { /* LDP fallback below */ }
   if (!name) {
     try {
-      const data = await getJson(new URL(webid).pathname); // ex. /users/1
+      const data = await getJson(new URL(webid).pathname); // e.g. /users/1
       name = String(field(data, 'name') ?? field(data, 'email') ?? '');
-    } catch { /* repli sur le webid */ }
+    } catch { /* fallback to the webid */ }
   }
   userNameCache.set(webid, name);
   return name;
 }
 
-// Header : utilisateur connecté (nom réel LDP + rôle) + déconnexion.
+// Header: logged-in user (real LDP name + role) + logout.
 function renderHeader(): void {
   const user = document.getElementById('user');
   if (user) {
@@ -122,8 +122,8 @@ function renderHeader(): void {
       void session.logout().finally(() => window.location.assign(window.location.pathname));
     });
   }
-  // App store : outil de configuration du menu, à part des entrées de navigation.
-  // Page pleine dans le main (#app) via la route /store — pas de menu latéral.
+  // App store: menu configuration tool, separate from the navigation entries.
+  // Full page in the main (#app) via the /store route — no side menu.
   const storeBtn = document.getElementById('appstore');
   if (storeBtn && !storeBtn.dataset.wired) {
     storeBtn.dataset.wired = '1';
@@ -133,7 +133,7 @@ function renderHeader(): void {
   }
 }
 
-// Icônes SVG inline (stroke currentColor) pour les entrées du menu.
+// Inline SVG icons (stroke currentColor) for the menu entries.
 const MENU_ICONS: Record<string, string> = {
   dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
   anomalies: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
@@ -146,8 +146,8 @@ const MENU_ICONS: Record<string, string> = {
 function renderMenu(role: string): void {
   const nav = document.getElementById('menu');
   if (!nav) return;
-  // Menu dynamique généré depuis les prefs (app-store-spec §1.6.1) quand le
-  // catalogue /features/ est servi par le back ; sinon menu statique de secours.
+  // Dynamic menu generated from the prefs (app-store-spec §1.6.1) when the
+  // /features/ catalogue is served by the back; otherwise static fallback menu.
   if ((window as unknown as { __appStoreOK?: boolean }).__appStoreOK) {
     nav.replaceChildren();
     const el = document.createElement('app-menu');
@@ -156,7 +156,7 @@ function renderMenu(role: string): void {
   }
   const current = window.location.pathname;
   const links = menuItems(orbit.routes, role)
-    .filter((item) => item.visible && item.menu !== false) // menu:false (ex. /store) : hors menu, atteint via le header
+    .filter((item) => item.visible && item.menu !== false) // menu:false (e.g. /store): not in the menu, reached via the header
     .map((item) => {
       const active = current === item.path ? ' class="active"' : '';
       const icon = MENU_ICONS[item.name] ?? '';
@@ -183,11 +183,11 @@ function mountInto(parent: HTMLElement, tag: string): void {
   parent.appendChild(el);
 }
 
-// Cible du lien « retour » selon la page de détail courante.
+// Target of the "back" link depending on the current detail page.
 function backTarget(name: string, role: string): { route: string; path: string; label: string } | null {
   if (name === 'building-detail') return { route: 'dashboard', path: '/', label: '← Back to dashboard' };
   if (name === 'ticket-detail') {
-    return role === 'technicien'
+    return role === 'technician'
       ? { route: 'interventions', path: '/interventions', label: '← Back to my interventions' }
       : { route: 'tickets', path: '/tickets', label: '← Back to tickets' };
   }
@@ -202,8 +202,8 @@ async function render(): Promise<void> {
   const route = m?.route;
   const name = m?.name ?? 'dashboard';
   app.replaceChildren();
-  // App store non déployé côté back (GET /features/ → 404) : panneau explicite
-  // au lieu du composant, qui sinon afficherait une erreur sèche.
+  // App store not deployed server-side (GET /features/ → 404): explicit panel
+  // instead of the component, which would otherwise show a bare error.
   if (name === 'store' && !(window as unknown as { __appStoreOK?: boolean }).__appStoreOK) {
     const p = document.createElement('p');
     p.className = 'error';
@@ -211,7 +211,7 @@ async function render(): Promise<void> {
     app.appendChild(p);
     return;
   }
-  // Pages de détail (chemin avec paramètre) : lien « retour » vers la liste d'origine.
+  // Detail pages (path with a parameter): "back" link to the originating list.
   if (route?.path.includes(':')) {
     const back = backTarget(name, currentRole());
     if (back) {
@@ -223,10 +223,10 @@ async function render(): Promise<void> {
       app.appendChild(a);
     }
   }
-  // v2 — AUCUN composant packagé : si la route correspond à une feature distante
-  // (cdn_url + sri au catalogue), on charge d'abord son bundle CDN (SRI vérifié avant
-  // import, CA-A5), puis on monte normalement. Le guard (§1.9.7) a déjà redirigé si la
-  // feature est désactivée.
+  // v2 — NO packaged component: if the route matches a distant feature
+  // (cdn_url + sri in the catalogue), we first load its CDN bundle (SRI checked before
+  // import, CA-A5), then mount as usual. The guard (§1.9.7) has already redirected if the
+  // feature is disabled.
   const feat = (window as unknown as { __appStoreOK?: boolean }).__appStoreOK
     ? appStore.getFeatureByRoute(window.location.pathname)
     : null;
@@ -234,13 +234,13 @@ async function render(): Promise<void> {
     const slug = String(getField(feat, 'slug') ?? '');
     const tags = componentsFor(name, orbit.routes);
     if (tags.length === 0 && !route?.sections?.length) {
-      // lot sans composants déclarés dans orbit.json → montée à la volée via <dynamic-feature>
+      // batch with no components declared in orbit.json → on-the-fly mount via <dynamic-feature>
       const host = document.createElement('dynamic-feature');
       host.setAttribute('slug', slug);
       app.appendChild(host);
       return;
     }
-    // la route déclare ses tags : précharger le bundle (SRI) puis montage standard
+    // the route declares its tags: preload the bundle (SRI) then standard mount
     const ph = document.createElement('p');
     ph.className = 'loading';
     ph.textContent = `Loading ${slug}…`;
@@ -259,15 +259,15 @@ async function render(): Promise<void> {
       app.appendChild(p);
       return;
     }
-    ph.remove(); // retire le placeholder « Loading… » sans toucher au lien retour
-    // bundle chargé + SRI vérifié → enregistrer l'installation dans les prefs (§2.2.3 :
-    // installed_version / installed_sri) pour que le badge « installed vX » soit vrai
+    ph.remove(); // remove the "Loading…" placeholder without touching the back link
+    // bundle loaded + SRI checked → record the installation in the prefs (§2.2.3:
+    // installed_version / installed_sri) so the "installed vX" badge is true
     if (!isInstalled(feat, appStore.getPrefs())) {
       appStore.patchPrefs(installPatch(slug, String(getField(feat, 'version') ?? ''), String(getField(feat, 'sri') ?? '')))
-        .catch(() => {}); // 412 → rechargé au prochain refresh, pas bloquant
+        .catch(() => {}); // 412 → reloaded on next refresh, not blocking
     }
   } else if (!(window as unknown as { __appStoreOK?: boolean }).__appStoreOK) {
-    // mode démo sans back (VITE_FIXTURES=1) : composants chargés à la demande (chunks séparés)
+    // demo mode without back (VITE_FIXTURES=1): components loaded on demand (separate chunks)
     await Promise.all([
       import('../components/building-map/building-map.js'),
       import('../components/energy-chart/energy-chart.js'),
@@ -280,7 +280,7 @@ async function render(): Promise<void> {
       import('../components/building-header/building-header.js'),
     ]);
   }
-  // Route avec sections titrées (ex. tableau de bord) : <section><h2>…</h2>composants</section>
+  // Route with titled sections (e.g. dashboard): <section><h2>…</h2>components</section>
   if (route?.sections?.length) {
     for (const section of route.sections) {
       const sec = document.createElement('section');
@@ -310,13 +310,13 @@ function renderAll(): void {
 
 async function main(): Promise<void> {
   if (window.sibStore) {
-    // §13.7 : fetch authentifié (DPoP) injecté dans sibStore, point d'injection unique.
-    // Repli fixture démo si le back ne répond pas (VITE_FIXTURES != '0').
+    // §13.7: authenticated fetch (DPoP) injected into sibStore, single injection point.
+    // Demo fixture fallback if the back does not answer (VITE_FIXTURES != '0').
     const fixturesOn = config.fixtures !== '0';
-    // Client autonome (servi par vite, pas par le back) : les data-src relatifs
-    // ('/buildings/', '/tickets/<pk>', …) sont résolus par sibStore contre location.href —
-    // on les réécrit en ABSOLU vers POD_URL pour atteindre le back en cross-origin
-    // (CORS géré par le back, /auth par Keycloak via webOrigins).
+    // Self-contained client (served by vite, not by the back): relative data-src
+    // ('/buildings/', '/tickets/<pk>', …) are resolved by sibStore against location.href —
+    // we rewrite them ABSOLUTE to POD_URL to reach the back cross-origin
+    // (CORS handled by the back, /auth by Keycloak via webOrigins).
     const toPod = (u: string | URL): string => {
       const abs = new URL(String(u), window.location.href);
       if (abs.origin !== window.location.origin) return String(u);
@@ -326,14 +326,14 @@ async function main(): Promise<void> {
     (window.sibStore as { fetchAuthn?: typeof fetch }).fetchAuthn = (async (u: string | URL, i?: RequestInit) =>
       authn(toPod(u), i)) as typeof fetch;
     installFixtureFallback(window.sibStore, { enabled: fixturesOn });
-    // §3 : à chaque 401 → purge du cache sibStore + redirect login OIDC.
+    // §3: on each 401 → purge the sibStore cache + OIDC login redirect.
     const store = window.sibStore as unknown as { fetch?: typeof fetch; cache?: { clear?: () => void } };
     if (typeof store.fetch === 'function') {
       const origFetch = store.fetch.bind(store);
       store.fetch = (async (u: string | URL, i?: RequestInit) => {
         const res = await origFetch(toPod(u), i);
         if (res.status === 401) {
-          try { store.cache?.clear?.(); } catch { /* cache déjà vidé */ }
+          try { store.cache?.clear?.(); } catch { /* cache already cleared */ }
           document.dispatchEvent(new CustomEvent('auth-required'));
           void loginRedirect();
         }
@@ -341,28 +341,28 @@ async function main(): Promise<void> {
       }) as typeof fetch;
     }
   }
-  // Sans shell Orbit standalone : promesse résolue pour que les composants montés
-  // plus tard (navigation) déclenchent leur chargement aussi.
+  // Without the standalone Orbit shell: resolved promise so that components mounted
+  // later (navigation) also trigger their loading.
   window.orbit ??= { ready: Promise.resolve() };
   await window.orbit.ready;
-  // Session OIDC D'ABORD (callback ?code=… ou restauration) : les composants ne sont
-  // montés qu'une fois la session connue, sinon leurs appels LDP partent en 401.
-  // On mémorise l'URL de boot : restorePreviousSession réécrit l'URL vers l'URL de
-  // redirect mémorisée (ex. « / ») via replaceState — il faut restaurer le deep link
-  // demandé (ex. /store, /tickets/22) quand on n'était PAS sur un callback ?code=….
-  // Deep link après rechargement : la lib OIDC (restorePreviousSession) peut renaviguer
-  // vers l'URL de callback mémorisée (?session_state&iss) au lieu de l'URL demandée.
-  // 1) On mémorise le chemin demandé à chaque boot ; si on boot sur une URL de callback
-  //    sans code, on restaure le chemin mémorisé.
+  // OIDC session FIRST (?code=… callback or restore): components are mounted only once
+  // the session is known, otherwise their LDP calls would go out as 401.
+  // We remember the boot URL: restorePreviousSession rewrites the URL to the remembered
+  // redirect URL (e.g. "/") via replaceState — we must restore the requested deep link
+  // (e.g. /store, /tickets/22) when we were NOT on a ?code=… callback.
+  // Deep link after reload: the OIDC lib (restorePreviousSession) may navigate
+  // back to the remembered callback URL (?session_state&iss) instead of the requested URL.
+  // 1) We remember the requested path on each boot; if we boot on a callback URL
+  //    without a code, we restore the remembered path.
   const stripAuthParams = (u: string) => {
     const url = new URL(u, window.location.origin);
     for (const p of ['code', 'state', 'session_state', 'iss']) url.searchParams.delete(p);
     return url.pathname + url.search;
   };
   const q = new URLSearchParams(window.location.search);
-  // Callback FRAIS (on vient de partir vers Keycloak) : laisser la lib échanger le code.
-  // Sinon, si l'URL contient des résidus d'auth (code consommé / session_state / iss) —
-  // la lib restorePreviousSession renavigue vers l'ancien callback — on restaure le deep link.
+  // FRESH callback (we just went to Keycloak): let the lib exchange the code.
+  // Otherwise, if the URL contains auth leftovers (consumed code / session_state / iss) —
+  // the lib restorePreviousSession navigates back to the old callback — we restore the deep link.
   const loginOut = sessionStorage.getItem('app.loginOut') === '1';
   if (q.has('code') && loginOut) {
     sessionStorage.removeItem('app.loginOut');
@@ -376,8 +376,8 @@ async function main(): Promise<void> {
   const bootUrl = stripAuthParams(window.location.pathname + window.location.search);
   sessionStorage.setItem('app.bootPath', bootUrl);
   const wasCallback = new URLSearchParams(window.location.search).has('code');
-  // 2) La lib peut aussi récrire l'URL par replaceState (même un tick après sa promesse) :
-  //    on intercepte pour nettoyer les params d'auth et garder le deep link demandé.
+  // 2) The lib may also rewrite the URL via replaceState (even a tick after its promise):
+  //    we intercept to clean the auth params and keep the requested deep link.
   const origReplaceState = window.history.replaceState.bind(window.history);
   window.history.replaceState = (data, unused, url) => {
     if (url == null) return origReplaceState(data, unused, url);
@@ -390,9 +390,9 @@ async function main(): Promise<void> {
   try {
     await session.handleIncomingRedirect({ restorePreviousSession: true });
   } catch (err) {
-    console.warn('[app-supervision] handleIncomingRedirect en erreur :', err);
+    console.warn('[app-supervision] handleIncomingRedirect error:', err);
   }
-  // Filet de sécurité si la lib a récrit l'URL sans passer par replaceState.
+  // Safety net if the lib rewrote the URL without going through replaceState.
   if (!wasCallback) {
     await new Promise((r) => setTimeout(r, 150));
     if (window.location.pathname + window.location.search !== bootUrl) {
@@ -400,15 +400,15 @@ async function main(): Promise<void> {
     }
   }
   if (!session.info.isLoggedIn) {
-    // Pas de session : on rend le shell (jamais de page blanche) puis on redirige.
+    // No session: we render the shell (never a blank page) then redirect.
     document.dispatchEvent(new CustomEvent('orbit-ready'));
     renderAll();
     await loginRedirect(wasCallback ? undefined : bootUrl); // navigue vers Keycloak
     return;
   }
-  // App store : helpers configurés avec la session (§1.9.12 — webid → /prefs/<pk>),
-  // puis catalogue + prefs chargées. Si /features/ n'est pas servi (app-store non
-  // déployé côté back), __appStoreOK=false → menu statique de secours.
+  // App store: helpers configured with the session (§1.9.12 — webid → /prefs/<pk>),
+  // then catalogue + prefs loaded. If /features/ is not served (app-store not
+  // deployed server-side), __appStoreOK=false → static fallback menu.
   appStore.configure({
     podUrl: config.podUrl,
     getWebid: () => session.info.webId ?? '',
@@ -416,13 +416,13 @@ async function main(): Promise<void> {
   });
   (window as unknown as { __appStoreOK?: boolean }).__appStoreOK =
     await appStore.refresh().then(() => true).catch(() => false);
-  // Le shell est rendu QUOI QU'IL ARRIVE : une erreur ne doit pas laisser une page blanche.
+  // The shell is rendered NO MATTER WHAT: an error must not leave a blank page.
   document.dispatchEvent(new CustomEvent('orbit-ready'));
   renderAll();
   console.info(`[app-supervision] pod=${config.podUrl} issuer=${config.oidcIssuer} webid=${session.info.webId ?? ''} appStore=${(window as unknown as { __appStoreOK?: boolean }).__appStoreOK}`);
 }
 
-// Clic sur un lien « retour » (rendu dans #app) → même navigation que le menu.
+// Click on a "back" link (rendered in #app) → same navigation as the menu.
 document.addEventListener('click', (e) => {
   const a = (e.target as HTMLElement).closest?.('a.back-link') as HTMLElement | null;
   if (!a) return;
@@ -437,22 +437,22 @@ document.addEventListener('requestNavigation', (e) => {
   lastNav = d;
   const def = orbit.routes.find((r) => r.name === d.route);
   let path = d.resource ?? def?.path ?? '/';
-  // Les composants passent des IRI absolues du pod (http://localhost/tickets/22) :
-  // pushState n'accepte que des chemins same-origin → on ne garde que le pathname.
+  // Components pass absolute pod IRIs (http://localhost/tickets/22):
+  // pushState only accepts same-origin paths → we keep only the pathname.
   try {
     const u = new URL(path, window.location.href);
     if (u.origin === new URL(config.podUrl, window.location.href).origin || u.origin === window.location.origin) {
       path = u.pathname + u.search;
     }
-  } catch { /* path relatif ou invalide : inchangé */ }
+  } catch { /* relative or invalid path: unchanged */ }
   window.history.pushState({}, '', path);
   renderAll();
 });
 window.addEventListener('popstate', () => renderAll());
 
 main().catch((err) => {
-  // Dernier filet : jamais de page blanche sans explication.
-  console.error('[app-supervision] bootstrap en erreur :', err);
+  // Last resort: never a blank page without an explanation.
+  console.error('[app-supervision] bootstrap error:', err);
   const app = document.getElementById('app');
   if (app && !app.childElementCount) {
     app.innerHTML = '<p class="error">Error loading the application — see the console.</p>';

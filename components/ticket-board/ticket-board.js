@@ -1,6 +1,6 @@
-// ticket-board — tableau des tickets par statut (spec front §7.5). Base : ComponentObjectsHandler → OrbitComponent.
-// Data : /tickets/ (RLS filtre selon le rôle). Colonnes par statut + compteurs ; tri priorité/date (§7.5).
-// Pas de drag & drop en v1 ; clic carte → route détail.
+// ticket-board — ticket board by status (front spec §7.5). Base: ComponentObjectsHandler → OrbitComponent.
+// Data: /tickets/ (RLS filters by role). Columns per status + counters; sort by priority/date (§7.5).
+// No drag & drop in v1; card click → detail route.
 import { html, css } from 'lit';
 import { OrbitComponent } from '../boilerplate/index.js';
 import { field } from '../../src/lib/context.js';

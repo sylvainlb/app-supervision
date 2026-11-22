@@ -1,6 +1,6 @@
-// anomaly-list — liste des anomalies (spec front §7.4). Base : ComponentObjectsHandler → OrbitComponent.
-// Data : conteneur gold publié /gold/anomaly_candidates/ (§13.3). Filtres côté client.
-// « Créer un ticket » → requestNavigation route ticket-new avec ?anomaly=<@id> (pré-remplit anomaly_ref).
+// anomaly-list — anomaly list (front spec §7.4). Base: ComponentObjectsHandler → OrbitComponent.
+// Data: published gold container /gold/anomaly_candidates/ (§13.3). Client-side filters.
+// "Create a ticket" → requestNavigation route ticket-new with ?anomaly=<@id> (prefills anomaly_ref).
 import { html, css } from 'lit';
 import { OrbitComponent, getJson } from '../boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
@@ -11,7 +11,7 @@ export class AnomalyList extends OrbitComponent {
     ...OrbitComponent.properties,
     filterSeverity: { type: String, attribute: false },
     filterBuilding: { type: String, attribute: false },
-    building: { type: String }, // IRI ou chemin /buildings/<pk> : filtre par meter_id du bâtiment
+    building: { type: String }, // IRI or path /buildings/<pk>: filters by the building's meter_id
   };
 
   static styles = css`
@@ -42,15 +42,15 @@ export class AnomalyList extends OrbitComponent {
     this.building = '';
   }
 
-  // Sur une page détail bâtiment, l'attribut building = chemin /buildings/<pk> :
-  // on résout la ressource pour récupérer son meter_id et filtrer les anomalies dessus.
+  // On a building detail page, the building attribute = path /buildings/<pk>:
+  // we resolve the resource to get its meter_id and filter the anomalies on it.
   async connectedCallback() {
     super.connectedCallback?.();
     if (this.building?.startsWith('/buildings/') && !this.filterBuilding) {
       try {
         const b = await getJson(this.building);
         this.filterBuilding = String(field(b, 'meter_id') ?? '');
-      } catch { /* filtre ignoré si le bâtiment ne répond pas */ }
+      } catch { /* filter ignored if the building does not answer */ }
     }
   }
 

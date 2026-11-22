@@ -1,3 +1,3 @@
-// Entrée bundle CDN (v2) de la feature `tickets` — enregistre tous les tags de la route.
+// CDN bundle entry (v2) of the feature `tickets` — registers all the route tags.
 import '../ticket-board/ticket-board.js';
 import '../ticket-new/ticket-new.js';

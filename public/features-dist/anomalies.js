@@ -672,11 +672,11 @@ var sharedStyles = i`    :host {
     --shadow: 0 1px 2px rgba(15,23,42,.05), 0 6px 18px rgba(15,23,42,.06);
     --shadow-lg: 0 4px 10px rgba(15,23,42,.07), 0 18px 44px rgba(15,23,42,.13);
     display: block; font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #111827; }
-    /* Reset box-sizing dans le shadow root aussi : sinon les champs width:100%
-       débordent de leur conteneur (padding + borderure en content-box). */
+    /* Reset box-sizing in the shadow root too: otherwise width:100% fields
+       overflow their container (padding + border in content-box). */
     *, *::before, *::after { box-sizing: border-box; }
-    /* Curseur « main » sur tout ce qui est cliquable (y compris <a> sans href :
-       le navigateur ne met le pointer que sur les liens avec href). */
+    /* "pointer" cursor on everything clickable (including <a> without href:
+       the browser only sets the pointer on links with href). */
     a, button, summary, [role="button"], [data-route], .clickable { cursor: pointer; }
     button {
       background: linear-gradient(135deg, var(--brand-light, #34d399), var(--brand, #10b981)); color: #064e3b; border: 0; border-radius: 10px;
@@ -704,7 +704,7 @@ var sharedStyles = i`    :host {
     tbody tr { transition: background .12s ease; }
     tbody tr:hover { background: #ecfdf5; }
     .card { background: #fff; border: 1px solid var(--border, #e5eaf0); border-radius: 12px; box-shadow: var(--shadow); padding: 12px; transition: box-shadow .15s ease, transform .15s ease; }
-    /* Badges « soft » : fond teinté + texte coloré (plus lisibles que le plein uni) */
+    /* "soft" badges: tinted background + colored text (more readable than solid fill) */
     .badge { display: inline-block; border-radius: 999px; padding: 3px 11px; font-size: 0.74rem; font-weight: 700; letter-spacing: .02em; color: #475569; background: #f1f5f9; }
     .sev-LOW, .st-OPEN { background: #e2e8f0; color: #475569; }
     .sev-MEDIUM, .pri-MEDIUM, .st-anomaly { background: #fef3c7; color: #b45309; }
@@ -726,7 +726,7 @@ var ComponentObjectHandler = class extends i4 {
     super();
     this.object = null;
   }
-  // À surcharger : prédicat sur la ressource chargée.
+  // To override: predicate on the loaded resource.
   isType(_obj) {
     return true;
   }
@@ -740,7 +740,7 @@ var ComponentObjectsHandler = class extends ComponentObjectHandler {
     super();
     this.objects = [];
   }
-  // À surcharger : prédicat sur chaque membre du conteneur.
+  // To override: predicate on each container member.
   hasType(_obj) {
     return true;
   }
@@ -770,7 +770,7 @@ var OrbitComponent = class extends ComponentObjectsHandler {
     document.removeEventListener("save", this._onSave);
     super.disconnectedCallback();
   }
-  // Hook de chargement — à surcharger. Alimenter this.object / this.objects.
+  // Loading hook — to override. Fill this.object / this.objects.
   async load() {
     const data = await getJson(this.dataSrc);
     const resolved = await resolveMembers(data);
@@ -784,7 +784,7 @@ var OrbitComponent = class extends ComponentObjectsHandler {
   navigate(route, resource = null, query = null) {
     document.dispatchEvent(new CustomEvent("requestNavigation", { detail: { route, resource, query } }));
   }
-  // État vide explicite (§7.1) — à surcharger si le composant alimente autre chose que objects/object.
+  // Explicit empty state (§7.1) — to override if the component feeds something other than objects/object.
   isEmpty() {
     return this.objects.length === 0 && !this.object;
   }
@@ -796,7 +796,7 @@ var OrbitComponent = class extends ComponentObjectsHandler {
       complete: () => this.isEmpty() ? b2`<div class="empty">no items</div>` : this.renderContent()
     });
   }
-  // À surcharger : rendu du contenu une fois les données chargées.
+  // To override: content rendering once the data is loaded.
   renderContent() {
     return b2``;
   }
@@ -823,7 +823,7 @@ function filterAnomalies(anomalies, { building, severity, type, from, to } = {})
 function ticketPrefill(anomaly) {
   const ts = anomalyTs(anomaly);
   return {
-    title: `Anomalie ${field(anomaly, "type") ?? ""} \u2014 ${field(anomaly, "meter_id") ?? ""} (${ts})`.replace(/\s+/g, " ").trim(),
+    title: `Anomaly ${field(anomaly, "type") ?? ""} \u2014 ${field(anomaly, "meter_id") ?? ""} (${ts})`.replace(/\s+/g, " ").trim(),
     anomaly_ref: anomaly["@id"],
     description: `z=${field(anomaly, "z_score") ?? ""} sev=${field(anomaly, "severity") ?? ""} ts=${ts}`
   };
@@ -836,7 +836,7 @@ var AnomalyList = class extends OrbitComponent {
     filterSeverity: { type: String, attribute: false },
     filterBuilding: { type: String, attribute: false },
     building: { type: String }
-    // IRI ou chemin /buildings/<pk> : filtre par meter_id du bâtiment
+    // IRI or path /buildings/<pk>: filters by the building's meter_id
   };
   static styles = i`
     ${OrbitComponent.styles}
@@ -864,8 +864,8 @@ var AnomalyList = class extends OrbitComponent {
     this.filterBuilding = "";
     this.building = "";
   }
-  // Sur une page détail bâtiment, l'attribut building = chemin /buildings/<pk> :
-  // on résout la ressource pour récupérer son meter_id et filtrer les anomalies dessus.
+  // On a building detail page, the building attribute = path /buildings/<pk>:
+  // we resolve the resource to get its meter_id and filter the anomalies on it.
   async connectedCallback() {
     super.connectedCallback?.();
     if (this.building?.startsWith("/buildings/") && !this.filterBuilding) {

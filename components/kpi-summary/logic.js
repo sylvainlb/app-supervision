@@ -1,4 +1,4 @@
-// Logique pure kpi-summary — agrégats du tableau de bord.
+// Pure kpi-summary logic — dashboard aggregates.
 import { field } from '../../src/lib/context.js';
 import { isAnomalyActive, anomalySeverity } from '../building-map/logic.js';
 

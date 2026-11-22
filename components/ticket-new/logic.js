@@ -1,16 +1,16 @@
-// Logique pure ticket-new — création de ticket (spec front §7.4 pré-remplissage,
-// RG-1 : un ticket est toujours rattaché à un bâtiment).
-// Écriture POST en clés non préfixées (@vocab du conteneur /tickets/).
+// Pure ticket-new logic — ticket creation (front spec §7.4 prefill,
+// RG-1: a ticket is always attached to a building).
+// POST write with non-prefixed keys (@vocab of the /tickets/ container).
 import { PRIORITIES, DEFAULT_PRIORITY } from '../../src/lib/transitions.js';
 
 export function validateTicket({ title, building_id } = {}) {
   const errors = [];
-  if (!title) errors.push('titre requis');
+  if (!title) errors.push('title required');
   if (!building_id) errors.push('building required (RG-1)');
   return errors;
 }
 
-// Payload POST /tickets/ — clés non préfixées (le serveur mappe par nom local, @vocab).
+// POST /tickets/ payload — non-prefixed keys (the server maps by local name, @vocab).
 export function buildTicketPayload({ title, description, priority, building_id, anomaly_ref, created_by } = {}) {
   const payload = {
     title,

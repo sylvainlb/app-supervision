@@ -35,11 +35,11 @@ body {
 }
 a { color: var(--brand); }
 button { font-family: inherit; }
-/* Curseur « main » partout où c'est cliquable — y compris les <a> sans href
-   (menu, liens de navigation) qui n'ont pas le pointer par défaut. */
+/* "pointer" cursor everywhere it is clickable — including <a> without href
+   (menu, navigation links) which do not have the default pointer. */
 a, button, summary, [role="button"], [data-route], .clickable { cursor: pointer; }
 
-/* Sections du tableau de bord (orbit.json → route.sections) */
+/* Dashboard sections (orbit.json → route.sections) */
 .dash-section { margin-bottom: 34px; padding-bottom: 26px; border-bottom: 1px solid var(--border); }
 .dash-section:last-child { border-bottom: 0; }
 .dash-section > h2 {
@@ -54,7 +54,7 @@ a, button, summary, [role="button"], [data-route], .clickable { cursor: pointer;
 }
 .sec-hint { font-size: 0.86rem; color: var(--muted); margin: 2px 0 16px; max-width: 75ch; line-height: 1.5; }
 
-/* Lien « retour » sur les pages de détail */
+/* "Back" link on detail pages */
 .back-link {
   display: inline-flex; align-items: center; gap: 7px; margin-bottom: 18px; padding: 8px 15px;
   background: var(--card); border: 1px solid var(--border); border-radius: 999px;

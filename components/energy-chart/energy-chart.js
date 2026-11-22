@@ -1,7 +1,7 @@
-// energy-chart — graphique de consommation (spec front §7.3). Base : ComponentObjectHandler → OrbitComponent.
-// Attributs : building (IRI), metric (net_grid_hourly | pv_performance_hourly | agrégat publié),
-// window (24h | 7d | 30d). Hourly → proxy POST /app/query (§13.3, C1.9) ; agrégats → conteneur LDP publié.
-// Badge de fraîcheur RG-4. Chart.js si disponible (window.Chart), sinon tableau repli.
+// energy-chart — consumption chart (front spec §7.3). Base: ComponentObjectHandler → OrbitComponent.
+// Attributes: building (IRI), metric (net_grid_hourly | pv_performance_hourly | published aggregate),
+// window (24h | 7d | 30d). Hourly → proxy POST /app/query (§13.3, C1.9); aggregates → published LDP container.
+// Freshness badge RG-4. Chart.js if available (window.Chart), otherwise table fallback.
 import { html, css } from 'lit';
 import Chart from 'chart.js/auto';
 import { OrbitComponent, resolveMembers, getJson } from '../boilerplate/index.js';
@@ -43,10 +43,10 @@ export class EnergyChart extends OrbitComponent {
   async load() {
     const access = metricAccess(this.metric);
     if (access.via === 'proxy') {
-      // Ne jamais extraire la méthode (perd le `this`) : wrapper résolu à l'appel.
+      // Never extract the method (loses `this`): wrapper resolved at call time.
       const fetchFn = (u, i) => (window.sibStore?.fetchAuthn ?? fetch)(u, i);
       const res = await queryGold(fetchFn, this._proxyParams());
-      // Le proxy renvoie {columns, rows} avec rows = tableaux positionnels → objets.
+      // The proxy returns {columns, rows} with rows = positional arrays → objects.
       const cols = res.columns ?? [];
       this.rows = (res.rows ?? []).map((r) => (Array.isArray(r) ? Object.fromEntries(cols.map((c, i) => [c, r[i]])) : r));
     } else {
@@ -61,8 +61,8 @@ export class EnergyChart extends OrbitComponent {
   }
 
   _proxyParams() {
-    // assetId = nom du metric (net_grid_hourly…) ; buildProxyRequest fait le mapping
-    // vers l'id catalogue DSP (dataset:facis:…) — ne pas mapper deux fois.
+    // assetId = metric name (net_grid_hourly…); buildProxyRequest does the mapping
+    // to the DSP catalogue id (dataset:facis:…) — do not map twice.
     const { from, to } = selectWindow(this.window);
     return { assetId: this.metric, from, to };
   }
@@ -72,7 +72,7 @@ export class EnergyChart extends OrbitComponent {
   }
 
   updated() {
-    // Le canvas n'existe qu'après le render du task : on (re)dessine le graphique ici.
+    // The canvas only exists after the task render: we (re)draw the chart here.
     if (this._task?.status === 2 /* COMPLETE */) this._renderChart();
   }
 
@@ -81,12 +81,12 @@ export class EnergyChart extends OrbitComponent {
     const canvas = this.renderRoot.querySelector('canvas');
     if (!canvas) return;
     if (this._chart) { this._chart.destroy(); this._chart = null; }
-    // Courbes lissées + remplissage en dégradé (emerald) sous la courbe.
+    // Smoothed curves + gradient fill (emerald) under the curve.
     const ctx = canvas.getContext('2d');
     const PALETTE = ['#10b981', '#6366f1', '#d97706', '#0284c7', '#db2777'];
     const datasets = series.datasets.map((d, i) => {
       const color = PALETTE[i % PALETTE.length];
-      // happy-dom / vieux contextes : createLinearGradient peut manquer → repli couleur pleine transparente.
+      // happy-dom / old contexts: createLinearGradient may be missing → fallback to a flat translucent color.
       let grad = color + '33';
       if (ctx && typeof ctx.createLinearGradient === 'function') {
         grad = ctx.createLinearGradient(0, 0, 0, canvas.height || 300);

@@ -1,4 +1,4 @@
-// Entrée bundle CDN (v2) de la feature `dashboard` — enregistre tous les tags de la route.
+// CDN bundle entry (v2) of the feature `dashboard` — registers all the route tags.
 import '../anomaly-list/anomaly-list.js';
 import '../building-map/building-map.js';
 import '../energy-chart/energy-chart.js';

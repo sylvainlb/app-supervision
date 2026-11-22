@@ -1,17 +1,17 @@
-// Logique pure user-admin — spec front §7.7.
+// Pure user-admin logic — front spec §7.7.
 import { ROLES } from '../../src/lib/transitions.js';
 
-// Le webid saisi doit être une IRI déréférençable ; rôle ∈ gestionnaire|technicien|admin.
+// The entered webid must be a dereferenceable IRI; role ∈ manager|technician|admin.
 export function validateUser({ webid, name, email, role } = {}) {
   const errors = [];
   if (!webid || !/^https?:\/\/.+\/.+/.test(webid)) errors.push('webid: dereferenceable IRI required');
-  if (!name) errors.push('name requis');
-  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) errors.push('email invalide');
+  if (!name) errors.push('name required');
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) errors.push('invalid email');
   if (!ROLES.includes(role)) errors.push(`invalid role (${ROLES.join(' | ')})`);
   return errors;
 }
 
-// Clés non préfixées (@vocab du conteneur /users/).
+// Non-prefixed keys (@vocab of the /users/ container).
 export function userPayload({ webid, name, email, role }) {
   return { webid, name, email, role };
 }

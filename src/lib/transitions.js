@@ -1,24 +1,24 @@
-// Workflow exact des statuts — RG-2 complété, spec front §13.5.
-// Le PEP FAP-LDP rejette aussi une transition invalide (409 dspace:Error invalid_transition,
-// décision K / CA-L15) ; l'UI filtre les boutons mais ne décide jamais seule.
+// Exact status workflow — RG-2 completed, front spec §13.5.
+// The FAP-LDP PEP also rejects an invalid transition (409 dspace:Error invalid_transition,
+// decision K / CA-L15); the UI filters the buttons but never decides on its own.
 
 export const STATUSES = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
 export const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 export const DEFAULT_PRIORITY = 'MEDIUM';
-export const ROLES = ['gestionnaire', 'technicien', 'admin'];
+export const ROLES = ['manager', 'technician', 'admin'];
 
-// Matrice §13.5 : depuis → vers → rôles autorisés.
-// "technicien" = technicien assigné au ticket (paramètre `assigned`).
+// Matrix §13.5: from → to → allowed roles.
+// "technician" = technician assigned to the ticket (parameter `assigned`).
 const MATRIX = {
-  OPEN: { IN_PROGRESS: ['technicien', 'gestionnaire'] },
-  IN_PROGRESS: { RESOLVED: ['technicien', 'gestionnaire'] },
-  RESOLVED: { CLOSED: ['gestionnaire'], IN_PROGRESS: ['gestionnaire'] },
-  CLOSED: { OPEN: ['gestionnaire'] },
+  OPEN: { IN_PROGRESS: ['technician', 'manager'] },
+  IN_PROGRESS: { RESOLVED: ['technician', 'manager'] },
+  RESOLVED: { CLOSED: ['manager'], IN_PROGRESS: ['manager'] },
+  CLOSED: { OPEN: ['manager'] },
 };
 
-// Création : uniquement OPEN, par le gestionnaire.
+// Creation: OPEN only, by the manager role.
 export function canCreate(role) {
-  return role === 'gestionnaire';
+  return role === 'manager';
 }
 
 export function canTransition(from, to, role, { assigned = false } = {}) {
@@ -27,7 +27,7 @@ export function canTransition(from, to, role, { assigned = false } = {}) {
   if (!STATUSES.includes(from)) return false;
   const allowed = MATRIX[from]?.[to];
   if (!allowed) return false;
-  if (role === 'technicien') return allowed.includes('technicien') && assigned;
+  if (role === 'technician') return allowed.includes('technician') && assigned;
   return allowed.includes(role);
 }
 

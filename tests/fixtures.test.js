@@ -1,16 +1,16 @@
-// Fixtures de démo : intégrité des données + comportement du repli.
+// Demo fixtures: data integrity + fallback behavior.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { FIXTURES, fixtureProxyResponse, installFixtureFallback, installFixtureProxy } from '../src/lib/fixtures.js';
 import { STATUSES, PRIORITIES } from '../src/lib/transitions.js';
 
-test('intégrité : bâtiments géolocalisés, tickets rattachés (RG-1), enums valides', () => {
+test('integrity: geolocated buildings, tickets attached (RG-1), valid enums', () => {
   const buildings = FIXTURES['/buildings/']['ldp:contains'];
   const tickets = FIXTURES['/tickets/']['ldp:contains'];
   const anomalies = FIXTURES['/gold/anomaly_candidates/']['ldp:contains'];
   assert.ok(buildings.length >= 3);
   for (const b of buildings) {
-    assert.ok(typeof b['buildings:lat'] === 'number' && typeof b['buildings:lon'] === 'number', `${b['@id']} géolocalisé (§13.4)`);
+    assert.ok(typeof b['buildings:lat'] === 'number' && typeof b['buildings:lon'] === 'number', `${b['@id']} geolocated (§13.4)`);
     assert.ok(b['buildings:meter_id']);
   }
   const buildingIds = new Set(buildings.map((b) => b['@id']));
@@ -18,12 +18,12 @@ test('intégrité : bâtiments géolocalisés, tickets rattachés (RG-1), enums 
   for (const t of tickets) {
     assert.ok(STATUSES.includes(t['tickets:status']));
     assert.ok(PRIORITIES.includes(t['tickets:priority']));
-    assert.ok(buildingIds.has(t['tickets:building_id']), `ticket ${t['@id']} rattaché à un bâtiment (RG-1)`);
+    assert.ok(buildingIds.has(t['tickets:building_id']), `ticket ${t['@id']} attached to a building (RG-1)`);
   }
-  for (const a of anomalies) assert.ok(meterIds.has(a.meter_id), `anomalie ${a['@id']} sur un meter connu`);
+  for (const a of anomalies) assert.ok(meterIds.has(a.meter_id), `anomaly ${a['@id']} on a known meter`);
 });
 
-test('repli getData : back en panne → fixture ; back OK → passthrough', async () => {
+test('getData fallback: back down → fixture; back OK → passthrough', async () => {
   const failing = { getData: async () => { throw new Error('network'); } };
   const store = installFixtureFallback(failing, { enabled: true });
   const b = await store.getData('/buildings/');
@@ -37,7 +37,7 @@ test('repli getData : back en panne → fixture ; back OK → passthrough', asyn
   await assert.rejects(() => off.getData('/buildings/'));
 });
 
-test('repli mutations : post/patch/delete sur la fixture en mémoire', async () => {
+test('mutation fallback: post/patch/delete on the in-memory fixture', async () => {
   const store = installFixtureFallback({ getData: async () => { throw new Error('down'); } }, { enabled: true });
   const before = (await store.getData('/tickets/'))['ldp:contains'].length;
   const created = await store.post('/tickets/', { 'tickets:title': 'Test', 'tickets:building_id': 'https://app.localhost/buildings/1' });
@@ -51,24 +51,24 @@ test('repli mutations : post/patch/delete sur la fixture en mémoire', async () 
   assert.equal((await store.getData('/tickets/'))['ldp:contains'].length, before);
 });
 
-test('repli proxy /app/query : back 404 → série horaire synthétique, back OK → passthrough', async () => {
+test('/app/query proxy fallback: back 404 → synthetic hourly series, back OK → passthrough', async () => {
   const notFound = async () => ({ ok: false, status: 404, json: async () => ({}) });
   const fetchMock = installFixtureProxy(notFound, { enabled: true });
   const res = await fetchMock('/app/query', { method: 'POST', body: JSON.stringify({ assetId: 'net_grid_hourly', from: '2026-11-19T00:00:00Z', to: '2026-11-20T00:00:00Z' }) });
   assert.ok(res.ok);
   const body = await res.json();
   assert.equal(body.assetId, 'net_grid_hourly');
-  assert.equal(body.rowCount, 25); // 24 h + borne incluse
+  assert.equal(body.rowCount, 25); // 24 h + inclusive bound
   assert.ok(body.rows.every((r) => 'net_grid_kw' in r && 'ts_hour' in r));
   const okFetch = async () => ({ ok: true, status: 200, json: async () => ({ real: true }) });
   const res2 = await installFixtureProxy(okFetch, { enabled: true })('/app/query', { body: '{}' });
   assert.deepEqual(await res2.json(), { real: true });
-  // désactivé → on ne touche à rien
+  // disabled → nothing is touched
   const res3 = await installFixtureProxy(notFound, { enabled: false })('/app/query', { body: '{}' });
   assert.equal(res3.status, 404);
 });
 
-test('fixtureProxyResponse : fenêtre 7j PV nulle la nuit', () => {
+test('fixtureProxyResponse: 7d window PV is zero at night', () => {
   const r = fixtureProxyResponse('pv_performance_hourly', '2026-11-19T00:00:00Z', '2026-11-20T00:00:00Z');
   const night = r.rows.find((x) => new Date(x.ts_hour).getUTCHours() === 2);
   const noon = r.rows.find((x) => new Date(x.ts_hour).getUTCHours() === 12);

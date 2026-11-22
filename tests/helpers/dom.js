@@ -1,5 +1,5 @@
-// Helper DOM pour tests de composants : happy-dom + window.sibStore mocké.
-// Chaque fichier de test node --test tourne dans son propre process : safe.
+// DOM helper for component tests: happy-dom + mocked window.sibStore.
+// Each node --test test file runs in its own process: safe.
 import { Window } from 'happy-dom';
 
 const FORCE = new Set([
@@ -22,7 +22,7 @@ export function setupDom() {
   return window;
 }
 
-// sibStore mocké : getData retourne data[url], mutations journalisées dans calls.
+// Mocked sibStore: getData returns data[url], mutations logged in calls.
 export function mockSibStore(window, data = {}) {
   const calls = [];
   window.sibStore = {
@@ -32,7 +32,7 @@ export function mockSibStore(window, data = {}) {
       if (data[url] instanceof Error) throw data[url];
       return data[url];
     },
-    // getJson() (boilerplate) passe par fetchAuthn : on sert la même mappe en Response-like
+    // getJson() (boilerplate) goes through fetchAuthn: we serve the same map as a Response-like
     fetchAuthn: async (url, init = {}) => {
       const u = String(url);
       calls.push(['get', u, init]);
@@ -62,7 +62,7 @@ export async function mount(tag, attrs = {}) {
   document.body.appendChild(el);
   fireOrbitReady();
   await el.updateComplete;
-  await new Promise((r) => setTimeout(r, 0)); // laisse la Task résoudre
+  await new Promise((r) => setTimeout(r, 0)); // let the Task resolve
   await el.updateComplete;
   return el;
 }

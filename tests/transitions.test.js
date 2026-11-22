@@ -1,5 +1,5 @@
-// Conformité §13.5 — workflow exact des statuts (RG-2 complété).
-// Le PEP rejette aussi 409 invalid_transition (décision K / CA-L15) ; l'UI ne fait que filtrer.
+// §13.5 conformance — exact status workflow (RG-2 completed).
+// The PEP also rejects 409 invalid_transition (decision K / CA-L15); the UI only filters.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { STATUSES, PRIORITIES, DEFAULT_PRIORITY, canCreate, canTransition, validNextStatuses } from '../src/lib/transitions.js';
@@ -10,43 +10,43 @@ test('§13.2 : enums', () => {
   assert.equal(DEFAULT_PRIORITY, 'MEDIUM');
 });
 
-test('§13.5 : création = OPEN, gestionnaire seul', () => {
-  assert.ok(canCreate('gestionnaire'));
-  assert.ok(!canCreate('technicien'));
+test('§13.5: creation = OPEN, manager only', () => {
+  assert.ok(canCreate('manager'));
+  assert.ok(!canCreate('technician'));
   assert.ok(!canCreate('admin'));
-  assert.ok(canTransition(null, 'OPEN', 'gestionnaire'));
-  assert.ok(!canTransition(null, 'OPEN', 'technicien'));
-  assert.ok(!canTransition(null, 'IN_PROGRESS', 'gestionnaire'));
+  assert.ok(canTransition(null, 'OPEN', 'manager'));
+  assert.ok(!canTransition(null, 'OPEN', 'technician'));
+  assert.ok(!canTransition(null, 'IN_PROGRESS', 'manager'));
 });
 
-test('§13.5 : technicien assigné — OPEN→IN_PROGRESS→RESOLVED, jamais CLOSED', () => {
-  assert.ok(canTransition('OPEN', 'IN_PROGRESS', 'technicien', { assigned: true }));
-  assert.ok(canTransition('IN_PROGRESS', 'RESOLVED', 'technicien', { assigned: true }));
-  assert.ok(!canTransition('RESOLVED', 'CLOSED', 'technicien', { assigned: true }));
-  assert.ok(!canTransition('CLOSED', 'OPEN', 'technicien', { assigned: true }));
-  // technicien non assigné : rien
-  assert.ok(!canTransition('OPEN', 'IN_PROGRESS', 'technicien', { assigned: false }));
+test('§13.5: assigned technician — OPEN→IN_PROGRESS→RESOLVED, never CLOSED', () => {
+  assert.ok(canTransition('OPEN', 'IN_PROGRESS', 'technician', { assigned: true }));
+  assert.ok(canTransition('IN_PROGRESS', 'RESOLVED', 'technician', { assigned: true }));
+  assert.ok(!canTransition('RESOLVED', 'CLOSED', 'technician', { assigned: true }));
+  assert.ok(!canTransition('CLOSED', 'OPEN', 'technician', { assigned: true }));
+  // unassigned technician: nothing
+  assert.ok(!canTransition('OPEN', 'IN_PROGRESS', 'technician', { assigned: false }));
 });
 
-test('§13.5 : gestionnaire — toute la matrice', () => {
-  assert.ok(canTransition('OPEN', 'IN_PROGRESS', 'gestionnaire'));
-  assert.ok(canTransition('IN_PROGRESS', 'RESOLVED', 'gestionnaire'));
-  assert.ok(canTransition('RESOLVED', 'CLOSED', 'gestionnaire')); // clôture réservée au gestionnaire
-  assert.ok(canTransition('RESOLVED', 'IN_PROGRESS', 'gestionnaire')); // réouverture
-  assert.ok(canTransition('CLOSED', 'OPEN', 'gestionnaire')); // réouverture
+test('§13.5: manager — the whole matrix', () => {
+  assert.ok(canTransition('OPEN', 'IN_PROGRESS', 'manager'));
+  assert.ok(canTransition('IN_PROGRESS', 'RESOLVED', 'manager'));
+  assert.ok(canTransition('RESOLVED', 'CLOSED', 'manager')); // closing reserved to the manager
+  assert.ok(canTransition('RESOLVED', 'IN_PROGRESS', 'manager')); // reopen
+  assert.ok(canTransition('CLOSED', 'OPEN', 'manager')); // reopen
 });
 
-test('§13.5 : transitions invalides rejetées', () => {
-  assert.ok(!canTransition('OPEN', 'RESOLVED', 'gestionnaire'));
-  assert.ok(!canTransition('OPEN', 'CLOSED', 'gestionnaire'));
-  assert.ok(!canTransition('IN_PROGRESS', 'CLOSED', 'gestionnaire'));
-  assert.ok(!canTransition('IN_PROGRESS', 'OPEN', 'gestionnaire'));
-  assert.ok(!canTransition('CLOSED', 'RESOLVED', 'gestionnaire'));
-  assert.ok(!canTransition('OPEN', 'BOGUS', 'gestionnaire'));
+test('§13.5: invalid transitions rejected', () => {
+  assert.ok(!canTransition('OPEN', 'RESOLVED', 'manager'));
+  assert.ok(!canTransition('OPEN', 'CLOSED', 'manager'));
+  assert.ok(!canTransition('IN_PROGRESS', 'CLOSED', 'manager'));
+  assert.ok(!canTransition('IN_PROGRESS', 'OPEN', 'manager'));
+  assert.ok(!canTransition('CLOSED', 'RESOLVED', 'manager'));
+  assert.ok(!canTransition('OPEN', 'BOGUS', 'manager'));
 });
 
-test('validNextStatuses reflète la matrice', () => {
-  assert.deepEqual(validNextStatuses('RESOLVED', 'gestionnaire'), ['CLOSED', 'IN_PROGRESS']);
-  assert.deepEqual(validNextStatuses('RESOLVED', 'technicien', { assigned: true }), []);
-  assert.deepEqual(validNextStatuses('OPEN', 'technicien', { assigned: true }), ['IN_PROGRESS']);
+test('validNextStatuses reflects the matrix', () => {
+  assert.deepEqual(validNextStatuses('RESOLVED', 'manager'), ['CLOSED', 'IN_PROGRESS']);
+  assert.deepEqual(validNextStatuses('RESOLVED', 'technician', { assigned: true }), []);
+  assert.deepEqual(validNextStatuses('OPEN', 'technician', { assigned: true }), ['IN_PROGRESS']);
 });

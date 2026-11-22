@@ -1,5 +1,5 @@
-// Mini-routeur standalone (les routes viennent d'orbit.json, spec §8).
-// En prod Orbit fournit le vrai routeur ; ici on monte les composants dans #app.
+// Standalone mini-router (routes come from orbit.json, spec §8).
+// In prod Orbit provides the real router; here we mount components into #app.
 
 // path "/buildings/2" → { name: 'building-detail', params: ['2'] }
 export function matchPath(pathname, routes) {
@@ -10,7 +10,7 @@ export function matchPath(pathname, routes) {
   }
   for (const r of routes) {
     if (r.path.includes(':id')) {
-      const base = r.path.split(':')[0]; // ex. "/buildings/"
+      const base = r.path.split(':')[0]; // e.g. "/buildings/"
       if (pathname.startsWith(base)) return { name: r.name, route: r, params: [pathname.slice(base.length)] };
     }
   }
@@ -21,8 +21,8 @@ export function componentsFor(name, routes) {
   return routes.find((r) => r.name === name)?.components ?? [];
 }
 
-// Libellé utilisateur pour le header : vrai nom (ressource LDP /users/<id>) si connu,
-// sinon webid/claims OIDC (D-7).
+// User label for the header: real name (LDP resource /users/<id>) if known,
+// otherwise webid/OIDC claims (D-7).
 /**
  * @param {{name?:string, webid?:string, preferred_username?:string, role?:string}|null|undefined} claims
  * @returns {string}
@@ -34,8 +34,8 @@ export function userLabel(claims) {
   return role ? `${name} (${role})` : name;
 }
 
-// Menu latéral : libellés FR + visibilité par rôle (spec §8 — le rôle pilote
-// l'assemblage des écrans, jamais la décision d'accès).
+// Side menu: labels + visibility per role (spec §8 — the role drives screen
+// assembly, never the access decision).
 export const LABELS = {
   dashboard: 'Dashboard',
   'building-detail': 'Building',
@@ -48,7 +48,7 @@ export const LABELS = {
   store: 'App store',
 };
 
-// route visible si le rôle y est autorisé, ou si admin (voit tout).
+// route visible if the role is allowed on it, or if admin (sees everything).
 /**
  * @param {Array<{name:string, path:string, roles?:string[], menu?:boolean}>} routes
  * @param {string} role
@@ -56,12 +56,12 @@ export const LABELS = {
  */
 export function menuItems(routes, role) {
   return routes
-    .filter((r) => r.path === '/' || !r.path.includes(':id')) // pas les routes de détail dans le menu
+    .filter((r) => r.path === '/' || !r.path.includes(':id')) // not the detail routes in the menu
     .map((r) => ({
       name: r.name,
       path: r.path,
       label: LABELS[r.name] ?? r.name,
       visible: role === 'admin' || (r.roles ?? []).includes(role),
-      menu: r.menu !== false, // route "outil" (ex. /store, menu:false) : listée avec menu:false, filtrée par le consommateur (header)
+      menu: r.menu !== false, // "tool" route (e.g. /store, menu:false): listed with menu:false, filtered out by the consumer (header)
     }));
 }

@@ -10,8 +10,8 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <!-- Icônes du menu : SVG inline (components/shared/icons.js) — les fonts ligatures
-         ne pénètrent pas le shadow DOM des web components. -->
+    <!-- Menu icons: inline SVG (components/shared/icons.js) — ligature icon fonts
+         do not pierce the shadow DOM of web components. -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -56,7 +56,7 @@
       #header button.icon { display: inline-flex; align-items: center; justify-content: center; padding: 6px 9px; }
       #header button.icon svg { width: 17px; height: 17px; }
       #layout { display: block; padding-top: 58px; min-height: 100vh; }
-      /* Menu toujours visible, même quand le contenu scrolle */
+      /* Menu always visible, even when the content scrolls */
       #menu {
         position: fixed; top: 58px; left: 0; bottom: 0; width: 236px;
         background: linear-gradient(180deg, #ffffff 0%, #f0fdf9 100%);
@@ -99,7 +99,7 @@
       </span>
       <span class="spacer"></span>
       <span class="user" id="user"></span>
-      <button id="appstore" class="icon" type="button" title="Personnaliser le menu" aria-label="Personnaliser le menu (app store)">
+      <button id="appstore" class="icon" type="button" title="Customize the menu" aria-label="Customize the menu (app store)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>
       </button>
       <button id="logout" type="button">Log out</button>

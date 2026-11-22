@@ -1,5 +1,5 @@
-// ticket-new — formulaire de création de ticket (spec front §7.4 : pré-rempli depuis
-// ?anomaly=<@id> : titre + tickets:anomaly_ref). POST /tickets/ puis retour à la liste.
+// ticket-new — ticket creation form (front spec §7.4: prefilled from
+// ?anomaly=<@id>: title + tickets:anomaly_ref). POST /tickets/ then back to the list.
 import { LitElement, html, css } from 'lit';
 import { sharedStyles , resolveMembers, getJson } from '../boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
@@ -7,7 +7,7 @@ import { validateTicket, buildTicketPayload, PRIORITIES } from './logic.js';
 
 export class TicketNew extends LitElement {
   static properties = {
-    anomaly: { type: String }, // @id de l'anomalie (query ?anomaly=)
+    anomaly: { type: String }, // @id of the anomaly (query ?anomaly=)
     buildings: { type: Array, attribute: false },
     form: { type: Object, attribute: false },
     errors: { type: Array, attribute: false },
@@ -17,7 +17,7 @@ export class TicketNew extends LitElement {
   static styles = css`
     ${sharedStyles}
     form { background: #fff; border: 1px solid var(--border, #e5eaf0); border-radius: var(--radius, 14px); box-shadow: var(--shadow); padding: 20px 22px; max-width: 520px; }
-    /* grille verticale propre : libellé au-dessus, champ pleine largeur en dessous */
+    /* clean vertical grid: label above, full-width field below */
     form label { display: grid; gap: 6px; margin: 0 0 14px; font-size: 0.86rem; font-weight: 600; color: #334155; }
     form input, form select, form textarea { width: 100%; }
     form textarea { min-height: 96px; resize: vertical; }

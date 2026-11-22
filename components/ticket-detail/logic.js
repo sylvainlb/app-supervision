@@ -1,14 +1,14 @@
-// Logique pure ticket-detail — spec front §7.6 + matrice §13.5.
-// Champs lus par nom local (field) ; écriture PATCH en clés non préfixées (@vocab).
+// Pure ticket-detail logic — front spec §7.6 + matrix §13.5.
+// Fields read by local name (field); PATCH write with non-prefixed keys (@vocab).
 import { canTransition, validNextStatuses } from '../../src/lib/transitions.js';
 import { field } from '../../src/lib/context.js';
 
-// PATCH merge-patch RFC 7386 du changement de statut (clé non préfixée → @vocab).
+// RFC 7386 merge-patch of the status change (non-prefixed key → @vocab).
 export function transitionPatch(to) {
   return { status: to };
 }
 
-// Boutons de transition valides uniquement (RG-2) pour un rôle donné.
+// Only valid transition buttons (RG-2) for a given role.
 export function allowedTransitions(ticket, role, { assigned = false } = {}) {
   const from = field(ticket, 'status');
   return validNextStatuses(from, role, { assigned }).map((to) => ({
@@ -18,7 +18,7 @@ export function allowedTransitions(ticket, role, { assigned = false } = {}) {
   }));
 }
 
-// Commentaire : POST append sur /tickets/<pk>/comments/ (§7.6).
+// Comment: POST append on /tickets/<pk>/comments/ (§7.6).
 export function commentPayload(text, webid, now = new Date()) {
   return {
     text,

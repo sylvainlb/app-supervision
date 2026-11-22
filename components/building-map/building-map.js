@@ -1,8 +1,8 @@
-// building-map — carte du parc (spec front §7.2). Base : ComponentObjectsHandler → OrbitComponent.
-// Data : /buildings/ + croisement conteneur gold publié /gold/anomaly_candidates/ + /tickets/.
-// Carte Leaflet si window.L (CDN) présent, sinon repli liste. Clic → détail bâtiment.
-// Fix carte « cassée » : la map est créée dans requestAnimationFrame (le conteneur a sa
-// taille après le 1er rendu) + invalidateSize() à chaque mise à jour.
+// building-map — portfolio map (front spec §7.2). Base: ComponentObjectsHandler → OrbitComponent.
+// Data: /buildings/ + cross with the published gold container /gold/anomaly_candidates/ + /tickets/.
+// Leaflet map if window.L (CDN) is present, otherwise list fallback. Click → building detail.
+// "Broken map" fix: the map is created in requestAnimationFrame (the container has its
+// size after the 1st render) + invalidateSize() on each update.
 import { html, css } from 'lit';
 import { OrbitComponent, resolveMembers, getJson } from '../boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
@@ -24,14 +24,14 @@ export class BuildingMap extends OrbitComponent {
   static styles = css`
     ${OrbitComponent.styles}
     .map { height: 400px; border-radius: var(--radius, 14px); overflow: hidden; box-shadow: var(--shadow-lg); background: #aad3df; border: 1px solid var(--border); }
-    /* Pastille bâtiment sur la carte (divIcon Leaflet) */
+    /* Building marker on the map (Leaflet divIcon) */
     .bmk { background: transparent; border: none; }
     .bmk-dot {
       display: block; width: 26px; height: 26px; border-radius: 50%;
       border: 3px solid #fff; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.55);
       position: relative;
     }
-    /* Halo pulsant sur les états critiques */
+    /* Pulsing halo on critical states */
     .bmk-dot.st-high::after, .bmk-dot.st-anomaly::after {
       content: ""; position: absolute; inset: -3px; border-radius: 50%;
       border: 2px solid currentColor; opacity: 0; animation: bmk-pulse 1.8s ease-out infinite;
@@ -42,7 +42,7 @@ export class BuildingMap extends OrbitComponent {
       0% { transform: scale(0.7); opacity: 0.9; }
       100% { transform: scale(2.1); opacity: 0; }
     }
-    .leaflet-container { background: #aad3df; font-family: inherit; } /* tuiles OSM manquantes → fond neutre, pas de blanc cassé */
+    .leaflet-container { background: #aad3df; font-family: inherit; } /* missing OSM tiles → neutral background, not broken white */
     .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: var(--shadow-lg); }
     .legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.82rem; color: var(--muted); margin: 12px 2px 14px; }
     .legend > span {
@@ -86,7 +86,7 @@ export class BuildingMap extends OrbitComponent {
     return buildings;
   }
 
-  // Injecte leaflet.css DANS le shadow root et résout quand il est appliqué.
+  // Injects leaflet.css INTO the shadow root and resolves once it is applied.
   _leafletCssReady() {
     if (this._cssPromise) return this._cssPromise;
     let link = this.renderRoot.querySelector('link[data-leaflet-css]');
@@ -98,29 +98,29 @@ export class BuildingMap extends OrbitComponent {
       this.renderRoot.prepend(link);
     }
     this._cssPromise = new Promise((resolve) => {
-      if (link.sheet) return resolve(); // déjà chargé
+      if (link.sheet) return resolve(); // already loaded
       link.addEventListener('load', () => resolve(), { once: true });
-      link.addEventListener('error', () => resolve(), { once: true }); // on tente quand même
-      setTimeout(() => resolve(), 4000); // filet de sécurité
+      link.addEventListener('error', () => resolve(), { once: true }); // try anyway
+      setTimeout(() => resolve(), 4000); // safety net
     });
     return this._cssPromise;
   }
 
-  // Carte Leaflet si la lib CDN est chargée (index.html), sinon repli liste.
+  // Leaflet map if the CDN lib is loaded (index.html), otherwise list fallback.
   updated() {
     const L = window.L;
     if (!L) return;
-    // Marqueur = pastille colorée selon l'état (même code couleur que la légende/liste) :
-    // bien visible sur la carte, contrairement à l'icône Leaflet par défaut trop petite.
+    // Marker = colored dot according to state (same color code as the legend/list):
+    // clearly visible on the map, unlike the default Leaflet icon which is too small.
     const STATE_COLOR = { [STATE.OK]: '#059669', [STATE.ANOMALY]: '#d97706', [STATE.HIGH]: '#dc2626' };
     const states = computeBuildingStates(this.objects, this.anomalies, this.tickets)
       .filter(({ building }) => typeof field(building, 'lat') === 'number' && typeof field(building, 'lon') === 'number');
     const div = this.renderRoot.querySelector('#map');
     if (!div || states.length === 0) return;
-    // La map doit être créée APRÈS le 1er rendu (taille du conteneur connue) ET après
-    // le chargement du CSS Leaflet dans le shadow root (les styles du document ne
-    // pénètrent pas le shadow DOM : sans ça, les tuiles n'ont aucun positionnement →
-    // « carte cassée »), puis re-mesurée à chaque update.
+    // The map must be created AFTER the 1st render (container size known) AND after
+    // the Leaflet CSS has loaded in the shadow root (document styles do not
+    // pierce the shadow DOM: without it, tiles have no positioning →
+    // "broken map"), then re-measured on each update.
     requestAnimationFrame(async () => {
       await this._leafletCssReady();
       if (!this._map) {
@@ -133,8 +133,8 @@ export class BuildingMap extends OrbitComponent {
         this._markers = L.featureGroup().addTo(this._map);
       }
       this._map.invalidateSize();
-      // Le conteneur peut encore changer de taille après le 1er rendu (polices, layout) :
-      // re-mesurer après peinture, sinon les tuiles restent décalées sur une partie de la carte.
+      // The container can still change size after the 1st render (fonts, layout):
+      // re-measure after paint, otherwise tiles stay shifted on part of the map.
       setTimeout(() => this._map?.invalidateSize(), 250);
       this._markers.clearLayers();
       for (const { building, state } of states) {
