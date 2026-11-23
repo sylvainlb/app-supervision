@@ -23,7 +23,7 @@ import orbit from '../orbit.json';
 import { loadRemoteModule } from '../components/shared/loader.js';
 // App store (app-store-spec.md v0.4) : helpers window.appStore + blox <app-menu>/<app-store>.
 import { appStore } from '../components/shared/app-store-api.js';
-import { isDistant, isInstalled, installPatch, get as getField } from '../components/shared/logic.js';
+import { isDistant, isInstalled, installPatch, declarativeRoutes, get as getField } from '../components/shared/logic.js';
 import '../components/app-menu/app-menu.js';
 import '../components/app-store/app-store.js';
 import '../components/dynamic-feature/dynamic-feature.js';
@@ -71,7 +71,10 @@ let lastNav: { route?: string; resource?: string; query?: Record<string, unknown
 // Current role for the menu (§8: the role drives screen assembly, never the
 // access decision — ACL/RLS stays server-side). Overridable via window.appRole.
 function currentRole(): string {
-  return window.appRole ?? 'manager';
+  // Rôle CANONIQUE (claim Keycloak / rôle realm, en français : gestionnaire |
+  // technicien | admin) — ne jamais traduire ici : role_min du catalogue /features/,
+  // matrice de transitions §13.5 et RLS back utilisent ces valeurs.
+  return window.appRole ?? 'gestionnaire';
 }
 
 // Real user name, cached: first via Keycloak's OIDC userinfo endpoint
@@ -416,6 +419,23 @@ async function main(): Promise<void> {
   });
   (window as unknown as { __appStoreOK?: boolean }).__appStoreOK =
     await appStore.refresh().then(() => true).catch(() => false);
+  // v0.5 two-stage store (app-store-spec v0.5 §1.4.3): merge the routes of INSTALLED
+  // declarative features into the shell route table at boot. orbit.json stays untouched
+  // for the code stage (CA-A8); guards + <dynamic-feature> mounting apply unchanged.
+  if ((window as unknown as { __appStoreOK?: boolean }).__appStoreOK) {
+    const extra = declarativeRoutes(appStore.getCatalogue(), appStore.getPrefs());
+    const known = new Set(orbit.routes.map((r: { path: string }) => r.path));
+    for (const r of extra) {
+      if (r.path && !known.has(r.path)) {
+        orbit.routes.push(r);
+        known.add(r.path);
+        const worbit = window.orbit as { routes?: unknown[] } | undefined;
+        if (worbit && Array.isArray(worbit.routes) && !worbit.routes.some((x) => (x as { path: string }).path === r.path)) {
+          worbit.routes.push(r);
+        }
+      }
+    }
+  }
   // The shell is rendered NO MATTER WHAT: an error must not leave a blank page.
   document.dispatchEvent(new CustomEvent('orbit-ready'));
   renderAll();
