@@ -180,6 +180,14 @@ function renderHeader(): void {
       document.dispatchEvent(new CustomEvent('requestNavigation', { detail: { route: 'store', resource: '/store' } }));
     });
   }
+  // Mes apps : éditeur de composants UI (chantier 3), page pleine /editor.
+  const appsBtn = document.getElementById('uieditor');
+  if (appsBtn && !appsBtn.dataset.wired) {
+    appsBtn.dataset.wired = '1';
+    appsBtn.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('requestNavigation', { detail: { route: 'ui-editor', resource: '/editor' } }));
+    });
+  }
 }
 
 // Inline SVG icons (stroke currentColor) for the menu entries.
