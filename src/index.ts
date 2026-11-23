@@ -106,18 +106,59 @@ async function resolveUserName(webid: string): Promise<string> {
 }
 
 // Header: logged-in user (real LDP name + role) + logout.
+// Initiales pour l'avatar du header : 2 premières lettres des 2 premiers mots
+// du nom affiché (sans le rôle entre parenthèses), ex. « Claire Martin » → « CM ».
+function initialsOf(label: string): string {
+  const name = label.split('(')[0].trim();
+  if (!name) return '?';
+  const parts = name.split(/\s+/).filter(Boolean);
+  const ini = parts.slice(0, 2).map((p) => p[0]?.toUpperCase() ?? '').join('');
+  return ini || '?';
+}
+
+// Menu déroulant du bloc compte (avatar + nom) : App store / Log out.
+function wireAccountMenu(): void {
+  const btn = document.getElementById('account-btn');
+  const menu = document.getElementById('account-menu');
+  if (!btn || !menu || btn.dataset.wired) return;
+  btn.dataset.wired = '1';
+  const setOpen = (open: boolean) => {
+    menu.hidden = !open;
+    btn.setAttribute('aria-expanded', String(open));
+  };
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setOpen(menu.hidden);
+  });
+  // Ferme au clic ailleurs ou à Échap.
+  document.addEventListener('click', (e) => {
+    if (!menu.hidden && !menu.contains(e.target as Node)) setOpen(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !menu.hidden) { setOpen(false); btn.focus(); }
+  });
+  menu.addEventListener('click', () => setOpen(false)); // toute action du menu le referme
+}
+
 function renderHeader(): void {
   const user = document.getElementById('user');
+  const avatar = document.getElementById('avatar');
   if (user) {
     const webid = session.info.isLoggedIn ? session.info.webId ?? '' : '';
     const role = currentRole();
-    user.textContent = webid ? userLabel({ webid, role }) : '';
+    const label = webid ? userLabel({ webid, role }) : '';
+    user.textContent = label;
+    if (avatar) avatar.textContent = initialsOf(label);
     if (webid) {
       void resolveUserName(webid).then((name) => {
-        if (name) user.textContent = userLabel({ webid, name, role });
+        if (name) {
+          user.textContent = userLabel({ webid, name, role });
+          if (avatar) avatar.textContent = initialsOf(userLabel({ webid, name, role }));
+        }
       });
     }
   }
+  wireAccountMenu();
   const logout = document.getElementById('logout');
   if (logout && !logout.dataset.wired) {
     logout.dataset.wired = '1';
