@@ -26,6 +26,7 @@ import { appStore } from '@facis/app-store/components/shared/app-store-api.js';
 import { isDistant, isInstalled, installPatch, declarativeRoutes, get as getField } from '@facis/app-store/components/shared/logic.js';
 import '@facis/app-store/components/app-menu/app-menu.js';
 import '@facis/app-store/components/app-store/app-store.js';
+import '@facis/app-store/components/my-apps/my-apps.js';
 import '@facis/app-store/components/dynamic-feature/dynamic-feature.js';
 // Chantier 3 — declarative UI editor (packaged like the app-store mechanism): /editor route.
 import '@facis/app-ui-editor/src/editor.js';
@@ -215,12 +216,15 @@ function renderHeader(): void {
       document.dispatchEvent(new CustomEvent('requestNavigation', { detail: { route: 'store', resource: '/store' } }));
     });
   }
-  // Mes apps : éditeur de composants UI (chantier 3), page pleine /editor.
+  // Mes apps : hub listant les composants publiés (UI + IA) dans /components/,
+  // avec création (éditeur UI / éditeur IA) et modification (liens profonds
+  // /editor?component=… , /ai-editor?component=…). Les éditeurs restent des routes
+  // profondes ; le point d'entrée "Mes apps" est la liste, pas l'éditeur.
   const appsBtn = document.getElementById('uieditor');
   if (appsBtn && !appsBtn.dataset.wired) {
     appsBtn.dataset.wired = '1';
     appsBtn.addEventListener('click', () => {
-      document.dispatchEvent(new CustomEvent('requestNavigation', { detail: { route: 'ui-editor', resource: '/editor' } }));
+      document.dispatchEvent(new CustomEvent('requestNavigation', { detail: { route: 'my-apps', resource: '/my-apps' } }));
     });
   }
 }

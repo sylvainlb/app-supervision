@@ -44,6 +44,44 @@ export const FIXTURES = {
   // App store (app-store-spec.md): feature catalogue + prefs of user 1.
   // The real seed is app-specific (provided via the app's model.json); here a
   // demo covering the app's routes + the /store entry itself.
+  // Chantier 3 (ext/shacl endpoints, served by the back in prod): contract index + core contract,
+  // so the /editor page works in fixtures mode too.
+  '/shapes/': {
+    '@id': `${POD}/shapes/`,
+    sources: [
+      { kind: 'core', slug: null, version: 'demo', state: 'installed', published: true,
+        contract: `${POD}/shapes`, contractUri: `${POD}/shapes`, fragmentUri: `${POD}/fragment`, fragmentHash: 'demo-core' },
+    ],
+  },
+  '/shapes': {
+    '@context': {
+      sh: 'http://www.w3.org/ns/shacl#', rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
+      xsd: 'http://www.w3.org/2001/XMLSchema#', tickets: `${POD}/ns/app/tickets#`, buildings: `${POD}/ns/app/buildings#`,
+    },
+    '@graph': [
+      {
+        '@type': 'sh:NodeShape', 'sh:targetClass': 'tickets:tickets',
+        'sh:property': [
+          { 'sh:path': 'tickets:title', 'sh:name': { en: 'Title' }, 'sh:datatype': 'xsd:string', 'sh:minCount': 1 },
+          { 'sh:path': 'tickets:description', 'sh:name': { en: 'Description' }, 'sh:datatype': 'xsd:string' },
+          { 'sh:path': 'tickets:status', 'sh:name': { en: 'Status' }, 'sh:datatype': 'xsd:string', 'sh:in': ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'] },
+          { 'sh:path': 'tickets:priority', 'sh:name': { en: 'Priority' }, 'sh:datatype': 'xsd:string', 'sh:in': ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] },
+          { 'sh:path': 'tickets:building_id', 'sh:name': { en: 'Building' }, 'sh:nodeKind': 'sh:IRI', 'sh:class': 'buildings:buildings' },
+          { 'sh:path': 'tickets:assigned_to', 'sh:name': { en: 'Assignee' }, 'sh:nodeKind': 'sh:IRI', 'sh:class': `${POD}/ns/app/users#` },
+        ],
+      },
+      {
+        '@type': 'sh:NodeShape', 'sh:targetClass': 'buildings:buildings',
+        'sh:property': [
+          { 'sh:path': 'buildings:name', 'sh:name': { en: 'Name' }, 'sh:datatype': 'xsd:string', 'sh:minCount': 1 },
+          { 'sh:path': 'buildings:address', 'sh:name': { en: 'Address' }, 'sh:datatype': 'xsd:string' },
+          { 'sh:path': 'buildings:lat', 'sh:name': { en: 'Latitude' }, 'sh:datatype': 'xsd:decimal' },
+          { 'sh:path': 'buildings:lon', 'sh:name': { en: 'Longitude' }, 'sh:datatype': 'xsd:decimal' },
+        ],
+      },
+    ],
+  },
+  '/components/': { '@id': `${POD}/components/`, 'ldp:contains': [] },
   '/features/': {
     '@id': `${POD}/features/`,
     'ldp:contains': [
