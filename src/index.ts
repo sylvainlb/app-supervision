@@ -110,6 +110,41 @@ async function resolveUserName(webid: string): Promise<string> {
   return name;
 }
 
+// RP-initiated logout (OIDC): session.logout() only clears the LOCAL storage —
+// without calling Keycloak's end_session_endpoint, the SSO cookie stays valid and
+// the automatic loginRedirect() at boot would silently re-login via SSO right after.
+// So: read the id_token first (session.logout() clears it), clear the local session,
+// then redirect to the IdP end_session_endpoint, which revokes the tokens, ends the
+// SSO session and sends us back to the app origin (post_logout_redirect_uri — the
+// client's post.logout.redirect.uris is '+', i.e. any of its redirectUris).
+async function readIdToken(): Promise<string> {
+  try {
+    const mgr = (session as unknown as {
+      clientAuthentication?: { sessionInfoManager?: { get: (id: string) => Promise<{ idToken?: string }> } };
+    }).clientAuthentication?.sessionInfoManager;
+    const info = await mgr?.get?.(session.info.sessionId);
+    return info?.idToken ?? '';
+  } catch {
+    return '';
+  }
+}
+
+async function logoutAndRedirect(): Promise<never> {
+  const idToken = await readIdToken(); // BEFORE session.logout(): it clears the storage
+  try { await session.logout(); } catch { /* local clear already best-effort */ }
+  sessionStorage.removeItem('app.loginOut');
+  let endSession = `${config.oidcIssuer}/protocol/openid-connect/logout`; // Keycloak standard path
+  try {
+    const disc = await fetch(`${config.oidcIssuer}/.well-known/openid-configuration`).then((r) => r.json()) as { end_session_endpoint?: string };
+    if (disc.end_session_endpoint) endSession = disc.end_session_endpoint;
+  } catch { /* fallback above */ }
+  const u = new URL(endSession);
+  if (idToken) u.searchParams.set('id_token_hint', idToken);
+  u.searchParams.set('client_id', config.oidcClientId);
+  u.searchParams.set('post_logout_redirect_uri', window.location.origin + '/');
+  return window.location.assign(u.toString()) as never;
+}
+
 // Header: logged-in user (real LDP name + role) + logout.
 // Initiales pour l'avatar du header : 2 premières lettres des 2 premiers mots
 // du nom affiché (sans le rôle entre parenthèses), ex. « Claire Martin » → « CM ».
@@ -168,7 +203,7 @@ function renderHeader(): void {
   if (logout && !logout.dataset.wired) {
     logout.dataset.wired = '1';
     logout.addEventListener('click', () => {
-      void session.logout().finally(() => window.location.assign(window.location.pathname));
+      void logoutAndRedirect();
     });
   }
   // App store: menu configuration tool, separate from the navigation entries.
