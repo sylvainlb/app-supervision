@@ -2,7 +2,7 @@
 // Data: published gold container /gold/anomaly_candidates/ (§13.3). Client-side filters.
 // "Create a ticket" → requestNavigation route ticket-new with ?anomaly=<@id> (prefills anomaly_ref).
 import { html, css } from 'lit';
-import { OrbitComponent, getJson } from '../boilerplate/index.js';
+import { OrbitComponent, getJson } from '@facis/app-store/components/boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
 import { filterAnomalies, ticketPrefill, anomalyTs } from './logic.js';
 

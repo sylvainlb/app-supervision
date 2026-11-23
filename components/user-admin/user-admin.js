@@ -1,7 +1,7 @@
 // user-admin — user/role CRUD, admin only (front spec §7.7). Base: ComponentObjectsHandler → OrbitComponent.
 // Data: /users/ (ACL/RLS). CRUD via store.post/put/delete; webid = dereferenceable IRI.
 import { html, css } from 'lit';
-import { OrbitComponent } from '../boilerplate/index.js';
+import { OrbitComponent } from '@facis/app-store/components/boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
 import { ROLES } from '../../src/lib/transitions.js';
 import { validateUser, userPayload } from './logic.js';

@@ -4,7 +4,7 @@
 // Freshness badge RG-4. Chart.js if available (window.Chart), otherwise table fallback.
 import { html, css } from 'lit';
 import Chart from 'chart.js/auto';
-import { OrbitComponent, resolveMembers, getJson } from '../boilerplate/index.js';
+import { OrbitComponent, resolveMembers, getJson } from '@facis/app-store/components/boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
 import { queryGold } from '../../src/lib/gold-access.js';
 import { metricAccess, selectWindow, buildSeries, formatFreshness, latestTimestamp, WINDOWS } from './logic.js';

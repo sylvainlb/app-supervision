@@ -12,7 +12,7 @@ import './styles.css';
 import { config } from './config.js';
 import { installFixtureFallback, installFixtureProxy } from './lib/fixtures.js';
 import { matchPath, componentsFor, menuItems, userLabel } from './lib/router.js';
-import { getJson } from '../components/boilerplate/index.js';
+import { getJson } from '@facis/app-store/components/boilerplate/index.js';
 import { field } from './lib/context.js';
 import orbit from '../orbit.json';
 // v2: NO business component imported statically — everything goes through the CDN
@@ -20,13 +20,18 @@ import orbit from '../orbit.json';
 // Only remain packaged: the app store mechanism (<app-menu>/<app-store>/<dynamic-feature>,
 // bootstrap) and the boilerplate. In fixtures mode (VITE_FIXTURES=1, no back), the
 // business components are loaded on demand in separate chunks (see render()).
-import { loadRemoteModule } from '../components/shared/loader.js';
+import { loadRemoteModule } from '@facis/app-store/components/shared/loader.js';
 // App store (app-store-spec.md v0.4) : helpers window.appStore + blox <app-menu>/<app-store>.
-import { appStore } from '../components/shared/app-store-api.js';
-import { isDistant, isInstalled, installPatch, declarativeRoutes, get as getField } from '../components/shared/logic.js';
-import '../components/app-menu/app-menu.js';
-import '../components/app-store/app-store.js';
-import '../components/dynamic-feature/dynamic-feature.js';
+import { appStore } from '@facis/app-store/components/shared/app-store-api.js';
+import { isDistant, isInstalled, installPatch, declarativeRoutes, get as getField } from '@facis/app-store/components/shared/logic.js';
+import '@facis/app-store/components/app-menu/app-menu.js';
+import '@facis/app-store/components/app-store/app-store.js';
+import '@facis/app-store/components/dynamic-feature/dynamic-feature.js';
+// Chantier 3 — declarative UI editor (packaged like the app-store mechanism): /editor route.
+import '@facis/app-ui-editor/src/editor.js';
+import '@facis/app-ui-editor/src/canvas.js';
+// Chantier 2 — model editor with semantic profile (packaged like app-ui-editor): /model-editor route.
+import '@facis/app-model-editor';
 
 declare global {
   interface Window {
@@ -184,6 +189,7 @@ const MENU_ICONS: Record<string, string> = {
   tickets: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.5 2.5 0 0 0 0 5v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2.5 2.5 0 0 0 0-5z"/><line x1="13" y1="5" x2="13" y2="19" stroke-dasharray="2.5 3"/></svg>',
   interventions: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L3 18l3 3 5.7-5.7a4.5 4.5 0 0 0 6-6L14 13l-3-3 3.7-3.7z"/></svg>',
   admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>',
+  'ui-editor': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><line x1="17.5" y1="14" x2="17.5" y2="21"/><line x1="14" y1="17.5" x2="21" y2="17.5"/></svg>',
   'ticket-new': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
 };
 

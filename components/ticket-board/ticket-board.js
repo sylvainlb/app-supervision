@@ -2,7 +2,7 @@
 // Data: /tickets/ (RLS filters by role). Columns per status + counters; sort by priority/date (§7.5).
 // No drag & drop in v1; card click → detail route.
 import { html, css } from 'lit';
-import { OrbitComponent } from '../boilerplate/index.js';
+import { OrbitComponent } from '@facis/app-store/components/boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
 
 const STATUS_LABEL = { OPEN: 'Open', IN_PROGRESS: 'In progress', RESOLVED: 'Resolved', CLOSED: 'Closed' };

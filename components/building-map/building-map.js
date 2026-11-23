@@ -4,7 +4,7 @@
 // "Broken map" fix: the map is created in requestAnimationFrame (the container has its
 // size after the 1st render) + invalidateSize() on each update.
 import { html, css } from 'lit';
-import { OrbitComponent, resolveMembers, getJson } from '../boilerplate/index.js';
+import { OrbitComponent, resolveMembers, getJson } from '@facis/app-store/components/boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
 import { computeBuildingStates, STATE } from './logic.js';
 

@@ -43,7 +43,7 @@ test('menuItems: labels, no detail routes, visibility per role (§8)', () => {
   const all = menuItems(routes, 'manager');
   assert.ok(!all.some((i) => i.name === 'ticket-detail' || i.name === 'building-detail'), 'no :id routes in the menu');
   const gest = all.filter((i) => i.visible && i.menu !== false).map((i) => i.name);
-  assert.deepEqual(gest, ['dashboard', 'anomalies', 'tickets', 'ticket-new']); // /store: menu:false → outside the menu, reached via the header icon
+  assert.deepEqual(gest, ['dashboard', 'anomalies', 'tickets', 'ticket-new', 'ui-editor']); // « Mes apps » (/editor) dans le menu ; /store reste hors menu (menu:false, icône header)
   const tech = menuItems(routes, 'technician').filter((i) => i.visible && i.menu !== false).map((i) => i.name);
   assert.deepEqual(tech, ['interventions']);
   assert.ok(all.some((i) => i.name === 'store' && i.menu === false), 'store (menu:false) outside the menu, reached via the header');

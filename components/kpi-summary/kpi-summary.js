@@ -1,6 +1,6 @@
 // kpi-summary — dashboard KPI cards (portfolio overview).
 import { html, css } from 'lit';
-import { OrbitComponent, resolveMembers, getJson } from '../boilerplate/index.js';
+import { OrbitComponent, resolveMembers, getJson } from '@facis/app-store/components/boilerplate/index.js';
 import { computeKpis } from './logic.js';
 
 export class KpiSummary extends OrbitComponent {

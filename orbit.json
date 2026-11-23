@@ -299,6 +299,27 @@
    ],
    "components": [],
    "dynamic": true
+  },
+  {
+   "name": "ui-editor",
+   "path": "/editor",
+   "roles": [
+    "manager",
+    "admin"
+   ],
+   "components": [
+    "cmp-editor"
+   ]
+  },
+  {
+   "name": "model-editor",
+   "path": "/model-editor",
+   "roles": [
+    "admin"
+   ],
+   "components": [
+    "app-model-editor"
+   ]
   }
  ],
  "components": {
@@ -315,7 +336,7 @@
   "solid-router": "@startinblox/core",
   "kpi-summary": "components/kpi-summary/kpi-summary.js",
   "building-header": "components/building-header/building-header.js",
-  "app-store": "components/app-store/app-store.js",
-  "app-menu": "components/app-menu/app-menu.js"
+  "app-store": "@facis/app-store/components/app-store/app-store.js",
+  "app-menu": "@facis/app-store/components/app-menu/app-menu.js"
  }
 }

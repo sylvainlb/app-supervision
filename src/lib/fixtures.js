@@ -50,6 +50,7 @@ export const FIXTURES = {
       { '@id': `${POD}/features/building-map` },
       { '@id': `${POD}/features/anomaly-list` },
       { '@id': `${POD}/features/ticket-board` },
+      { '@id': `${POD}/features/ui-editor` },
       { '@id': `${POD}/features/user-admin` },
       { '@id': `${POD}/features/app-store` },
       { '@id': `${POD}/features/building-detail` },
@@ -78,6 +79,12 @@ export const FIXTURES = {
     '@id': `${POD}/features/ticket-board`, slug: 'ticket-board',
     title_i18n: { en: 'Tickets', fr: 'Tickets' }, description_i18n: { en: 'Interventions: assignment and status tracking.', fr: 'Interventions : assignation et suivi des statuts.' },
     icon: 'confirmation_number', menu_order: 30, role_min: 'manager', component: 'ticket-board', route: '/tickets',
+    config_schema: { fields: [] }, default_enabled: true,
+  },
+  '/features/ui-editor': {
+    '@id': `${POD}/features/ui-editor`, slug: 'ui-editor',
+    title_i18n: { en: 'My apps', fr: 'Mes apps' }, description_i18n: { en: 'UI component editor (declarative apps).', fr: 'Éditeur de composants UI (apps déclaratives).' },
+    icon: 'widgets', menu_order: 40, role_min: 'manager', component: 'cmp-editor', route: '/editor',
     config_schema: { fields: [] }, default_enabled: true,
   },
   '/features/user-admin': {

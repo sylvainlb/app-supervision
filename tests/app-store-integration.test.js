@@ -18,8 +18,8 @@ test('orbit.json: /store route + app-store/app-menu components declared', () => 
   assert.ok(store, 'missing store route');
   assert.equal(store.path, '/store');
   assert.deepEqual(store.components, ['app-store']);
-  assert.ok(orbit.components['app-store']?.includes('components/app-store/app-store.js'));
-  assert.ok(orbit.components['app-menu']?.includes('components/app-menu/app-menu.js'));
+  assert.ok(orbit.components['app-store']?.includes('@facis/app-store/components/app-store/app-store.js'));
+  assert.ok(orbit.components['app-menu']?.includes('@facis/app-store/components/app-menu/app-menu.js'));
 });
 
 test('index.ts imports the app-store and configures window.appStore at boot', () => {
@@ -53,8 +53,8 @@ test('functional: refresh via fixture fallback, sorted dynamic menu, CA-A4 anti-
   const fetchFail = async () => { throw new Error('network down (test)'); };
   window.sibStore = { fetchAuthn: installFixtureProxy(fetchFail, { enabled: true }) };
 
-  const { appStore } = await import('../components/shared/app-store-api.js');
-  const { menuEntries } = await import('../components/shared/logic.js');
+  const { appStore } = await import('@facis/app-store/components/shared/app-store-api.js');
+  const { menuEntries } = await import('@facis/app-store/components/shared/logic.js');
   appStore.configure({
     podUrl: 'http://localhost',
     getWebid: () => 'http://localhost/users/1',
@@ -112,18 +112,21 @@ test('functional: refresh via fixture fallback, sorted dynamic menu, CA-A4 anti-
   assert.ok(navs.includes('/'), 'redirect / emitted exactly once');
 });
 
-test('loader: tag already registered → no re-import (no "already defined")', async () => {
-  const { loadRemoteModule } = await import('../components/shared/loader.js');
+test('loader: tag already registered → sri still verified, but no re-import (no "already defined")', async () => {
+  const { loadRemoteModule, sha384Base64 } = await import('@facis/app-store/components/shared/loader.js');
+  const MODULE = '// fake feature module';
+  const sri = 'sha384-' + await sha384Base64(new TextEncoder().encode(MODULE).buffer);
   // simulates an already-defined custom element (e.g. the dashboard bundle embeds anomaly-list)
   const registry = new Map([['anomaly-list', class {}]]);
   const g = globalThis.customElements;
   globalThis.customElements = { get: (t) => registry.get(t) };
   try {
-    let imported = 0;
+    let imported = 0, fetched = 0;
     const res = await loadRemoteModule(
-      { cdnUrl: '/features-dist/anomalies.js', sri: 'sha384-AAAA', tag: 'anomaly-list' },
-      { fetchFn: async () => { throw new Error('fetch must not be called'); }, importFn: async () => { imported++; return {}; } },
+      { cdnUrl: '/features-dist/anomalies.js', sri, tag: 'anomaly-list' },
+      { fetchFn: async () => { fetched++; return { ok: true, status: 200, text: async () => MODULE }; }, importFn: async () => { imported++; return {}; } },
     );
+    assert.equal(fetched, 1, 'the bundle is fetched (sri verification CA-A5 always happens)');
     assert.equal(imported, 0, 'no import if the tag is already registered');
     assert.equal(res.alreadyRegistered, true);
   } finally {

@@ -19,8 +19,9 @@ test('§8: the declared routes with roles and components', () => {
     { name: 'interventions', path: '/interventions', roles: ['technician'] },
     { name: 'admin', path: '/admin', roles: ['admin'] },
     { name: 'store', path: '/store', roles: ['manager', 'technician', 'admin'] },
+    { name: 'ui-editor', path: '/editor', roles: ['manager', 'admin'] }, // chantier 3 (v0.5)
   ];
-  assert.equal(orbit.routes.length, 21); // 9 packaged + 12 distant (v2, menu:false, components:[])
+  assert.equal(orbit.routes.length, 22); // 10 packaged (incl. ui-editor) + 12 distant (v2, menu:false, components:[])
   for (const exp of expected) {
     const route = orbit.routes.find((r) => r.name === exp.name);
     assert.ok(route, `missing route: ${exp.name}`);
