@@ -77,10 +77,20 @@ let lastNav: { route?: string; resource?: string; query?: Record<string, unknown
 // Current role for the menu (§8: the role drives screen assembly, never the
 // access decision — ACL/RLS stays server-side). Overridable via window.appRole.
 function currentRole(): string {
-  // Rôle CANONIQUE (claim Keycloak / rôle realm, en français : gestionnaire |
-  // technicien | admin) — ne jamais traduire ici : role_min du catalogue /features/,
-  // matrice de transitions §13.5 et RLS back utilisent ces valeurs.
+  // Rôle CANONIQUE = claim Keycloak 'role' (realm values, FR : gestionnaire |
+  // technicien | admin) — the back (RLS, matrice de transitions) consumes this
+  // value, it must never be translated.
   return window.appRole ?? 'gestionnaire';
+}
+
+// The front side (orbit.json roles, catalogue /features/ role_min, transitions)
+// is EN ('manager' | 'technician' | 'admin'). Map the canonical FR role at the
+// boundary: everything that COMPARES against orbit.json / the catalogue uses
+// menuRole(); everything sent to or coming from the back uses currentRole().
+const ROLE_EN: Record<string, string> = { gestionnaire: 'manager', technicien: 'technician', admin: 'admin' };
+function menuRole(): string {
+  const r = currentRole();
+  return ROLE_EN[r] ?? r; // already EN (window.appRole override) → unchanged
 }
 
 // Real user name, cached: first via Keycloak's OIDC userinfo endpoint
@@ -186,7 +196,7 @@ function renderHeader(): void {
   const avatar = document.getElementById('avatar');
   if (user) {
     const webid = session.info.isLoggedIn ? session.info.webId ?? '' : '';
-    const role = currentRole();
+    const role = menuRole(); // affichage EN (le claim FR reste la valeur canonique)
     const label = webid ? userLabel({ webid, role }) : '';
     user.textContent = label;
     if (avatar) avatar.textContent = initialsOf(label);
@@ -271,8 +281,9 @@ function renderMenu(role: string): void {
 }
 
 function mountInto(parent: HTMLElement, tag: string): void {
-  const el = document.createElement(tag) as HTMLElement & { dataSrc?: string; building?: string; anomaly?: string; webid?: string };
+  const el = document.createElement(tag) as HTMLElement & { dataSrc?: string; building?: string; anomaly?: string; webid?: string; role?: string };
   if (tag === 'ticket-detail' || tag === 'building-header') el.dataSrc = window.location.pathname;
+  if (tag === 'ticket-detail') el.role = menuRole(); // transitions matrix is EN (src/lib/transitions.js)
   if (tag === 'ticket-new' && lastNav.query?.anomaly) el.anomaly = String(lastNav.query.anomaly);
   if (window.location.pathname.startsWith('/buildings/')) {
     if (tag === 'energy-chart' || tag === 'anomaly-list') el.building = window.location.pathname;
@@ -310,7 +321,7 @@ async function render(): Promise<void> {
   }
   // Detail pages (path with a parameter): "back" link to the originating list.
   if (route?.path.includes(':')) {
-    const back = backTarget(name, currentRole());
+    const back = backTarget(name, menuRole());
     if (back) {
       const a = document.createElement('a');
       a.className = 'back-link';
@@ -402,7 +413,7 @@ async function render(): Promise<void> {
 function renderAll(): void {
   void render();
   renderHeader();
-  renderMenu(currentRole());
+  renderMenu(menuRole());
 }
 
 async function main(): Promise<void> {
@@ -509,7 +520,7 @@ async function main(): Promise<void> {
   appStore.configure({
     podUrl: config.podUrl,
     getWebid: () => session.info.webId ?? '',
-    getRole: () => currentRole(),
+    getRole: () => menuRole(),
   });
   (window as unknown as { __appStoreOK?: boolean }).__appStoreOK =
     await appStore.refresh().then(() => true).catch(() => false);
