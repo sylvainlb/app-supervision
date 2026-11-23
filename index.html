@@ -19,7 +19,7 @@
     <title>Energy supervision</title>
     <style>
       #header {
-        position: fixed; top: 0; left: 0; right: 0; height: 58px; z-index: 100;
+        position: fixed; top: 0; left: 0; right: 0; height: 58px; z-index: 2000; /* au-dessus de la plage Leaflet (<= 1000) */
         display: flex; align-items: center; gap: 12px;
         background: linear-gradient(100deg, #ffffff 0%, #f0fdf9 55%, #d1fae5 130%);
         color: #0f172a; padding: 0 22px;
@@ -86,7 +86,7 @@
       #menu {
         position: fixed; top: 58px; left: 0; bottom: 0; width: 236px;
         background: linear-gradient(180deg, #ffffff 0%, #f0fdf9 100%);
-        padding: 18px 10px; overflow-y: auto; z-index: 90;
+        padding: 18px 10px; overflow-y: auto; z-index: 1900;
         border-right: 1px solid #e5eaf0;
         box-shadow: 2px 0 12px rgba(6, 78, 59, 0.05);
       }
