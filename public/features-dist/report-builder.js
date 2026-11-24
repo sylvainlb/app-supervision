@@ -653,18 +653,29 @@ async function getJson(url) {
   }
   return res.json();
 }
-async function resolveMembers(data) {
+async function resolveMembers(data, { concurrency = 12 } = {}) {
   const members = data?.["ldp:contains"] ?? (Array.isArray(data) ? data : []);
-  return Promise.all(members.map(async (m2) => {
-    if (m2 && typeof m2 === "object" && m2["@id"] && Object.keys(m2).filter((k2) => k2 !== "@id" && k2 !== "@type").length === 0) {
-      try {
-        return await getJson(m2["@id"]);
-      } catch {
-        return m2;
+  const out = new Array(members.length);
+  let next = 0;
+  const isStub = (m2) => m2 && typeof m2 === "object" && m2["@id"] && Object.keys(m2).filter((k2) => k2 !== "@id" && k2 !== "@type").length === 0;
+  async function worker() {
+    while (next < members.length) {
+      const i6 = next++;
+      const m2 = members[i6];
+      if (isStub(m2)) {
+        try {
+          out[i6] = await getJson(m2["@id"]);
+        } catch {
+          out[i6] = m2;
+        }
+      } else {
+        out[i6] = m2;
       }
     }
-    return m2;
-  }));
+  }
+  const n4 = Math.max(1, Math.min(concurrency, members.length));
+  await Promise.all(Array.from({ length: n4 }, () => worker()));
+  return out;
 }
 var sharedStyles = i`    :host {
     --brand: #10b981; --brand-light: #34d399; --brand-dark: #059669; --ink: #0f172a; --muted: #64748b;
@@ -1145,7 +1156,15 @@ var appStore = {
 if (typeof window !== "undefined") {
   window.appStore = window.appStore ?? appStore;
 }
-var app_store_api_default = appStore;
+var singleton = new Proxy(appStore, {
+  get(_t, prop) {
+    const w2 = typeof window !== "undefined" ? window.appStore : void 0;
+    const target = w2 ?? appStore;
+    const v2 = target[prop];
+    return typeof v2 === "function" ? v2.bind(target) : v2;
+  }
+});
+var app_store_api_default = singleton;
 
 // components/shared/feature-data.js
 var ASSETS = {
@@ -1191,12 +1210,17 @@ function filterWindow(rows, { from, to } = {}) {
     return true;
   });
 }
+var ISO_IN_ID = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+function tsFromId(id) {
+  const m2 = ISO_IN_ID.exec(String(id ?? ""));
+  return m2 ? m2[0] : null;
+}
 async function loadAsset(assetId, { from, to } = {}) {
   const container = ASSETS[assetId];
   if (!container) throw new Error(`asset unknown to the LDP mapping: ${assetId}`);
-  let rows;
+  let data;
   try {
-    rows = await resolveMembers(await getJson(container));
+    data = await getJson(container);
   } catch (e4) {
     if (e4.status === 404) {
       e4.url = container;
@@ -1204,6 +1228,19 @@ async function loadAsset(assetId, { from, to } = {}) {
     }
     throw e4;
   }
+  const members = data?.["ldp:contains"] ?? (Array.isArray(data) ? data : []);
+  let selected = members;
+  if (from || to) {
+    selected = members.filter((m2) => {
+      const id = typeof m2 === "string" ? m2 : m2?.["@id"];
+      const ts = id ? tsFromId(id) : null;
+      if (!ts) return true;
+      if (from && ts < String(from).slice(0, ts.length)) return false;
+      if (to && ts > String(to).slice(0, ts.length)) return false;
+      return true;
+    });
+  }
+  const rows = await resolveMembers({ "ldp:contains": selected });
   return filterWindow(rows, { from, to });
 }
 function isMissingBackend(e4) {
