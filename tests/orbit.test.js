@@ -23,7 +23,7 @@ test('§8: the declared routes with roles and components', () => {
     { name: 'ui-editor', path: '/editor', roles: ['manager', 'admin'] }, // chantier 3 (v0.5) — lien profond, atteint via /my-apps
     { name: 'ai-editor', path: '/ai-editor', roles: ['manager', 'admin'] }, // chantier 4 — lien profond, atteint via /my-apps
     { name: 'model-editor', path: '/model-editor', roles: ['admin'] }, // chantier 2
-    { name: 'model-registry', path: '/model-registry', roles: ['admin'] }, // chantier 2 — registre des modèles (galerie, vue par défaut de <app-model-editor>)
+    { name: 'model-registry', path: '/model-registry', roles: ['manager', 'technician', 'admin'] }, // chantier 2 — registre des modèles (lecture, tous rôles ; galerie = vue par défaut)
   ];
   assert.equal(orbit.routes.length, 26); // 14 packaged (incl. my-apps, ui-editor, ai-editor, model-editor, model-registry) + 12 distant (v2, menu:false, components:[])
   for (const exp of expected) {

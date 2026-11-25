@@ -350,6 +350,8 @@
    "name": "model-registry",
    "path": "/model-registry",
    "roles": [
+    "manager",
+    "technician",
     "admin"
    ],
    "components": [
