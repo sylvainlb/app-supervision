@@ -23,8 +23,9 @@ test('§8: the declared routes with roles and components', () => {
     { name: 'ui-editor', path: '/editor', roles: ['manager', 'admin'] }, // chantier 3 (v0.5) — lien profond, atteint via /my-apps
     { name: 'ai-editor', path: '/ai-editor', roles: ['manager', 'admin'] }, // chantier 4 — lien profond, atteint via /my-apps
     { name: 'model-editor', path: '/model-editor', roles: ['admin'] }, // chantier 2
+    { name: 'model-registry', path: '/model-registry', roles: ['admin'] }, // chantier 2 — registre des modèles (galerie, vue par défaut de <app-model-editor>)
   ];
-  assert.equal(orbit.routes.length, 25); // 13 packaged (incl. my-apps, ui-editor, ai-editor, model-editor) + 12 distant (v2, menu:false, components:[])
+  assert.equal(orbit.routes.length, 26); // 14 packaged (incl. my-apps, ui-editor, ai-editor, model-editor, model-registry) + 12 distant (v2, menu:false, components:[])
   for (const exp of expected) {
     const route = orbit.routes.find((r) => r.name === exp.name);
     assert.ok(route, `missing route: ${exp.name}`);

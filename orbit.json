@@ -345,6 +345,16 @@
    "components": [
     "app-model-editor"
    ]
+  },
+  {
+   "name": "model-registry",
+   "path": "/model-registry",
+   "roles": [
+    "admin"
+   ],
+   "components": [
+    "app-model-editor"
+   ]
   }
  ],
  "components": {
