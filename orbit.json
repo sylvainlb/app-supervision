@@ -340,7 +340,6 @@
    "name": "model-editor",
    "path": "/model-editor",
    "roles": [
-    "manager",
     "admin"
    ],
    "components": [
