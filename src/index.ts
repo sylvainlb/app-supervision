@@ -281,7 +281,11 @@ function renderMenu(role: string): void {
 }
 
 function mountInto(parent: HTMLElement, tag: string): void {
-  const el = document.createElement(tag) as HTMLElement & { dataSrc?: string; building?: string; anomaly?: string; webid?: string; role?: string };
+  // Prefer constructing via the registry: for some names document.createElement(tag)
+  // returns an unupgraded element in certain engines; new Ctor() is the spec-compliant
+  // way to instantiate an autonomous custom element.
+  const Ctor = customElements.get(tag);
+  const el = (Ctor ? new Ctor() : document.createElement(tag)) as HTMLElement & { dataSrc?: string; building?: string; anomaly?: string; webid?: string; role?: string };
   if (tag === 'ticket-detail' || tag === 'building-header') el.dataSrc = window.location.pathname;
   if (tag === 'ticket-detail') el.role = menuRole(); // transitions matrix is EN (src/lib/transitions.js)
   if (tag === 'ticket-new' && lastNav.query?.anomaly) el.anomaly = String(lastNav.query.anomaly);
