@@ -4,7 +4,7 @@
 // "Broken map" fix: the map is created in requestAnimationFrame (the container has its
 // size after the 1st render) + invalidateSize() on each update.
 import { html, css } from 'lit';
-import { OrbitComponent, resolveMembers, getJson } from '../boilerplate/index.js';
+import { OrbitComponent, resolveMembers, getJson } from '@facis/app-store/components/boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
 import { computeBuildingStates, STATE } from './logic.js';
 
@@ -23,6 +23,9 @@ export class BuildingMap extends OrbitComponent {
 
   static styles = css`
     ${OrbitComponent.styles}
+    /* Contexte d'empilement propre : les panes Leaflet montent jusqu'à z-index 1000,
+       sans ça la carte passe devant le header fixe (z-100) au scroll. */
+    :host { position: relative; z-index: 0; }
     .map { height: 400px; border-radius: var(--radius, 14px); overflow: hidden; box-shadow: var(--shadow-lg); background: #aad3df; border: 1px solid var(--border); }
     /* Building marker on the map (Leaflet divIcon) */
     .bmk { background: transparent; border: none; }

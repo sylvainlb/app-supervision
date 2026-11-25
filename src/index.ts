@@ -12,7 +12,7 @@ import './styles.css';
 import { config } from './config.js';
 import { installFixtureFallback, installFixtureProxy } from './lib/fixtures.js';
 import { matchPath, componentsFor, menuItems, userLabel } from './lib/router.js';
-import { getJson } from '../components/boilerplate/index.js';
+import { getJson } from '@facis/app-store/components/boilerplate/index.js';
 import { field } from './lib/context.js';
 import orbit from '../orbit.json';
 // v2: NO business component imported statically — everything goes through the CDN
@@ -20,13 +20,19 @@ import orbit from '../orbit.json';
 // Only remain packaged: the app store mechanism (<app-menu>/<app-store>/<dynamic-feature>,
 // bootstrap) and the boilerplate. In fixtures mode (VITE_FIXTURES=1, no back), the
 // business components are loaded on demand in separate chunks (see render()).
-import { loadRemoteModule } from '../components/shared/loader.js';
+import { loadRemoteModule } from '@facis/app-store/components/shared/loader.js';
 // App store (app-store-spec.md v0.4) : helpers window.appStore + blox <app-menu>/<app-store>.
-import { appStore } from '../components/shared/app-store-api.js';
-import { isDistant, isInstalled, installPatch, declarativeRoutes, get as getField } from '../components/shared/logic.js';
-import '../components/app-menu/app-menu.js';
-import '../components/app-store/app-store.js';
-import '../components/dynamic-feature/dynamic-feature.js';
+import { appStore } from '@facis/app-store/components/shared/app-store-api.js';
+import { isDistant, isInstalled, installPatch, declarativeRoutes, get as getField } from '@facis/app-store/components/shared/logic.js';
+import '@facis/app-store/components/app-menu/app-menu.js';
+import '@facis/app-store/components/app-store/app-store.js';
+import '@facis/app-store/components/my-apps/my-apps.js';
+import '@facis/app-store/components/dynamic-feature/dynamic-feature.js';
+// Chantier 3 — declarative UI editor (packaged like the app-store mechanism): /editor route.
+import '@facis/app-ui-editor/src/editor.js';
+import '@facis/app-ui-editor/src/canvas.js';
+// Chantier 2 — model editor with semantic profile (packaged like app-ui-editor): /model-editor route.
+import '@facis/app-model-editor';
 
 declare global {
   interface Window {
@@ -71,10 +77,20 @@ let lastNav: { route?: string; resource?: string; query?: Record<string, unknown
 // Current role for the menu (§8: the role drives screen assembly, never the
 // access decision — ACL/RLS stays server-side). Overridable via window.appRole.
 function currentRole(): string {
-  // Rôle CANONIQUE (claim Keycloak / rôle realm, en français : gestionnaire |
-  // technicien | admin) — ne jamais traduire ici : role_min du catalogue /features/,
-  // matrice de transitions §13.5 et RLS back utilisent ces valeurs.
+  // Rôle CANONIQUE = claim Keycloak 'role' (realm values, FR : gestionnaire |
+  // technicien | admin) — the back (RLS, matrice de transitions) consumes this
+  // value, it must never be translated.
   return window.appRole ?? 'gestionnaire';
+}
+
+// The front side (orbit.json roles, catalogue /features/ role_min, transitions)
+// is EN ('manager' | 'technician' | 'admin'). Map the canonical FR role at the
+// boundary: everything that COMPARES against orbit.json / the catalogue uses
+// menuRole(); everything sent to or coming from the back uses currentRole().
+const ROLE_EN: Record<string, string> = { gestionnaire: 'manager', technicien: 'technician', admin: 'admin' };
+function menuRole(): string {
+  const r = currentRole();
+  return ROLE_EN[r] ?? r; // already EN (window.appRole override) → unchanged
 }
 
 // Real user name, cached: first via Keycloak's OIDC userinfo endpoint
@@ -103,6 +119,41 @@ async function resolveUserName(webid: string): Promise<string> {
   }
   userNameCache.set(webid, name);
   return name;
+}
+
+// RP-initiated logout (OIDC): session.logout() only clears the LOCAL storage —
+// without calling Keycloak's end_session_endpoint, the SSO cookie stays valid and
+// the automatic loginRedirect() at boot would silently re-login via SSO right after.
+// So: read the id_token first (session.logout() clears it), clear the local session,
+// then redirect to the IdP end_session_endpoint, which revokes the tokens, ends the
+// SSO session and sends us back to the app origin (post_logout_redirect_uri — the
+// client's post.logout.redirect.uris is '+', i.e. any of its redirectUris).
+async function readIdToken(): Promise<string> {
+  try {
+    const mgr = (session as unknown as {
+      clientAuthentication?: { sessionInfoManager?: { get: (id: string) => Promise<{ idToken?: string }> } };
+    }).clientAuthentication?.sessionInfoManager;
+    const info = await mgr?.get?.(session.info.sessionId);
+    return info?.idToken ?? '';
+  } catch {
+    return '';
+  }
+}
+
+async function logoutAndRedirect(): Promise<never> {
+  const idToken = await readIdToken(); // BEFORE session.logout(): it clears the storage
+  try { await session.logout(); } catch { /* local clear already best-effort */ }
+  sessionStorage.removeItem('app.loginOut');
+  let endSession = `${config.oidcIssuer}/protocol/openid-connect/logout`; // Keycloak standard path
+  try {
+    const disc = await fetch(`${config.oidcIssuer}/.well-known/openid-configuration`).then((r) => r.json()) as { end_session_endpoint?: string };
+    if (disc.end_session_endpoint) endSession = disc.end_session_endpoint;
+  } catch { /* fallback above */ }
+  const u = new URL(endSession);
+  if (idToken) u.searchParams.set('id_token_hint', idToken);
+  u.searchParams.set('client_id', config.oidcClientId);
+  u.searchParams.set('post_logout_redirect_uri', window.location.origin + '/');
+  return window.location.assign(u.toString()) as never;
 }
 
 // Header: logged-in user (real LDP name + role) + logout.
@@ -145,7 +196,7 @@ function renderHeader(): void {
   const avatar = document.getElementById('avatar');
   if (user) {
     const webid = session.info.isLoggedIn ? session.info.webId ?? '' : '';
-    const role = currentRole();
+    const role = menuRole(); // affichage EN (le claim FR reste la valeur canonique)
     const label = webid ? userLabel({ webid, role }) : '';
     user.textContent = label;
     if (avatar) avatar.textContent = initialsOf(label);
@@ -163,7 +214,7 @@ function renderHeader(): void {
   if (logout && !logout.dataset.wired) {
     logout.dataset.wired = '1';
     logout.addEventListener('click', () => {
-      void session.logout().finally(() => window.location.assign(window.location.pathname));
+      void logoutAndRedirect();
     });
   }
   // App store: menu configuration tool, separate from the navigation entries.
@@ -175,6 +226,17 @@ function renderHeader(): void {
       document.dispatchEvent(new CustomEvent('requestNavigation', { detail: { route: 'store', resource: '/store' } }));
     });
   }
+  // Mes apps : hub listant les composants publiés (UI + IA) dans /components/,
+  // avec création (éditeur UI / éditeur IA) et modification (liens profonds
+  // /editor?component=… , /ai-editor?component=…). Les éditeurs restent des routes
+  // profondes ; le point d'entrée "Mes apps" est la liste, pas l'éditeur.
+  const appsBtn = document.getElementById('uieditor');
+  if (appsBtn && !appsBtn.dataset.wired) {
+    appsBtn.dataset.wired = '1';
+    appsBtn.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('requestNavigation', { detail: { route: 'my-apps', resource: '/my-apps' } }));
+    });
+  }
 }
 
 // Inline SVG icons (stroke currentColor) for the menu entries.
@@ -184,6 +246,7 @@ const MENU_ICONS: Record<string, string> = {
   tickets: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.5 2.5 0 0 0 0 5v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2.5 2.5 0 0 0 0-5z"/><line x1="13" y1="5" x2="13" y2="19" stroke-dasharray="2.5 3"/></svg>',
   interventions: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L3 18l3 3 5.7-5.7a4.5 4.5 0 0 0 6-6L14 13l-3-3 3.7-3.7z"/></svg>',
   admin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>',
+  'ui-editor': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><line x1="17.5" y1="14" x2="17.5" y2="21"/><line x1="14" y1="17.5" x2="21" y2="17.5"/></svg>',
   'ticket-new': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
 };
 
@@ -218,8 +281,9 @@ function renderMenu(role: string): void {
 }
 
 function mountInto(parent: HTMLElement, tag: string): void {
-  const el = document.createElement(tag) as HTMLElement & { dataSrc?: string; building?: string; anomaly?: string; webid?: string };
+  const el = document.createElement(tag) as HTMLElement & { dataSrc?: string; building?: string; anomaly?: string; webid?: string; role?: string };
   if (tag === 'ticket-detail' || tag === 'building-header') el.dataSrc = window.location.pathname;
+  if (tag === 'ticket-detail') el.role = menuRole(); // transitions matrix is EN (src/lib/transitions.js)
   if (tag === 'ticket-new' && lastNav.query?.anomaly) el.anomaly = String(lastNav.query.anomaly);
   if (window.location.pathname.startsWith('/buildings/')) {
     if (tag === 'energy-chart' || tag === 'anomaly-list') el.building = window.location.pathname;
@@ -257,7 +321,7 @@ async function render(): Promise<void> {
   }
   // Detail pages (path with a parameter): "back" link to the originating list.
   if (route?.path.includes(':')) {
-    const back = backTarget(name, currentRole());
+    const back = backTarget(name, menuRole());
     if (back) {
       const a = document.createElement('a');
       a.className = 'back-link';
@@ -349,7 +413,7 @@ async function render(): Promise<void> {
 function renderAll(): void {
   void render();
   renderHeader();
-  renderMenu(currentRole());
+  renderMenu(menuRole());
 }
 
 async function main(): Promise<void> {
@@ -456,7 +520,7 @@ async function main(): Promise<void> {
   appStore.configure({
     podUrl: config.podUrl,
     getWebid: () => session.info.webId ?? '',
-    getRole: () => currentRole(),
+    getRole: () => menuRole(),
   });
   (window as unknown as { __appStoreOK?: boolean }).__appStoreOK =
     await appStore.refresh().then(() => true).catch(() => false);

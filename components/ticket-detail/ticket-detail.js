@@ -2,7 +2,7 @@
 // Data: /tickets/<pk> + /tickets/<pk>/comments/. RG-2 transitions via PATCH merge-patch;
 // 412 → reload + toast "modified in the meantime" (§10). Comments appended.
 import { html, css } from 'lit';
-import { OrbitComponent, resolveMembers, getJson } from '../boilerplate/index.js';
+import { OrbitComponent, resolveMembers, getJson } from '@facis/app-store/components/boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
 import { actionForStatus } from '../../src/lib/http-contract.js';
 import { allowedTransitions, commentPayload } from './logic.js';

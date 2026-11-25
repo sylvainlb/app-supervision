@@ -46,6 +46,7 @@ export const LABELS = {
   interventions: 'My interventions',
   admin: 'Administration',
   store: 'App store',
+  'ui-editor': 'Mes apps',
 };
 
 // route visible if the role is allowed on it, or if admin (sees everything).

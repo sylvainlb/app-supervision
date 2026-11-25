@@ -24,7 +24,10 @@
     "@inrupt/solid-client-authn-browser": "1.11.2",
     "@lit/task": "1.0.3",
     "chart.js": "4.4.4",
-    "lit": "3.3.3"
+    "lit": "3.3.3",
+    "@facis/app-store": "file:../app-store",
+    "@facis/app-ui-editor": "file:../app-ui-editor",
+    "@facis/app-model-editor": "file:../app-model-editor"
   },
   "overrides": {
     "@inrupt/oidc-client-ext": "1.11.2",

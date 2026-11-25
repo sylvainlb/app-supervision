@@ -19,8 +19,12 @@ test('§8: the declared routes with roles and components', () => {
     { name: 'interventions', path: '/interventions', roles: ['technician'] },
     { name: 'admin', path: '/admin', roles: ['admin'] },
     { name: 'store', path: '/store', roles: ['manager', 'technician', 'admin'] },
+    { name: 'my-apps', path: '/my-apps', roles: ['manager', 'admin'] }, // hub « Mes apps » : liste des composants publiés (UI+IA), entrée du menu compte
+    { name: 'ui-editor', path: '/editor', roles: ['manager', 'admin'] }, // chantier 3 (v0.5) — lien profond, atteint via /my-apps
+    { name: 'ai-editor', path: '/ai-editor', roles: ['manager', 'admin'] }, // chantier 4 — lien profond, atteint via /my-apps
+    { name: 'model-editor', path: '/model-editor', roles: ['admin'] }, // chantier 2
   ];
-  assert.equal(orbit.routes.length, 21); // 9 packaged + 12 distant (v2, menu:false, components:[])
+  assert.equal(orbit.routes.length, 25); // 13 packaged (incl. my-apps, ui-editor, ai-editor, model-editor) + 12 distant (v2, menu:false, components:[])
   for (const exp of expected) {
     const route = orbit.routes.find((r) => r.name === exp.name);
     assert.ok(route, `missing route: ${exp.name}`);
@@ -44,7 +48,7 @@ test('§13.6: exact pinned npm versions (no ^ nor ~)', () => {
 });
 
 test('§6: orbit.json declares the custom blox (incl. app-store) + the reused Store blox', () => {
-  for (const c of ['building-map', 'energy-chart', 'anomaly-list', 'ticket-board', 'ticket-detail', 'ticket-new', 'user-admin', 'app-store', 'app-menu']) {
+  for (const c of ['building-map', 'energy-chart', 'anomaly-list', 'ticket-board', 'ticket-detail', 'ticket-new', 'user-admin', 'app-store', 'app-menu', 'my-apps', 'ai-component-editor']) {
     assert.ok(orbit.components[c], `undeclared component: ${c}`);
   }
   for (const b of ['solid-display', 'solid-form', 'solid-ac-checker', 'solid-router']) {

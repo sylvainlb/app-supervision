@@ -1,7 +1,7 @@
 // ticket-new — ticket creation form (front spec §7.4: prefilled from
 // ?anomaly=<@id>: title + tickets:anomaly_ref). POST /tickets/ then back to the list.
 import { LitElement, html, css } from 'lit';
-import { sharedStyles , resolveMembers, getJson } from '../boilerplate/index.js';
+import { sharedStyles , resolveMembers, getJson } from '@facis/app-store/components/boilerplate/index.js';
 import { field } from '../../src/lib/context.js';
 import { validateTicket, buildTicketPayload, PRIORITIES } from './logic.js';
 
