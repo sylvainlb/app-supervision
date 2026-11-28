@@ -33,6 +33,7 @@ import '@facis/app-ui-editor/src/editor.js';
 import '@facis/app-ui-editor/src/canvas.js';
 // Workstream 2 — model editor with semantic profile (packaged like app-ui-editor): /model-editor route.
 import '@facis/app-model-editor';
+import '@facis/app-model-editor/styles.css';
 
 declare global {
   interface Window {

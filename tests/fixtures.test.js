@@ -51,6 +51,23 @@ test('mutation fallback: post/patch/delete on the in-memory fixture', async () =
   assert.equal((await store.getData('/tickets/'))['ldp:contains'].length, before);
 });
 
+test('AI registry fixture: GET /ai/models fallback serves the dummy demo model (back down)', async () => {
+  const m = FIXTURES['/ai/models'].models;
+  assert.ok(m.some((x) => x.name === 'dummy://demo'), 'dummy://demo in the fixture registry');
+  assert.equal(m[0].location, 'local');
+  const notFound = async () => ({ ok: false, status: 404, json: async () => ({}) });
+  const fetchMock = installFixtureProxy(notFound, { enabled: true });
+  const res = await fetchMock('/ai/models');
+  assert.ok(res.ok);
+  const body = await res.json();
+  assert.equal(body.models[0].name, 'dummy://demo', 'served to the AI element model picker');
+  // back OK → real registry passthrough
+  const real = async () => ({ ok: true, status: 200, json: async () => ({ models: [{ name: 'ollama://mistral-small' }] }) });
+  const fetchReal = installFixtureProxy(real, { enabled: true });
+  const res2 = await fetchReal('/ai/models');
+  assert.equal((await res2.json()).models[0].name, 'ollama://mistral-small');
+});
+
 test('/app/query proxy fallback: back 404 → synthetic hourly series, back OK → passthrough', async () => {
   const notFound = async () => ({ ok: false, status: 404, json: async () => ({}) });
   const fetchMock = installFixtureProxy(notFound, { enabled: true });

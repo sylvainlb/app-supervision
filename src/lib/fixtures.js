@@ -53,6 +53,16 @@ export const FIXTURES = {
         contract: `${POD}/shapes`, contractUri: `${POD}/shapes`, fragmentUri: `${POD}/fragment`, fragmentHash: 'demo-core' },
     ],
   },
+  // AI stack registry (GET /ai/models, appendix B) — demo only: one dummy model so the
+  // "AI element" model picker is usable without the AI service. The real registry wins
+  // as soon as the back answers (installFixtureProxy: back OK → passthrough).
+  '/ai/models': {
+    models: [
+      { iri: `${POD}/ai_models/dummy-demo`, name: 'dummy://demo', protocol: 'openai_chat',
+        endpoint: 'http://localhost:11434', model_id: 'dummy', location: 'local',
+        context_window: 4096, native_structured_output: true, jurisdiction: 'local (demo)' },
+    ],
+  },
   '/shapes': {
     '@context': {
       sh: 'http://www.w3.org/ns/shacl#', rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
