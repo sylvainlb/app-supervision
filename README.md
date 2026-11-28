@@ -12,13 +12,17 @@ Orbit shell, sibStore, Store blox as CDN ES modules, custom Lit components, sib-
 ```
 app-supervision (this repo)     ← front — USER entry point
    │ consumes: root LDP, POST /app/query, OIDC (/auth/*)
+   │ file: deps (sibling repos, required): app-model-editor (@facis/app-model-editor),
+   │   app-ui-editor (@facis/app-ui-editor), app-store (@facis/app-store)
    ▼
 app-supervision-backend         ← deployable assembly — DEPLOYMENT entry point
    │   (scripts/start.sh starts the whole docker infra)
    ├── fap-ldp                  ← LDP extension: app.* domain, JSON-LD endpoint, ACL/PDP
+   │     (+ ext/model-injection E11, ext/shacl contracts)
    └── fap-light-serveur        ← core: bronze/silver/gold PostgreSQL + ORCE + caddy + IdP (1 VM)
 app-store + app-features        ← activatable features, plugged into the front
-spec/                           ← specifications (documentation, read first)
+app-ai-component-editor         ← AI component editor (standalone)
+spec/                           ← specifications (documentation, read first; not a git repo)
 ```
 
 **Dependency rule: front → back → fap.** No front file is served by the back: in dev,
@@ -39,14 +43,20 @@ git clone git@github.com:sylvainlb/app-supervision.git          # this repo (fro
 git clone git@github.com:sylvainlb/app-supervision-backend.git  # deployable assembly
 git clone git@github.com:sylvainlb/fap-light-serveur.git        # FAP-light core
 git clone git@github.com:sylvainlb/fap-ldp.git                   # LDP extension
-# Optional (v2 features):
-git clone git@github.com:sylvainlb/app-store.git                 # feature mechanism
+# REQUIRED siblings of the front (file: dependencies in package.json — npm ci fails without them):
+git clone git@github.com:sylvainlb/app-model-editor.git         # @facis/app-model-editor (model registry/editor, routes /model-registry, /model-editor)
+git clone git@github.com:sylvainlb/app-ui-editor.git            # @facis/app-ui-editor (WYSIWYG component editor)
+# Optional (v2 features + AI component editor):
+git clone git@github.com:sylvainlb/app-store.git                 # @facis/app-store (feature mechanism)
 git clone git@github.com:sylvainlb/app-features.git              # business components
+git clone git@github.com:sylvainlb/app-ai-component-editor.git   # AI component editor (standalone)
 # + the spec/ directory (specifications) provided with the sources, next to the repos
+#   (spec/ is intentionally NOT a git repository — it ships with the sources)
 ```
 
-> The first 4 repositories are enough to run the application. `app-store` /
-> `app-features` are only used for loadable v2 features (the front already embeds
+> The first 6 repositories (front, back, core, LDP ext, model-editor, ui-editor) are enough
+> to run the application. `app-store` / `app-features` / `app-ai-component-editor` are only
+> used for loadable v2 features and the AI component editor (the front already embeds
 > the `<app-store>` / `<app-menu>` mechanism as vendored).
 
 ### 2. Read the spec
@@ -115,7 +125,32 @@ npm: `cdn_url` = `https://cdn.jsdelivr.net/npm/@facis/app-features@<version>/dis
 As long as the seeded catalogue contains relative URLs, no external call is made —
 even in prod.
 
+### 7. Model registry & model editor (`@facis/app-model-editor`)
+
+Once the back is up and you are logged in, open:
+
+- **http://app.localhost/model-registry** — public registry: the object types your apps can
+  manipulate (published LDP containers: `buildings`, `tickets`, …), one fiche per model,
+  « Edit model », test zone, publish;
+- **http://app.localhost/model-editor** — same gallery + the admin « model sources » section.
+
+The component is embedded from the sibling repo `app-model-editor` (`file:` dependency,
+served from its `src/`, no build). Spec: `../spec/app-shape-editor.md` (rev 4.x, journal
+4.13–4.29) and `../spec/model-injection-spec.md` (E11 injection channel, annexe A). Server
+side: `fap-ldp/ext/shacl` (contracts, `GET /shapes/`) and `fap-ldp/ext/model-injection`
+(E11, `POST /admin/apps`, admin role only — dev account `admin`/`dev`).
+
+### 8. Tests
+
+Every repository has a node test suite, no services needed:
+
+```sh
+# in each repo:
+node --test tck/    # or: node --test tests/   (app-supervision)
+```
+
 ---
+
 
 ## Structure (spec §4)
 
