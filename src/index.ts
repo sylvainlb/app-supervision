@@ -490,7 +490,11 @@ async function main(): Promise<void> {
   } else if (q.has('code') || q.has('session_state') || q.has('iss')) {
     const remembered = sessionStorage.getItem('app.bootPath');
     const target = remembered ? stripAuthParams(remembered) : '/';
-    if (stripAuthParams(window.location.pathname + window.location.search) !== target) {
+    // Compare the RAW URL (not the stripped one): if it still carries auth params
+    // (consumed ?code=…&session_state=…&iss=…) we must replaceState, otherwise the
+    // reload keeps them in the address bar and the OIDC lib retries the code exchange
+    // on the next load → invalid_grant.
+    if (window.location.pathname + window.location.search !== target) {
       window.history.replaceState({}, '', target);
     }
   }
@@ -511,7 +515,7 @@ async function main(): Promise<void> {
   try {
     await session.handleIncomingRedirect({ restorePreviousSession: true });
   } catch (err) {
-    consumptionle.warn('[app-supervision] handleIncomingRedirect error:', err);
+    console.warn('[app-supervision] handleIncomingRedirect error:', err);
   }
   // Safety net if the lib rewrote the URL without going through replaceState.
   if (!wasCallback) {
@@ -557,7 +561,7 @@ async function main(): Promise<void> {
   // The shell is rendered NO MATTER WHAT: an error must not leave a blank page.
   document.dispatchEvent(new CustomEvent('orbit-ready'));
   renderAll();
-  consumptionle.info(`[app-supervision] pod=${config.podUrl} issuer=${config.oidcIssuer} webid=${session.info.webId ?? ''} appStore=${(window as unknown as { __appStoreOK?: boolean }).__appStoreOK}`);
+  console.info(`[app-supervision] pod=${config.podUrl} issuer=${config.oidcIssuer} webid=${session.info.webId ?? ''} appStore=${(window as unknown as { __appStoreOK?: boolean }).__appStoreOK}`);
 }
 
 // Click on a "back" link (rendered in #app) → same navigation as the menu.
@@ -590,10 +594,10 @@ window.addEventListener('popstate', () => renderAll());
 
 main().catch((err) => {
   // Last resort: never a blank page without an explanation.
-  consumptionle.error('[app-supervision] bootstrap error:', err);
+  console.error('[app-supervision] bootstrap error:', err);
   const app = document.getElementById('app');
   if (app && !app.childElementCount) {
-    app.innerHTML = '<p class="error">Error loading the application — see the consumptionle.</p>';
+    app.innerHTML = '<p class="error">Error loading the application — see the console.</p>';
   }
   renderAll();
 });

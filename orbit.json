@@ -349,6 +349,7 @@
   {
    "name": "model-registry",
    "path": "/model-registry",
+   "menu": false,
    "roles": [
     "manager",
     "technician",

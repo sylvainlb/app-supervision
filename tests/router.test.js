@@ -43,10 +43,11 @@ test('menuItems: labels, no detail routes, visibility per role (§8)', () => {
   const all = menuItems(routes, 'manager');
   assert.ok(!all.some((i) => i.name === 'ticket-detail' || i.name === 'building-detail'), 'no :id routes in the menu');
   const gest = all.filter((i) => i.visible && i.menu !== false).map((i) => i.name);
-  assert.deepEqual(gest, ['dashboard', 'anomalies', 'tickets', 'ticket-new', 'model-registry']); // /store, /my-apps, /editor, /ai-editor outside the menu (menu:false): reached via the header (account); model-registry open to all roles (read-only)
+  assert.deepEqual(gest, ['dashboard', 'anomalies', 'tickets', 'ticket-new']); // /store, /my-apps, /editor, /ai-editor, /model-registry hors menu (menu:false) : atteints via le header (compte)
   assert.ok(all.some((i) => i.name === 'my-apps' && i.menu === false), 'my-apps (menu:false) — "My apps" entry of the account menu, not the sidebar');
+  assert.ok(all.some((i) => i.name === 'model-registry' && i.menu === false), 'model-registry (menu:false) — global component like the app store, reached via the header dropdown');
   const tech = menuItems(routes, 'technician').filter((i) => i.visible && i.menu !== false).map((i) => i.name);
-  assert.deepEqual(tech, ['interventions', 'model-registry']);
+  assert.deepEqual(tech, ['interventions']);
   assert.ok(all.some((i) => i.name === 'store' && i.menu === false), 'store (menu:false) outside the menu, reached via the header');
   assert.ok(routes.some((r) => r.name === 'store' && r.path === '/store'), 'the /store route still exists in orbit.json');
   const admin = menuItems(routes, 'admin').filter((i) => i.visible).map((i) => i.name);
