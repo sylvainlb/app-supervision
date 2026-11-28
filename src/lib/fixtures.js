@@ -50,7 +50,17 @@ export const FIXTURES = {
     '@id': `${POD}/shapes/`,
     sources: [
       { kind: 'core', slug: null, version: 'demo', state: 'installed', published: true,
-        contract: `${POD}/shapes`, contractUri: `${POD}/shapes`, fragmentUri: `${POD}/fragment`, fragmentHash: 'demo-core' },
+        contract: `${POD}/shapes`, contractUri: `${POD}/shapes`, fragmentUri: `${POD}/fragment`, fragmentHash: 'demo-core',
+        // object registry (workstream 3 rev 8): all tables, published flag + internal flag
+        tables: [
+          { table: 'buildings', phys: 'buildings', label: { en: 'Buildings', fr: 'Bâtiments' }, published: true, internal: false, count: 7, fields: [{ en: 'Name' }, { en: 'Address' }, { en: 'Meter' }, { en: 'Latitude' }, { en: 'Longitude' }, { en: 'Area m²' }, { en: 'Facis asset' }] },
+          { table: 'tickets', phys: 'tickets', label: { en: 'Tickets', fr: 'Tickets' }, published: true, internal: false, count: 8, fields: [{ en: 'Title' }, { en: 'Description' }, { en: 'Status' }, { en: 'Priority' }, { en: 'Building' }, { en: 'Assignee' }, { en: 'Created by' }, { en: 'Anomaly ref' }] },
+          { table: 'users', phys: 'users', label: { en: 'Users', fr: 'Utilisateurs' }, published: false, internal: false, count: 4, fields: [{ en: 'Name' }, { en: 'Email' }, { en: 'Role' }, { en: 'Webid' }] },
+          { table: 'comments', phys: 'comments', label: { en: 'Comments', fr: 'Commentaires' }, published: false, internal: false, count: 4, fields: [{ en: 'Author' }, { en: 'Text' }, { en: 'Ticket' }, { en: 'Ts' }] },
+          { table: 'components', phys: 'components', label: { en: 'Components', fr: 'Composants' }, published: false, internal: true, count: 2, fields: [{ en: 'slug' }, { en: 'sri' }] },
+          { table: 'ai_models', phys: 'ai_models', label: { en: 'AI models', fr: 'Modèles IA' }, published: false, internal: true, count: 8, fields: [{ en: 'name' }, { en: 'endpoint' }, { en: 'model_id' }] },
+          { table: 'user_components', phys: 'user_components', label: { en: 'My components', fr: 'Mes composants' }, published: false, internal: true, count: 3, fields: [{ en: 'slug' }, { en: 'sri' }, { en: 'user_id' }] },
+        ] },
     ],
   },
   // AI stack registry (GET /ai/models, appendix B) — demo only: one dummy model so the

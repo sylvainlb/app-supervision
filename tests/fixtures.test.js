@@ -51,6 +51,16 @@ test('mutation fallback: post/patch/delete on the in-memory fixture', async () =
   assert.equal((await store.getData('/tickets/'))['ldp:contains'].length, before);
 });
 
+test('shapes index fixture carries the object registry (tables[] with published/internal flags)', () => {
+  const tables = FIXTURES['/shapes/'].sources[0].tables;
+  assert.ok(Array.isArray(tables) && tables.length >= 2, 'tables[] present so /editor step 1 works in demo mode');
+  const byName = Object.fromEntries(tables.map((t) => [t.table, t]));
+  assert.equal(byName.buildings.published, true);
+  assert.equal(byName.tickets.published, true);
+  assert.equal(byName.ai_models.internal, true, 'system table flagged internal');
+  assert.equal(byName.users.published, false);
+});
+
 test('AI registry fixture: GET /ai/models fallback serves the dummy demo model (back down)', async () => {
   const m = FIXTURES['/ai/models'].models;
   assert.ok(m.some((x) => x.name === 'dummy://demo'), 'dummy://demo in the fixture registry');
