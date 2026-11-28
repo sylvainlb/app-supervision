@@ -638,7 +638,7 @@ var h3 = class {
 };
 var r4 = (s5, i6) => s5 === i6 || s5.length === i6.length && s5.every((s6, h4) => !f(s6, i6[h4]));
 
-// components/boilerplate/index.js
+// ../app-store/components/boilerplate/index.js
 async function getJson(url) {
   const fetchFn = window.sibStore?.fetchAuthn ?? fetch;
   const res = await fetchFn(url, { headers: { accept: "application/ld+json" } });
@@ -653,18 +653,29 @@ async function getJson(url) {
   }
   return res.json();
 }
-async function resolveMembers(data) {
+async function resolveMembers(data, { concurrency = 12 } = {}) {
   const members = data?.["ldp:contains"] ?? (Array.isArray(data) ? data : []);
-  return Promise.all(members.map(async (m2) => {
-    if (m2 && typeof m2 === "object" && m2["@id"] && Object.keys(m2).filter((k2) => k2 !== "@id" && k2 !== "@type").length === 0) {
-      try {
-        return await getJson(m2["@id"]);
-      } catch {
-        return m2;
+  const out = new Array(members.length);
+  let next = 0;
+  const isStub = (m2) => m2 && typeof m2 === "object" && m2["@id"] && Object.keys(m2).filter((k2) => k2 !== "@id" && k2 !== "@type").length === 0;
+  async function worker() {
+    while (next < members.length) {
+      const i6 = next++;
+      const m2 = members[i6];
+      if (isStub(m2)) {
+        try {
+          out[i6] = await getJson(m2["@id"]);
+        } catch {
+          out[i6] = m2;
+        }
+      } else {
+        out[i6] = m2;
       }
     }
-    return m2;
-  }));
+  }
+  const n4 = Math.max(1, Math.min(concurrency, members.length));
+  await Promise.all(Array.from({ length: n4 }, () => worker()));
+  return out;
 }
 var sharedStyles = i`    :host {
     --brand: #10b981; --brand-light: #34d399; --brand-dark: #059669; --ink: #0f172a; --muted: #64748b;
@@ -675,8 +686,8 @@ var sharedStyles = i`    :host {
     /* Reset box-sizing in the shadow root too: otherwise width:100% fields
        overflow their container (padding + border in content-box). */
     *, *::before, *::after { box-sizing: border-box; }
-    /* "pointer" cursor on everything clickable (including <a> without href:
-       the browser only sets the pointer on links with href). */
+    /* Hand cursor on everything clickable (including <a> without href:
+       the browser only sets pointer on links with href). */
     a, button, summary, [role="button"], [data-route], .clickable { cursor: pointer; }
     button {
       background: linear-gradient(135deg, var(--brand-light, #34d399), var(--brand, #10b981)); color: #064e3b; border: 0; border-radius: 10px;
@@ -704,7 +715,7 @@ var sharedStyles = i`    :host {
     tbody tr { transition: background .12s ease; }
     tbody tr:hover { background: #ecfdf5; }
     .card { background: #fff; border: 1px solid var(--border, #e5eaf0); border-radius: 12px; box-shadow: var(--shadow); padding: 12px; transition: box-shadow .15s ease, transform .15s ease; }
-    /* "soft" badges: tinted background + colored text (more readable than solid fill) */
+    /* "Soft" badges: tinted background + colored text (more readable than solid fill) */
     .badge { display: inline-block; border-radius: 999px; padding: 3px 11px; font-size: 0.74rem; font-weight: 700; letter-spacing: .02em; color: #475569; background: #f1f5f9; }
     .sev-LOW, .st-OPEN { background: #e2e8f0; color: #475569; }
     .sev-MEDIUM, .pri-MEDIUM, .st-anomaly { background: #fef3c7; color: #b45309; }
@@ -770,7 +781,7 @@ var OrbitComponent = class extends ComponentObjectsHandler {
     document.removeEventListener("save", this._onSave);
     super.disconnectedCallback();
   }
-  // Loading hook — to override. Fill this.object / this.objects.
+  // Load hook — to override. Feed this.object / this.objects.
   async load() {
     const data = await getJson(this.dataSrc);
     const resolved = await resolveMembers(data);
@@ -796,7 +807,7 @@ var OrbitComponent = class extends ComponentObjectsHandler {
       complete: () => this.isEmpty() ? b2`<div class="empty">no items</div>` : this.renderContent()
     });
   }
-  // To override: content rendering once the data is loaded.
+  // To override: content render once the data is loaded.
   renderContent() {
     return b2``;
   }

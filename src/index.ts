@@ -28,10 +28,10 @@ import '@facis/app-store/components/app-menu/app-menu.js';
 import '@facis/app-store/components/app-store/app-store.js';
 import '@facis/app-store/components/my-apps/my-apps.js';
 import '@facis/app-store/components/dynamic-feature/dynamic-feature.js';
-// Chantier 3 — declarative UI editor (packaged like the app-store mechanism): /editor route.
+// Workstream 3 — declarative UI editor (packaged like the app-store mechanism): /editor route.
 import '@facis/app-ui-editor/src/editor.js';
 import '@facis/app-ui-editor/src/canvas.js';
-// Chantier 2 — model editor with semantic profile (packaged like app-ui-editor): /model-editor route.
+// Workstream 2 — model editor with semantic profile (packaged like app-ui-editor): /model-editor route.
 import '@facis/app-model-editor';
 
 declare global {
@@ -77,17 +77,17 @@ let lastNav: { route?: string; resource?: string; query?: Record<string, unknown
 // Current role for the menu (§8: the role drives screen assembly, never the
 // access decision — ACL/RLS stays server-side). Overridable via window.appRole.
 function currentRole(): string {
-  // Rôle CANONIQUE = claim Keycloak 'role' (realm values, FR : gestionnaire |
-  // technicien | admin) — the back (RLS, matrice de transitions) consumes this
+  // CANONICAL role = Keycloak 'role' claim (realm values, FR: manager |
+  // technician | admin) — the back (RLS, transition matrix) consumes this
   // value, it must never be translated.
-  return window.appRole ?? 'gestionnaire';
+  return window.appRole ?? 'manager';
 }
 
 // The front side (orbit.json roles, catalogue /features/ role_min, transitions)
 // is EN ('manager' | 'technician' | 'admin'). Map the canonical FR role at the
 // boundary: everything that COMPARES against orbit.json / the catalogue uses
 // menuRole(); everything sent to or coming from the back uses currentRole().
-const ROLE_EN: Record<string, string> = { gestionnaire: 'manager', technicien: 'technician', admin: 'admin' };
+const ROLE_EN: Record<string, string> = { manager: 'manager', technician: 'technician', admin: 'admin' };
 function menuRole(): string {
   const r = currentRole();
   return ROLE_EN[r] ?? r; // already EN (window.appRole override) → unchanged
@@ -157,8 +157,8 @@ async function logoutAndRedirect(): Promise<never> {
 }
 
 // Header: logged-in user (real LDP name + role) + logout.
-// Initiales pour l'avatar du header : 2 premières lettres des 2 premiers mots
-// du nom affiché (sans le rôle entre parenthèses), ex. « Claire Martin » → « CM ».
+// Initials for the header avatar: first 2 letters of the first 2 words
+// of the displayed name (without the role in parentheses), e.g. "Claire Martin" → "CM".
 function initialsOf(label: string): string {
   const name = label.split('(')[0].trim();
   if (!name) return '?';
@@ -167,7 +167,7 @@ function initialsOf(label: string): string {
   return ini || '?';
 }
 
-// Menu déroulant du bloc compte (avatar + nom) : App store / Log out.
+// Dropdown menu of the account block (avatar + name): App store / Log out.
 function wireAccountMenu(): void {
   const btn = document.getElementById('account-btn');
   const menu = document.getElementById('account-menu');
@@ -181,14 +181,14 @@ function wireAccountMenu(): void {
     e.stopPropagation();
     setOpen(menu.hidden);
   });
-  // Ferme au clic ailleurs ou à Échap.
+  // Close on outside click or Escape.
   document.addEventListener('click', (e) => {
     if (!menu.hidden && !menu.contains(e.target as Node)) setOpen(false);
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !menu.hidden) { setOpen(false); btn.focus(); }
   });
-  menu.addEventListener('click', () => setOpen(false)); // toute action du menu le referme
+  menu.addEventListener('click', () => setOpen(false)); // any menu action closes it
 }
 
 function renderHeader(): void {
@@ -196,7 +196,7 @@ function renderHeader(): void {
   const avatar = document.getElementById('avatar');
   if (user) {
     const webid = session.info.isLoggedIn ? session.info.webId ?? '' : '';
-    const role = menuRole(); // affichage EN (le claim FR reste la valeur canonique)
+    const role = menuRole(); // EN display (the FR claim remains the canonical value)
     const label = webid ? userLabel({ webid, role }) : '';
     user.textContent = label;
     if (avatar) avatar.textContent = initialsOf(label);
@@ -226,10 +226,10 @@ function renderHeader(): void {
       document.dispatchEvent(new CustomEvent('requestNavigation', { detail: { route: 'store', resource: '/store' } }));
     });
   }
-  // Mes apps : hub listant les composants publiés (UI + IA) dans /components/,
-  // avec création (éditeur UI / éditeur IA) et modification (liens profonds
-  // /editor?component=… , /ai-editor?component=…). Les éditeurs restent des routes
-  // profondes ; le point d'entrée "Mes apps" est la liste, pas l'éditeur.
+  // My apps: hub listing the published components (UI + AI) in /components/,
+  // with creation (UI editor / AI editor) and modification (deep links
+  // /editor?component=… , /ai-editor?component=…). The editors remain deep
+  // routes; the "My apps" entry point is the list, not the editor.
   const appsBtn = document.getElementById('uieditor');
   if (appsBtn && !appsBtn.dataset.wired) {
     appsBtn.dataset.wired = '1';
@@ -511,7 +511,7 @@ async function main(): Promise<void> {
   try {
     await session.handleIncomingRedirect({ restorePreviousSession: true });
   } catch (err) {
-    console.warn('[app-supervision] handleIncomingRedirect error:', err);
+    consumptionle.warn('[app-supervision] handleIncomingRedirect error:', err);
   }
   // Safety net if the lib rewrote the URL without going through replaceState.
   if (!wasCallback) {
@@ -524,7 +524,7 @@ async function main(): Promise<void> {
     // No session: we render the shell (never a blank page) then redirect.
     document.dispatchEvent(new CustomEvent('orbit-ready'));
     renderAll();
-    await loginRedirect(wasCallback ? undefined : bootUrl); // navigue vers Keycloak
+    await loginRedirect(wasCallback ? undefined : bootUrl); // redirect to Keycloak
     return;
   }
   // App store: helpers configured with the session (§1.9.12 — webid → /prefs/<pk>),
@@ -557,7 +557,7 @@ async function main(): Promise<void> {
   // The shell is rendered NO MATTER WHAT: an error must not leave a blank page.
   document.dispatchEvent(new CustomEvent('orbit-ready'));
   renderAll();
-  console.info(`[app-supervision] pod=${config.podUrl} issuer=${config.oidcIssuer} webid=${session.info.webId ?? ''} appStore=${(window as unknown as { __appStoreOK?: boolean }).__appStoreOK}`);
+  consumptionle.info(`[app-supervision] pod=${config.podUrl} issuer=${config.oidcIssuer} webid=${session.info.webId ?? ''} appStore=${(window as unknown as { __appStoreOK?: boolean }).__appStoreOK}`);
 }
 
 // Click on a "back" link (rendered in #app) → same navigation as the menu.
@@ -590,10 +590,10 @@ window.addEventListener('popstate', () => renderAll());
 
 main().catch((err) => {
   // Last resort: never a blank page without an explanation.
-  console.error('[app-supervision] bootstrap error:', err);
+  consumptionle.error('[app-supervision] bootstrap error:', err);
   const app = document.getElementById('app');
   if (app && !app.childElementCount) {
-    app.innerHTML = '<p class="error">Error loading the application — see the console.</p>';
+    app.innerHTML = '<p class="error">Error loading the application — see the consumptionle.</p>';
   }
   renderAll();
 });

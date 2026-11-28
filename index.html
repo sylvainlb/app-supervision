@@ -19,7 +19,7 @@
     <title>Energy supervision</title>
     <style>
       #header {
-        position: fixed; top: 0; left: 0; right: 0; height: 58px; z-index: 2000; /* au-dessus de la plage Leaflet (<= 1000) */
+        position: fixed; top: 0; left: 0; right: 0; height: 58px; z-index: 2000; /* above the Leaflet panes (<= 1000) */
         display: flex; align-items: center; gap: 12px;
         background: linear-gradient(100deg, #ffffff 0%, #f0fdf9 55%, #d1fae5 130%);
         color: #0f172a; padding: 0 22px;
@@ -42,7 +42,7 @@
         letter-spacing: 0.14em; padding: 0 20px 12px; margin: 0;
       }
       #header .spacer { flex: 1; }
-      /* Bloc compte : avatar + nom, ouvre un menu déroulant (app store / déconnexion) */
+      /* Account block: avatar + name, opens a dropdown menu (app store / log out) */
       #header .account { position: relative; }
       #header .account-btn {
         display: flex; align-items: center; gap: 9px;
@@ -137,7 +137,7 @@
           </button>
           <button type="button" role="menuitem" id="uieditor">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><line x1="17.5" y1="14" x2="17.5" y2="21"/><line x1="14" y1="17.5" x2="21" y2="17.5"/></svg>
-            Mes apps
+            My apps
           </button>
           <button type="button" role="menuitem" id="modelregistry">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>

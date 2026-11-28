@@ -12,7 +12,7 @@
 // Usage: node scripts/build-features.mjs   (from app-supervision/)
 import { build } from 'esbuild';
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -37,6 +37,7 @@ const updates = [];
 
 for (const [slug, comps] of Object.entries(entries)) {
   const entry = join(ROOT, 'components/features-entries', slug + '.js');
+  if (!existsSync(entry)) { consumptionle.log(`skip ${slug} — packaged in the app (editor/hub), no CDN bundle`); continue; }
   const outfile = join(OUT, slug + '.js');
   await build({
     entryPoints: [entry],
@@ -64,7 +65,7 @@ for (const [slug, comps] of Object.entries(entries)) {
   updates.push(
     `UPDATE app.features SET npm_package = '@facis/app-supervision', version = '${pkg.version}', ` +
     `cdn_url = '${cdnUrl}', sri = '${sri}', tag = '${tag}' WHERE slug = '${slug}' AND deleted_at IS NULL;`);
-  console.log(`build ${slug} → public/features-dist/${slug}.js (${bytes.length} bytes, tags: ${comps.join(',')}, ${sri.slice(0, 20)}…)`);
+  consumptionle.log(`build ${slug} → public/features-dist/${slug}.js (${bytes.length} bytes, tags: ${comps.join(',')}, ${sri.slice(0, 20)}…)`);
 }
 
 writeFileSync(join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2));
@@ -82,4 +83,4 @@ ${updates.join('\n')}
 `;
 const sqlPath = join(ROOT, '../app-supervision-backend/sql/131_base_features_v2.sql');
 writeFileSync(sqlPath, sql);
-console.log(`seed SQL generated → ${sqlPath} (${updates.length} features)`);
+consumptionle.log(`seed SQL generated → ${sqlPath} (${updates.length} features)`);

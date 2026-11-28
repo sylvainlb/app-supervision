@@ -1,475 +1,66 @@
 {
-  "package": "@facis/app-features",
+  "package": "@facis/app-supervision",
   "version": "0.1.0",
-  "cdn": "https://cdn.jsdelivr.net/npm/@facis/app-features@0.1.0/dist/<slug>.js",
   "features": {
-    "alert-rules": {
-      "tag": "alert-list",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/alert-rules.js",
-      "cdn_url": "/features-dist/alert-rules.js",
-      "sri": "sha384-xQEDnEAkfekkNSHHJkKB9OQzqXiue7Ctsl3mil9351TFh6Hkfcvm/OkjzP863hon",
-      "bytes": 52282,
-      "title_i18n": {
-        "en": "Alert rules",
-        "fr": "Règles d'alerte"
-      },
-      "description_i18n": {
-        "en": "Per-building anomaly thresholds (client-side evaluation, UI badge).",
-        "fr": "Seuils d'anomalie par bâtiment (évaluation côté client, badge UI)."
-      },
-      "icon": "notifications_active",
-      "menu_order": 10,
-      "role_min": "manager",
-      "route": "/alerts",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "thresholds",
-            "label": "Thresholds (building → {kW, eur_day})",
-            "type": "object"
-          }
-        ]
-      }
+    "dashboard": {
+      "tag": "building-map",
+      "cdn_url": "/features-dist/dashboard.js",
+      "sri": "sha384-8T+k3IfA10FCy1nXeYBMPb4w9SsXhFdLFXCidmKmcNuskiJwVaSrRvePSSoecFkx",
+      "bytes": 501223,
+      "components": [
+        "building-map",
+        "energy-chart",
+        "anomaly-list",
+        "kpi-summary"
+      ]
     },
-    "sla-dashboard": {
-      "tag": "sla-view",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/sla-dashboard.js",
-      "cdn_url": "/features-dist/sla-dashboard.js",
-      "sri": "sha384-QAHkKlbKVO7ZQYv0F/EK66OyMUlUp075GK4cDlT5VxN23u3ilKaTQ0dfBViVAs1V",
-      "bytes": 51543,
-      "title_i18n": {
-        "en": "SLA dashboard",
-        "fr": "Tableau de bord SLA"
-      },
-      "description_i18n": {
-        "en": "Ticket creation → RESOLVED delay vs SLA threshold.",
-        "fr": "Délai création du ticket → RESOLVED vs seuil SLA."
-      },
-      "icon": "timer",
-      "menu_order": 11,
-      "role_min": "manager",
-      "route": "/sla",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "sla_hours",
-            "label": "SLA threshold (h)",
-            "type": "number",
-            "default": 24
-          }
-        ]
-      }
+    "building-detail": {
+      "tag": "building-header",
+      "cdn_url": "/features-dist/building-detail.js",
+      "sri": "sha384-I0WHcSbEL3BczUJ+cSBo1TGvkGcN8qfp5LtuYLlxWXUV2G8E4Dk6wmhS/MGWaLSa",
+      "bytes": 486890,
+      "components": [
+        "building-header",
+        "energy-chart",
+        "anomaly-list"
+      ]
     },
-    "report-builder": {
-      "tag": "report-form",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/report-builder.js",
-      "cdn_url": "/features-dist/report-builder.js",
-      "sri": "sha384-gFtFTHksViWlwGh1UreQrJ80YF9WwKq3eKeFv3rR1q0Z5EY5TeWnEQUTKHg/a7BF",
-      "bytes": 54429,
-      "title_i18n": {
-        "en": "Report builder",
-        "fr": "Générateur de rapports"
-      },
-      "description_i18n": {
-        "en": "Client-side PDF/CSV report from already-fetched data.",
-        "fr": "Rapport PDF/CSV côté client à partir des données déjà récupérées."
-      },
-      "icon": "description",
-      "menu_order": 12,
-      "role_min": "manager",
-      "route": "/reports",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "period",
-            "label": "Period",
-            "type": "enum",
-            "options": [
-              "day",
-              "week",
-              "month",
-              "year"
-            ],
-            "default": "month"
-          },
-          {
-            "key": "building",
-            "label": "Building",
-            "type": "string"
-          },
-          {
-            "key": "format",
-            "label": "Format",
-            "type": "enum",
-            "options": [
-              "pdf",
-              "csv"
-            ],
-            "default": "pdf"
-          }
-        ]
-      }
+    "anomalies": {
+      "tag": "anomaly-list",
+      "cdn_url": "/features-dist/anomalies.js",
+      "sri": "sha384-MhqYwUgU8nKTrLbPIxIrnP7aLYApVpBCq/Wl7y9Rf6eShd3RAsMhaJQwIRZapYIT",
+      "bytes": 38387,
+      "components": [
+        "anomaly-list"
+      ]
     },
-    "budget-tracker": {
-      "tag": "budget-gauge",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/budget-tracker.js",
-      "cdn_url": "/features-dist/budget-tracker.js",
-      "sri": "sha384-WwMLyMTxUmxBw2Qno7N2v/VdpIlo2D3lLSMV7y7Dd4HbkjD3lrIfVigHE3hn+d+r",
-      "bytes": 52485,
-      "title_i18n": {
-        "en": "Budget tracker",
-        "fr": "Suivi de budget"
-      },
-      "description_i18n": {
-        "en": "Consumption vs kWh/€ budget with % alert (default 80).",
-        "fr": "Conso vs budget kWh/€ avec alerte en % (défaut 80)."
-      },
-      "icon": "savings",
-      "menu_order": 20,
-      "role_min": "manager",
-      "route": "/budget",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "budget_kwh",
-            "label": "Budget (kWh)",
-            "type": "number",
-            "required": true
-          },
-          {
-            "key": "budget_eur",
-            "label": "Budget (€)",
-            "type": "number"
-          },
-          {
-            "key": "alert_pct",
-            "label": "Alert threshold (%)",
-            "type": "number",
-            "default": 80
-          }
-        ]
-      }
+    "tickets": {
+      "tag": "ticket-board",
+      "cdn_url": "/features-dist/tickets.js",
+      "sri": "sha384-JDS0+xF6MSUTzSESpyhBE8bcIZGgExvdrBN+cq5iUxrm5cfjYueqOGjO0euOjIP+",
+      "bytes": 42361,
+      "components": [
+        "ticket-board"
+      ]
     },
-    "price-optimizer": {
-      "tag": "shift-advisor",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/price-optimizer.js",
-      "cdn_url": "/features-dist/price-optimizer.js",
-      "sri": "sha384-KFNRjXk5g9/qRNkQH18rDw7Y+OlnSZCPyYaX5oNrI9TcF5u/gGlKizQxwCQbWTXN",
-      "bytes": 51520,
-      "title_i18n": {
-        "en": "Price optimizer",
-        "fr": "Optimiseur de prix"
-      },
-      "description_i18n": {
-        "en": "Load-shifting advice based on hourly prices.",
-        "fr": "Conseil de décalage de conso selon les prix horaires."
-      },
-      "icon": "trending_down",
-      "menu_order": 21,
-      "role_min": "manager",
-      "route": "/optimize",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "shiftable_kwh",
-            "label": "Shiftable kWh",
-            "type": "number"
-          },
-          {
-            "key": "window",
-            "label": "Window (HH:MM-HH:MM)",
-            "type": "string",
-            "default": "08:00-20:00"
-          }
-        ]
-      }
+    "interventions": {
+      "tag": "ticket-board",
+      "cdn_url": "/features-dist/interventions.js",
+      "sri": "sha384-VYEhM+eT+6jOB/GYuufa/AmgIAQdGB60l+J1uhbtrRCFDPUA/j5nEau/EMB+DRnx",
+      "bytes": 44208,
+      "components": [
+        "ticket-board",
+        "ticket-detail"
+      ]
     },
-    "pv-selfconsumption": {
-      "tag": "pv-gauge",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/pv-selfconsumption.js",
-      "cdn_url": "/features-dist/pv-selfconsumption.js",
-      "sri": "sha384-H7ONdV6gz0YbAbQyNyOiDMsa8VNFkFQi/mUeCh9HBrp2NcbmiQyV3gDgpt5sBpeN",
-      "bytes": 51205,
-      "title_i18n": {
-        "en": "PV self-consumption",
-        "fr": "Autoconsommation PV"
-      },
-      "description_i18n": {
-        "en": "PV self-consumption rate, optional battery.",
-        "fr": "Taux d'autoconsommation PV, batterie optionnelle."
-      },
-      "icon": "solar_power",
-      "menu_order": 22,
-      "role_min": "manager",
-      "route": "/pv",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "battery_kwh",
-            "label": "Battery (kWh, 0 = none)",
-            "type": "number",
-            "default": 0
-          }
-        ]
-      }
-    },
-    "benchmark": {
-      "tag": "benchmark-view",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/benchmark.js",
-      "cdn_url": "/features-dist/benchmark.js",
-      "sri": "sha384-hBDeadbwmzzsbIMZXi3pNbO0aOnSSwgjI631s5Yit6mfCecYZAsCSnb+4Fr9SBbr",
-      "bytes": 52581,
-      "title_i18n": {
-        "en": "Building benchmark",
-        "fr": "Benchmark des bâtiments"
-      },
-      "description_i18n": {
-        "en": "kWh/m² or €/m² comparison across buildings.",
-        "fr": "Comparaison kWh/m² ou €/m² entre bâtiments."
-      },
-      "icon": "bar_chart",
-      "menu_order": 23,
-      "role_min": "manager",
-      "route": "/benchmark",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "metric",
-            "label": "Metric",
-            "type": "enum",
-            "options": [
-              "kwh_m2",
-              "eur_m2"
-            ],
-            "default": "kwh_m2"
-          },
-          {
-            "key": "period",
-            "label": "Period",
-            "type": "enum",
-            "options": [
-              "month",
-              "year"
-            ],
-            "default": "year"
-          },
-          {
-            "key": "ref_building",
-            "label": "Reference building",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    "regulatory-export": {
-      "tag": "regulatory-export",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/regulatory-export.js",
-      "cdn_url": "/features-dist/regulatory-export.js",
-      "sri": "sha384-FzTKL6h3hg2h1WdURhU/JIBnBmPAyUCD3yb+oOeUUnLtrhDVFfB6yKlXHZnBC+c1",
-      "bytes": 51974,
-      "title_i18n": {
-        "en": "Regulatory export",
-        "fr": "Export réglementaire"
-      },
-      "description_i18n": {
-        "en": "Annual per-site CSV export (kWh/year, server-side).",
-        "fr": "Export CSV annuel par site (kWh/an, côté serveur)."
-      },
-      "icon": "gavel",
-      "menu_order": 24,
-      "role_min": "manager",
-      "route": "/regulatory",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "year",
-            "label": "Year",
-            "type": "number"
-          },
-          {
-            "key": "format",
-            "label": "Format",
-            "type": "enum",
-            "options": [
-              "csv",
-              "json"
-            ],
-            "default": "csv"
-          }
-        ]
-      }
-    },
-    "weather-correlation": {
-      "tag": "weather-chart",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/weather-correlation.js",
-      "cdn_url": "/features-dist/weather-correlation.js",
-      "sri": "sha384-VgAC4XCAOkKVrqoJBIbgSyIbtOsWcjj2fgDOsuxKVblUwf8qk9JuqSm1FER3X3Xd",
-      "bytes": 51018,
-      "title_i18n": {
-        "en": "Weather correlation",
-        "fr": "Corrélation météo"
-      },
-      "description_i18n": {
-        "en": "Consumption vs hourly weather (gold weather_hourly).",
-        "fr": "Conso vs météo horaire (gold weather_hourly)."
-      },
-      "icon": "partly_cloudy_day",
-      "menu_order": 30,
-      "role_min": "manager",
-      "route": "/weather",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "station",
-            "label": "Weather station",
-            "type": "string"
-          },
-          {
-            "key": "period",
-            "label": "Period",
-            "type": "enum",
-            "options": [
-              "7d",
-              "30d",
-              "90d"
-            ],
-            "default": "30d"
-          }
-        ]
-      }
-    },
-    "city-events": {
-      "tag": "city-feed",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/city-events.js",
-      "cdn_url": "/features-dist/city-events.js",
-      "sri": "sha384-zHrhnq+w4aauo4YmlEiTtkd7SLsMk+INYo1PER3usUx0JF+f7HuxaFe1WmvW7Tis",
-      "bytes": 49996,
-      "title_i18n": {
-        "en": "City events",
-        "fr": "Événements ville"
-      },
-      "description_i18n": {
-        "en": "Impact of urban events on consumption.",
-        "fr": "Impact des événements urbains sur la conso."
-      },
-      "icon": "location_city",
-      "menu_order": 31,
-      "role_min": "manager",
-      "route": "/city",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "zone",
-            "label": "Zone",
-            "type": "string"
-          },
-          {
-            "key": "radius_km",
-            "label": "Radius (km)",
-            "type": "number",
-            "default": 5
-          }
-        ]
-      }
-    },
-    "ai-assistant": {
-      "tag": "ai-chat",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/ai-assistant.js",
-      "cdn_url": "/features-dist/ai-assistant.js",
-      "sri": "sha384-3bHSxfPuUTlKms1zImvSNV2SVNTtd1ctdg3J2FJe/V8+AARlE5XWVxulZ/X6I2Nv",
-      "bytes": 49441,
-      "title_i18n": {
-        "en": "AI assistant",
-        "fr": "Assistant IA"
-      },
-      "description_i18n": {
-        "en": "Chat over pod data via POST /app/llm (allowlist).",
-        "fr": "Chat sur les données du pod via POST /app/llm (allowlist)."
-      },
-      "icon": "smart_toy",
-      "menu_order": 32,
-      "role_min": "manager",
-      "route": "/assistant",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "assets",
-            "label": "Queryable assets",
-            "type": "array",
-            "items": "string"
-          },
-          {
-            "key": "model",
-            "label": "Model",
-            "type": "string",
-            "default": "default"
-          }
-        ]
-      }
-    },
-    "data-sharing": {
-      "tag": "share-manager",
-      "npm_package": "@facis/app-features",
-      "version": "0.1.0",
-      "file": "dist/data-sharing.js",
-      "cdn_url": "/features-dist/data-sharing.js",
-      "sri": "sha384-ViZQzjx2iR/erBiWvrloM/eBupmyKtxsh5kIsDSGrYheCPxl9Xk/LX2SWcgeLJrk",
-      "bytes": 49477,
-      "title_i18n": {
-        "en": "Data sharing",
-        "fr": "Partage de données"
-      },
-      "description_i18n": {
-        "en": "Asset sharing offers (DSP control plane, admin).",
-        "fr": "Offres de partage d'assets (plan de contrôle DSP, admin)."
-      },
-      "icon": "share",
-      "menu_order": 33,
-      "role_min": "admin",
-      "route": "/sharing",
-      "config_schema": {
-        "fields": [
-          {
-            "key": "asset",
-            "label": "Asset",
-            "type": "string",
-            "required": true
-          },
-          {
-            "key": "consumer_did",
-            "label": "Consumer DID",
-            "type": "string"
-          },
-          {
-            "key": "duration_days",
-            "label": "Duration (days)",
-            "type": "number",
-            "default": 30
-          }
-        ]
-      }
+    "admin": {
+      "tag": "user-admin",
+      "cdn_url": "/features-dist/admin.js",
+      "sri": "sha384-kjKrevJZXFkgLKM1WchIvX4yEosTKoMBTJSp5T7JgmM4+9a0ff5TnVBjPhgDnYpt",
+      "bytes": 37364,
+      "components": [
+        "user-admin"
+      ]
     }
   }
 }

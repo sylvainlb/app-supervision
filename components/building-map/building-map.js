@@ -23,8 +23,8 @@ export class BuildingMap extends OrbitComponent {
 
   static styles = css`
     ${OrbitComponent.styles}
-    /* Contexte d'empilement propre : les panes Leaflet montent jusqu'à z-index 1000,
-       sans ça la carte passe devant le header fixe (z-100) au scroll. */
+    /* Own stacking context: Leaflet panes go up to z-index 1000,
+       without it the map overlaps the fixed header (z-100) on scroll. */
     :host { position: relative; z-index: 0; }
     .map { height: 400px; border-radius: var(--radius, 14px); overflow: hidden; box-shadow: var(--shadow-lg); background: #aad3df; border: 1px solid var(--border); }
     /* Building marker on the map (Leaflet divIcon) */

@@ -19,11 +19,11 @@ test('§8: the declared routes with roles and components', () => {
     { name: 'interventions', path: '/interventions', roles: ['technician'] },
     { name: 'admin', path: '/admin', roles: ['admin'] },
     { name: 'store', path: '/store', roles: ['manager', 'technician', 'admin'] },
-    { name: 'my-apps', path: '/my-apps', roles: ['manager', 'admin'] }, // hub « Mes apps » : liste des composants publiés (UI+IA), entrée du menu compte
-    { name: 'ui-editor', path: '/editor', roles: ['manager', 'admin'] }, // chantier 3 (v0.5) — lien profond, atteint via /my-apps
-    { name: 'ai-editor', path: '/ai-editor', roles: ['manager', 'admin'] }, // chantier 4 — lien profond, atteint via /my-apps
-    { name: 'model-editor', path: '/model-editor', roles: ['admin'] }, // chantier 2
-    { name: 'model-registry', path: '/model-registry', roles: ['manager', 'technician', 'admin'] }, // chantier 2 — registre des modèles (lecture, tous rôles ; galerie = vue par défaut)
+    { name: 'my-apps', path: '/my-apps', roles: ['manager', 'admin'] }, // "My apps" hub: list of published components (UI+AI), entry of the account menu
+    { name: 'ui-editor', path: '/editor', roles: ['manager', 'admin'] }, // workstream 3 (v0.5) — deep link, reached via /my-apps
+    { name: 'ai-editor', path: '/ai-editor', roles: ['manager', 'admin'] }, // workstream 4 — deep link, reached via /my-apps
+    { name: 'model-editor', path: '/model-editor', roles: ['admin'] }, // workstream 2
+    { name: 'model-registry', path: '/model-registry', roles: ['manager', 'technician', 'admin'] }, // workstream 2 — model registry (read-only, all roles; gallery = default view)
   ];
   assert.equal(orbit.routes.length, 26); // 14 packaged (incl. my-apps, ui-editor, ai-editor, model-editor, model-registry) + 12 distant (v2, menu:false, components:[])
   for (const exp of expected) {

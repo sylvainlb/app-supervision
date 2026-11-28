@@ -44,7 +44,7 @@ export const FIXTURES = {
   // App store (app-store-spec.md): feature catalogue + prefs of user 1.
   // The real seed is app-specific (provided via the app's model.json); here a
   // demo covering the app's routes + the /store entry itself.
-  // Chantier 3 (ext/shacl endpoints, served by the back in prod): contract index + core contract,
+  // Workstream 3 (ext/shacl endpoints, served by the back in prod): contract index + core contract,
   // so the /editor page works in fixtures mode too.
   '/shapes/': {
     '@id': `${POD}/shapes/`,

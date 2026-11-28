@@ -9,7 +9,7 @@ import { matchPath, componentsFor, menuItems, userLabel } from '../src/lib/route
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const routes = JSON.parse(readFileSync(join(root, 'orbit.json'), 'utf8')).routes;
 
-test('routes exactes', () => {
+test('exact routes', () => {
   assert.equal(matchPath('/', routes).name, 'dashboard');
   assert.equal(matchPath('/tickets', routes).name, 'tickets');
   assert.equal(matchPath('/tickets/', routes).name, 'tickets');
@@ -43,8 +43,8 @@ test('menuItems: labels, no detail routes, visibility per role (§8)', () => {
   const all = menuItems(routes, 'manager');
   assert.ok(!all.some((i) => i.name === 'ticket-detail' || i.name === 'building-detail'), 'no :id routes in the menu');
   const gest = all.filter((i) => i.visible && i.menu !== false).map((i) => i.name);
-  assert.deepEqual(gest, ['dashboard', 'anomalies', 'tickets', 'ticket-new', 'model-registry']); // /store, /my-apps, /editor, /ai-editor hors menu (menu:false) : atteints via le header (compte) ; model-registry ouvert à tous les rôles (lecture seule)
-  assert.ok(all.some((i) => i.name === 'my-apps' && i.menu === false), 'my-apps (menu:false) — entrée « Mes apps » du menu compte, pas du sidebar');
+  assert.deepEqual(gest, ['dashboard', 'anomalies', 'tickets', 'ticket-new', 'model-registry']); // /store, /my-apps, /editor, /ai-editor outside the menu (menu:false): reached via the header (account); model-registry open to all roles (read-only)
+  assert.ok(all.some((i) => i.name === 'my-apps' && i.menu === false), 'my-apps (menu:false) — "My apps" entry of the account menu, not the sidebar');
   const tech = menuItems(routes, 'technician').filter((i) => i.visible && i.menu !== false).map((i) => i.name);
   assert.deepEqual(tech, ['interventions', 'model-registry']);
   assert.ok(all.some((i) => i.name === 'store' && i.menu === false), 'store (menu:false) outside the menu, reached via the header');
