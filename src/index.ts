@@ -237,6 +237,15 @@ function renderHeader(): void {
       document.dispatchEvent(new CustomEvent('requestNavigation', { detail: { route: 'my-apps', resource: '/my-apps' } }));
     });
   }
+  // Model registry: read-only registry view (GET /shapes/ index + published contracts),
+  // route open to every authenticated role (orbit.json model-registry).
+  const registryBtn = document.getElementById('modelregistry');
+  if (registryBtn && !registryBtn.dataset.wired) {
+    registryBtn.dataset.wired = '1';
+    registryBtn.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('requestNavigation', { detail: { route: 'model-registry', resource: '/model-registry' } }));
+    });
+  }
 }
 
 // Inline SVG icons (stroke currentColor) for the menu entries.
